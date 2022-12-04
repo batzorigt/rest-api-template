@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info">
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT" immediateFlush="false">
+			<PatternLayout
+				pattern="%d{YYYY.MM.dd HH:mm:ss.SSS} %-5level [%t] %l - %msg%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<logger name="io.ebean" level="INFO" />
+
+		<!-- docker containers -->
+		<logger name="io.ebean.docker" level="DEBUG" />
+
+		<!-- ddl -->
+		<logger name="io.ebean.DDL" level="DEBUG" />
+
+		<!-- sql and transaction logging -->
+		<logger name="io.ebean.SQL" level="DEBUG" />
+		<logger name="io.ebean.TXN" level="DEBUG" />
+		<!-- <logger name="io.ebean.SUM" level="TRACE"/> -->
+
+		<!-- l2 cache logging -->
+		<logger name="io.ebean.cache.QUERY" level="DEBUG" />
+		<logger name="io.ebean.cache.BEAN" level="DEBUG" />
+		<logger name="io.ebean.cache.COLL" level="DEBUG" />
+		<logger name="io.ebean.cache.NATKEY" level="DEBUG" />
+
+		<!-- elasticSearch query logging -->
+		<!--<logger name="io.ebean.ELA" level="TRACE"/> -->
+		
+		<Root level="info" includeLocation="true">
+			<AppenderRef ref="console" />
+		</Root>
+	</Loggers>
+</Configuration>

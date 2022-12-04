@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Don't forget to set system property
+-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector
+     to make all loggers asynchronous. -->
+ 
+<Configuration status="info">
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT" immediateFlush="false">
+			<PatternLayout
+				pattern="%d{YYYY.MM.dd HH:mm:ss.SSS} %-5level [%t] %l - %msg%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="info" includeLocation="true">
+			<AppenderRef ref="console" />
+		</Root>
+	</Loggers>
+</Configuration>
