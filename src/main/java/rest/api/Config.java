@@ -8,13 +8,13 @@ import org.aeonbits.owner.Config.LoadType;
 import org.aeonbits.owner.Config.Sources;
 
 @LoadPolicy(LoadType.MERGE)
-@Sources({"file:/rapit.config", "system:env"})
+@Sources({ "file:/rapit.config", "system:env" })
 public interface Config extends Accessible {
 
     @DefaultValue("8080")
     int portNo();
 
-    @DefaultValue("http://localhost:4200, http://localhost:4201, http://local.tabsolution.jp:4200")
+    @DefaultValue("http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200")
     String[] allowedOrigins();
 
     @DefaultValue("1234567890123456")
