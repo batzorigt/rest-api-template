@@ -113,7 +113,7 @@
 							</transformers>
 							<filters>
 								<filter>
-									<artifact>tab.solution:rest-api-template</artifact>
+									<artifact>batzorigt.rentsen:rest-api-template</artifact>
 									<excludes>
 										<exclude>rest/api/GenerateDbMigration.class</exclude>
 										<exclude>dbmigration/**</exclude>
