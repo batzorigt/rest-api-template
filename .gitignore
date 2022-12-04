@@ -1,0 +1,7 @@
+/target/
+/.DS_Store
+/.classpath
+/.factorypath
+/.project
+/dependency-reduced-pom.xml
+/jte-classes/
