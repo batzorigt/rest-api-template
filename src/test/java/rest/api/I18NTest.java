@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 public class I18NTest {
 
     @Test
-    void testAll() throws Exception {
+    void testAll()  {
         I18N.load("i18nTest", Locale.getDefault(), Locale.JAPAN);
 
         // example of parameterized message
