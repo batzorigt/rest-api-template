@@ -1,5 +1,6 @@
 package rest.api;
 
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +41,7 @@ public interface Crypto {
             Key key = generateKey(secretKey, encryptionAlgorithm);
             cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(initVector));
 
-            byte[] encoded = plaintext.getBytes("UTF-8");
+            byte[] encoded = plaintext.getBytes(StandardCharsets.UTF_8);
             byte[] cipherText = new byte[initVector.length + cipher.getOutputSize(encoded.length)];
 
             for (int i = 0; i < initVector.length; i++) {
@@ -56,7 +57,7 @@ public interface Crypto {
 
     public static String decrypt(String secretKey, String data) {
         try {
-            byte[] cipherText = Base64.decode(data.getBytes("UTF-8"));
+            byte[] cipherText = Base64.decode(data.getBytes(StandardCharsets.UTF_8));
 
             Cipher cipher = Cipher.getInstance(transformation);
             final int blockSize = cipher.getBlockSize();
