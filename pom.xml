@@ -70,6 +70,11 @@
 							<version>${mapstruct.version}</version>
 						</path>
 						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.22</version>
+						</path>
+						<path>
 							<groupId>io.ebean</groupId>
 							<artifactId>querybean-generator</artifactId>
 							<version>${ebean.version}</version>
@@ -85,6 +90,9 @@
 					<mainClass>rest.api.API</mainClass>
 					<systemProperties>
 						<systemProperty>
+							<key>-javaagent:</key>
+							<value>ebean-agent-${ebean.version}.jar</value>
+
 							<key>log4j2.contextSelector</key>
 							<value>org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</value>
 						</systemProperty>
@@ -153,7 +161,7 @@
 				<version>3.1.4</version>
 				<configuration>
 					<from>
-						<image>eclipse-temurin:17.0.1_12-jre-alpine</image>
+						<image>eclipse-temurin:17.0.7_7-jre-alpine</image>
 					</from>
 					<to>
 						<image>${project.groupId}.${project.artifactId}</image>
