@@ -3,19 +3,18 @@ package rest.api;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.MessageInterpolator;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import javax.validation.metadata.ConstraintDescriptor;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.internal.engine.messageinterpolation.DefaultLocaleResolver;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.MessageInterpolator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.metadata.ConstraintDescriptor;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
 
