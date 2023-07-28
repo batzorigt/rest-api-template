@@ -20,7 +20,7 @@ import rest.api.member.MemberHandler;
 public class API {
 
     public static JsonMapper jsonMapper;
-    private Javalin api = Javalin.create(API::config);
+    private final Javalin api = Javalin.create(API::config);
     public static final Config config = ConfigCache.getOrCreate(Config.class);
 
     private static void config(JavalinConfig config) {
@@ -29,7 +29,7 @@ public class API {
         config.showJavalinBanner = false;
 
         config.contextPath = API.config.contextPath();
-        config.asyncRequestTimeout = Long.valueOf(5000);
+        config.asyncRequestTimeout = 5000L;
         config.defaultContentType = "application/json";
 
         config.enableDevLogging();
@@ -37,7 +37,6 @@ public class API {
         config.compressionStrategy(null, new Gzip());
     }
 
-    @SuppressWarnings("resource")
     private void enableMicrometer(Javalin api) {
         api._conf.registerPlugin(new MicrometerPlugin());
         var micrometer = new Micrometer();
@@ -57,10 +56,11 @@ public class API {
     }
 
     private void commonRequestFilter(Context ctx) {
-        // TODO enable authenticator
+        // TODO uncomment to enable authenticator
         // AuthHandler.handle(ctx);
 
-        if (config.xsrfProtectionEnabled()) { // TODO xsrf is for protected API
+        // TODO set true to Config#xsrfProtectionEnabled to protect from XSRF
+        if (config.xsrfProtectionEnabled()) {
             XSRFHandler.handle(ctx);
         }
     }
@@ -78,12 +78,11 @@ public class API {
         ctx.res.addHeader("Referrer-Policy", "no-referrer");
     }
 
-    public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) {
         new API().start(config.portNo());
     }
 
-    @SuppressWarnings("resource")
-    public void start(int portNo) throws Throwable {
+    public void start(int portNo)  {
         api.before(this::commonRequestFilter);
         api.after(this::commonResponseFilter);
         api.exception(Exception.class, ExceptionHandlers::exceptionHandler);
@@ -109,7 +108,6 @@ public class API {
         routes();
     }
 
-    @SuppressWarnings("resource")
     public void stop() {
         api.stop();
     }
