@@ -20,12 +20,12 @@ public class GenreServiceTest {
     }
 
     @Test
-    void notFoundCase() throws Exception {
+    void notFoundCase() {
         assertNull(GenreService.getGenres(1, 10));
     }
 
     @Test
-    void dataExistingCase() throws Exception {
+    void dataExistingCase() {
         DGenreTest.insertRecords(1, 10);
 
         PagedData<Genre> result = GenreService.getGenres(1, 5);
@@ -64,18 +64,16 @@ public class GenreServiceTest {
 
     private void assertData(List<Genre> genres, int beginIndex, int endIndex) {
         for (int i = beginIndex; i <= endIndex; i++) {
-            assertFields(genres.get(i - beginIndex), i, "key" + i, "name" + i, "imageKey" + i, "imagePath" + i, i);
+            assertFields(genres.get(i - beginIndex), "key" + i, "name" + i, "imageKey" + i, "imagePath" + i, i);
         }
     }
 
     private void assertFields(Genre result,
-                              int id,
                               String key,
                               String name,
                               String imageKey,
                               String imagePath,
                               int orderNumber) {
-        assertEquals(id, result.getId());
         assertEquals(key, result.getKey());
         assertEquals(name, result.getName());
 
