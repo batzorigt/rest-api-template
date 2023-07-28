@@ -14,7 +14,7 @@ public interface Config extends Accessible {
     @DefaultValue("8080")
     int portNo();
 
-    @DefaultValue("http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200")
+    @DefaultValue("http://localhost:8080, http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200")
     String[] allowedOrigins();
 
     @DefaultValue("1234567890123456")
