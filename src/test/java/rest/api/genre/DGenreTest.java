@@ -24,44 +24,40 @@ public class DGenreTest {
 
     @Test
     void save() throws Exception {
-        DGenre genre = createGenre("key1", "name1", "imageKey1", "imagePath1", 1);
-        genre.save();
-
+        DGenre genre = insertRecord("key1", "name1", "imageKey1", "imagePath1", 1);
         DGenre result = new QDGenre().id.eq(genre.getId()).findOne();
         assertFields(result, "key1", "name1", "imageKey1", "imagePath1", 1);
     }
 
     @Test
     void update() throws Exception {
-        DGenre genre = createGenre("key2", "name2", "imageKey2", "imagePath2", 2);
-        genre.save();
-        Integer id = genre.getId();
-        genre = DB.reference(DGenre.class, id);
-        assertFields(genre, "key2", "name2", "imageKey2", "imagePath2", 2);
+        DGenre updateTarget = insertRecord("key2", "name2", "imageKey2", "imagePath2", 2);
+        Integer id = updateTarget.getId();
 
-        Date createdAt = genre.getCreatedAt();
-        Date updatedAt = genre.getUpdatedAt();
+        DGenre beforeUpdate = DB.reference(DGenre.class, id);
+        assertFields(beforeUpdate, "key2", "name2", "imageKey2", "imagePath2", 2);
 
-        fillFieldsExceptId(genre, "key3", "name3", "imageKey3", "imagePath3", 3);
-        genre.update();
+        Date createdAtBeforeUpdate = beforeUpdate.getCreatedAt();
+        Date updatedAtBeforeUpdate = beforeUpdate.getUpdatedAt();
 
-        DGenre result = new QDGenre().id.eq(id).findOne();
-        assertFields(result, "key3", "name3", "imageKey3", "imagePath3", 3);
+        fillFieldsExceptId(beforeUpdate, "key3", "name3", "imageKey3", "imagePath3", 3);
+        beforeUpdate.update();
 
-        assertEquals(createdAt, result.getCreatedAt());
-        assertNotEquals(updatedAt, result.getUpdatedAt());
+        DGenre afterUpdate = new QDGenre().id.eq(id).findOne();
+        assertFields(afterUpdate, "key3", "name3", "imageKey3", "imagePath3", 3);
+
+        assertEquals(createdAtBeforeUpdate, afterUpdate.getCreatedAt());
+        assertNotEquals(updatedAtBeforeUpdate, afterUpdate.getUpdatedAt());
     }
 
     @Test
     void delete() throws Exception {
-        DGenre genre = createGenre("key3", "name3", "imageKey3", "imagePath3", 3);
-        genre.save();
-
+        DGenre genre = insertRecord("key3", "name3", "imageKey3", "imagePath3", 3);
         Integer id = genre.getId();
-        genre = DB.reference(DGenre.class, id);
-        assertFields(genre, "key3", "name3", "imageKey3", "imagePath3", 3);
 
-        assertTrue(genre.delete());
+        DGenre genreTobeDeleted = DB.reference(DGenre.class, id);
+        assertFields(genreTobeDeleted, "key3", "name3", "imageKey3", "imagePath3", 3);
+        assertTrue(genreTobeDeleted.delete());
 
         DGenre result = new QDGenre().id.eq(id).findOne();
         assertNull(result);
@@ -82,13 +78,14 @@ public class DGenreTest {
 
     public static void insertRecords(int beginIndex, int endIndex) {
         for (int i = beginIndex; i <= endIndex; i++) {
-            createGenre("key" + i, "name" + i, "imageKey" + i, "imagePath" + i, i).save();
+            insertRecord("key" + i, "name" + i, "imageKey" + i, "imagePath" + i, i);
         }
     }
 
-    public static DGenre createGenre(String key, String name, String imageKey, String imagePath, int orderNumber) {
+    public static DGenre insertRecord(String key, String name, String imageKey, String imagePath, int orderNumber) {
         DGenre genre = new DGenre();
         fillFieldsExceptId(genre, key, name, imageKey, imagePath, orderNumber);
+        genre.save();
         return genre;
     }
 
