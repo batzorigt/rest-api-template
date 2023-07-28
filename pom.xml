@@ -10,10 +10,12 @@
 
 	<properties>
 		<encoding>UTF-8</encoding>
-		<ebean.version>12.14.0</ebean.version>
-		<javalin.version>4.2.0</javalin.version>
-		<jte.version>1.12.1</jte.version>
-		<mapstruct.version>1.4.2.Final</mapstruct.version>
+		<ebean.version>13.20.1</ebean.version>
+		<javalin.version>4.6.8</javalin.version>
+		<jte.version>3.0.1</jte.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<lombok.version>1.18.28</lombok.version>
+		
 	</properties>
 
 	<profiles>
@@ -65,14 +67,14 @@
 
 					<annotationProcessorPaths>
 						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<path>
 							<groupId>org.mapstruct</groupId>
 							<artifactId>mapstruct-processor</artifactId>
 							<version>${mapstruct.version}</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>1.18.22</version>
 						</path>
 						<path>
 							<groupId>io.ebean</groupId>
@@ -341,7 +343,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.22</version>
+			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
