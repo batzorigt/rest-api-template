@@ -21,7 +21,12 @@ public class I18NTest {
 
         // should return related locale message
         assertEquals("日本語", I18N.message("language", Locale.JAPAN));
-        assertEquals("english", I18N.message("language", Locale.getDefault()));
+
+        if(Locale.getDefault().equals(Locale.JAPAN)) {
+            assertEquals("日本語", I18N.message("language", Locale.getDefault()));
+        } else {
+            assertEquals("english", I18N.message("language", Locale.getDefault()));
+        }
 
         // when related locale is not found,
         // then it should return message from Japanese locale
