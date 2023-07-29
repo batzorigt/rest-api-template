@@ -1,9 +1,9 @@
 package rest.api;
 
-import io.javalin.core.util.JavalinLogger;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.ForbiddenResponse;
+import io.javalin.util.JavalinLogger;
 
 public enum XSRFHandler {
     ;
@@ -25,14 +25,14 @@ public enum XSRFHandler {
 
     public static void handle(Context ctx) {
         if (nagHttps) {
-            String uri = ctx.req.getRequestURI();
+            String uri = ctx.req().getRequestURI();
             if (uri != null && !uri.startsWith("https:")) {
                 JavalinLogger.warn(
                         "Using session cookies without https could make you susceptible to session hijacking: " + uri);
             }
         }
 
-        switch (ctx.req.getMethod()) {
+        switch (ctx.req().getMethod()) {
             case "GET":
                 final String token = XSRFToken.generate();
                 ctx.attribute(headerName, token);
@@ -42,7 +42,7 @@ public enum XSRFHandler {
             case "PUT":
             case "DELETE":
             case "PATCH":
-                if (!validateToken(ctx.req.getHeader(headerName), ctx.cookie(cookieName))) {
+                if (!validateToken(ctx.req().getHeader(headerName), ctx.cookie(cookieName))) {
                     throw new ForbiddenResponse("Unauthorized Access!");
                 }
                 break;
@@ -52,11 +52,11 @@ public enum XSRFHandler {
     }
 
     private static Cookie cookie(final String token) {
-        Cookie cookie = new Cookie(cookieName, token, "/", -1, API.config.isSecure(), 0, true, null, null, null);
+        Cookie cookie = new Cookie(cookieName, token, "/", -1, API.cfg.isSecure(), 0, true, null, null, null);
 
         cookie.setPath(cookiePath);
         cookie.setHttpOnly(true);
-        cookie.setSecure(API.config.isSecure());
+        cookie.setSecure(API.cfg.isSecure());
 
         return cookie;
     }

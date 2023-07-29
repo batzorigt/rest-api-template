@@ -11,7 +11,7 @@
 	<properties>
 		<encoding>UTF-8</encoding>
 		<ebean.version>13.20.1</ebean.version>
-		<javalin.version>4.6.8</javalin.version>
+		<javalin.version>5.6.1</javalin.version>
 		<jte.version>3.0.1</jte.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<lombok.version>1.18.28</lombok.version>
@@ -239,14 +239,14 @@
 			<version>3.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-core</artifactId>
-			<version>1.11.2</version>
+		    <groupId>io.javalin</groupId>
+		    <artifactId>javalin-micrometer</artifactId>
+		    <version>${javalin.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-			<version>1.11.2</version>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-registry-prometheus</artifactId>
+		    <version>1.11.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

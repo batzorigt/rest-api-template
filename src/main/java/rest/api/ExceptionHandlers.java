@@ -1,8 +1,8 @@
 package rest.api;
 
-import io.javalin.core.util.JavalinLogger;
 import io.javalin.http.Context;
 import io.javalin.http.HttpResponseException;
+import io.javalin.util.JavalinLogger;
 import kong.unirest.HttpStatus;
 
 public interface ExceptionHandlers {

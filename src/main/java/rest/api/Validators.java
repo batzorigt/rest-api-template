@@ -64,7 +64,7 @@ public abstract class Validators {
     }
 
     private static String message(Context ctx, ConstraintViolation<Object> violation) {
-        Locale locale = ctx.req.getLocale();
+        Locale locale = ctx.req().getLocale();
         if (!allowedLocales.contains(locale) || defaultLocale.equals(locale)) {
             return violation.getMessage();
         }

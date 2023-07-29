@@ -16,16 +16,16 @@ public class CryptoTest {
         user.put("emailAddress", "email@address");
 
         String expectedValue = user.toString();
-        String encryptedValue = Crypto.encrypt(API.config.encryptionKey(), expectedValue);
-        Assertions.assertEquals(expectedValue, Crypto.decrypt(API.config.encryptionKey(), encryptedValue));
+        String encryptedValue = Crypto.encrypt(API.cfg.encryptionKey(), expectedValue);
+        Assertions.assertEquals(expectedValue, Crypto.decrypt(API.cfg.encryptionKey(), encryptedValue));
     }
 
     @Test
     void enryptAndDecryptRawString() throws Throwable {
         String expectedValue =
                              "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+`1234567890-={}|[]\\:”;’<>?,./";
-        String encryptedValue = Crypto.encrypt(API.config.encryptionKey(), expectedValue);
-        Assertions.assertEquals(expectedValue, Crypto.decrypt(API.config.encryptionKey(), encryptedValue));
+        String encryptedValue = Crypto.encrypt(API.cfg.encryptionKey(), expectedValue);
+        Assertions.assertEquals(expectedValue, Crypto.decrypt(API.cfg.encryptionKey(), encryptedValue));
     }
 
 }

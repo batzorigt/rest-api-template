@@ -51,7 +51,7 @@ public enum XSRFToken {
     }
 
     public static String sign(String saltPlusToken) {
-        return Crypto.sign(saltPlusToken, API.config.encryptionKey());
+        return Crypto.sign(saltPlusToken, API.cfg.encryptionKey());
     }
 
 }

@@ -36,7 +36,7 @@ public class ContextHelpersTest {
         Member expected = MemberService.addMember(member);
 
         String msg = I18N.message("sucessfully.saved", Locale.JAPAN);
-        String json = API.jsonMapper.toJsonString(expected);
+        String json = API.jsonMapper.toJsonString(expected, expected.getClass());
 
         String response = String.format("{\"status\": %d, \"result\": %s, \"msg\": \"%s\"}", HttpStatus.OK_200, json,
                 msg);

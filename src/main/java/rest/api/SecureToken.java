@@ -7,7 +7,7 @@ import kong.unirest.json.JSONObject;
 public interface SecureToken {
 
     static String generate(JSONObject user) {
-        return XSRFToken.generate(Crypto.encrypt(API.config.encryptionKey(), user.toString()));
+        return XSRFToken.generate(Crypto.encrypt(API.cfg.encryptionKey(), user.toString()));
     }
 
     static JSONObject parse(String token, long timeout) {
@@ -30,7 +30,7 @@ public interface SecureToken {
 
         try {
             if (System.currentTimeMillis() <= Long.parseLong(tokens[1]) + timeout) {
-                return new JSONObject(Crypto.decrypt(API.config.encryptionKey(), tokens[0]));
+                return new JSONObject(Crypto.decrypt(API.cfg.encryptionKey(), tokens[0]));
             }
 
             return null;
