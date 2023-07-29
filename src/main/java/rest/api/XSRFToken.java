@@ -45,7 +45,7 @@ public enum XSRFToken {
         try {
             var timestamp = saltPlusToken.substring(lastIndexOfDot + 1);
             return System.currentTimeMillis() <= Long.parseLong(timestamp) + timeoutMiilis;
-        } catch (@SuppressWarnings("unused") NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
     }

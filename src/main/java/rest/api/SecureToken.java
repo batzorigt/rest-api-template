@@ -34,7 +34,7 @@ public interface SecureToken {
             }
 
             return null;
-        } catch (@SuppressWarnings("unused") Throwable unused) {
+        } catch (Throwable unused) {
             return null;
         }
     }

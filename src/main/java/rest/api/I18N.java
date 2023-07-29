@@ -30,7 +30,6 @@ public abstract class I18N {
         return message(key, ctx.req().getLocale(), args);
     }
 
-    @SuppressWarnings("null")
     public static String message(String key, Locale locale, Object... args) {
         ResourceBundle resource = resources.get(locale);
 
