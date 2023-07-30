@@ -10,10 +10,12 @@
 
 	<properties>
 		<encoding>UTF-8</encoding>
-		<ebean.version>12.14.0</ebean.version>
-		<javalin.version>4.2.0</javalin.version>
-		<jte.version>1.12.1</jte.version>
-		<mapstruct.version>1.4.2.Final</mapstruct.version>
+		<ebean.version>13.20.1</ebean.version>
+		<javalin.version>5.6.1</javalin.version>
+		<jte.version>3.0.1</jte.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<lombok.version>1.18.28</lombok.version>
+		
 	</properties>
 
 	<profiles>
@@ -51,10 +53,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.11.0</version>
 				<configuration>
-					<source>17</source>
-					<target>17</target>
+					<source>20</source>
+					<target>20</target>
+					<compilerArgs>--enable-preview</compilerArgs> 
 					
 					<excludes>
 						<exclude>dbmigration/**</exclude>
@@ -65,14 +68,14 @@
 
 					<annotationProcessorPaths>
 						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<path>
 							<groupId>org.mapstruct</groupId>
 							<artifactId>mapstruct-processor</artifactId>
 							<version>${mapstruct.version}</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>1.18.22</version>
 						</path>
 						<path>
 							<groupId>io.ebean</groupId>
@@ -85,7 +88,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<configuration>
 					<mainClass>rest.api.API</mainClass>
 					<systemProperties>
@@ -102,7 +105,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -138,7 +141,7 @@
 			<plugin>
 				<groupId>io.repaint.maven</groupId>
 				<artifactId>tiles-maven-plugin</artifactId>
-				<version>2.24</version>
+				<version>2.36</version>
 				<extensions>true</extensions>
 				<configuration>
 					<tiles>
@@ -149,19 +152,22 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.1.2</version>
+				<configuration>
+		            <argLine>--enable-preview</argLine>
+		        </configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.1.2</version>
 			</plugin>
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.1.4</version>
+				<version>3.3.2</version>
 				<configuration>
 					<from>
-						<image>eclipse-temurin:17.0.7_7-jre-alpine</image>
+						<image>eclipse-temurin:20.0.2_9-jre-alpine</image>
 					</from>
 					<to>
 						<image>${project.groupId}.${project.artifactId}</image>
@@ -169,6 +175,7 @@
 					<container>
 						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
 						<jvmFlags>
+							<jvmFlag>--enable-preview</jvmFlag>
 							<jvmFlag>-javaagent:ebean-agent-${ebean.version}.jar</jvmFlag>
 							<jvmFlag>-Dlog4j2.formatMsgNoLookups=true</jvmFlag>
 							<jvmFlag>-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</jvmFlag>
@@ -216,19 +223,20 @@
 			<version>${javalin.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-			<version>2.0.1.Final</version>
+		    <groupId>jakarta.validation</groupId>
+		    <artifactId>jakarta.validation-api</artifactId>
+		    <version>3.0.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>6.2.0.Final</version>
+			<version>8.0.1.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator-annotation-processor</artifactId>
-			<version>6.2.0.Final</version>
+			<version>8.0.1.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.el</groupId>
@@ -236,14 +244,14 @@
 			<version>3.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-core</artifactId>
-			<version>1.8.0</version>
+		    <groupId>io.javalin</groupId>
+		    <artifactId>javalin-micrometer</artifactId>
+		    <version>${javalin.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-			<version>1.8.0</version>
+		    <groupId>io.micrometer</groupId>
+		    <artifactId>micrometer-registry-prometheus</artifactId>
+		    <version>1.11.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -272,10 +280,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<version>2.16.0</version>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>2.0.7</version>
 		</dependency>
+
+		<dependency>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-slf4j2-impl</artifactId>
+		    <version>2.20.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
@@ -306,18 +321,18 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.3.1</version>
+			<version>42.6.0</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.13.0</version>
+			<version>2.15.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.konghq</groupId>
 			<artifactId>unirest-java</artifactId>
-			<version>3.13.4</version>
+			<version>3.14.5</version>
 			<classifier>standalone</classifier>
 		</dependency>
 		<dependency>
@@ -335,13 +350,13 @@
 		<dependency>
 			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>jaxb-runtime</artifactId>
-			<version>2.3.2</version>
+			<version>4.0.3</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.22</version>
+			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -354,13 +369,13 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.8.1</version>
+			<version>5.10.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>4.0.0</version>
+			<version>5.4.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

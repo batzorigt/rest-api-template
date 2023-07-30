@@ -17,7 +17,6 @@ public class GenreHandler {
         ContextHelpers.resultOfGet(ctx, result);
     }
 
-    @SuppressWarnings("resource")
     public static void routes(Javalin app) {
         app.get("genres", GenreHandler::getGenres);
     }

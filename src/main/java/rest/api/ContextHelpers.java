@@ -14,7 +14,7 @@ public interface ContextHelpers {
 
     static void result(Context ctx, int status, Object result, String msgKey, Object... args) {
         String msg = I18N.message(msgKey, ctx, args);
-        String json = API.jsonMapper.toJsonString(result);
+        String json = API.jsonMapper.toJsonString(result, result.getClass());
 
         // @off
         ctx.status(HttpStatus.OK_200);

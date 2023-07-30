@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 
-@SuppressWarnings("unused")
 public interface IO {
 
     static void close(AutoCloseable closeable) {

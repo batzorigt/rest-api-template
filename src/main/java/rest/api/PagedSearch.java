@@ -10,7 +10,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import io.ebean.PagedList;
 import io.javalin.http.ForbiddenResponse;
 
-@SuppressWarnings("boxing")
 public interface PagedSearch {
 
     static <T, R> PagedData<R> search(Integer pageNumber,

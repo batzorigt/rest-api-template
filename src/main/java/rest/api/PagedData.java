@@ -19,7 +19,6 @@ public class PagedData<T> implements Serializable {
     private Integer recordsPerPage;
     private Integer numberOfRecords;
 
-    @SuppressWarnings("boxing")
     public PagedData(Integer pageNumber, Integer recordsPerPage, Integer numberOfRecords, List<T> data) {
         pageNumber = NumberHelpers.nullIfZero(pageNumber);
         recordsPerPage = NumberHelpers.nullIfZero(recordsPerPage);

@@ -25,6 +25,12 @@ public interface Config extends Accessible {
 
     @DefaultValue("false")
     boolean xsrfProtectionEnabled();
+    
+    @DefaultValue("1024")
+    long httpMaxRequestSize();
+    
+    @DefaultValue("5000")
+    long httpAsyncTimeout();
 
     @DefaultValue("micro")
     String monitoringUsername();

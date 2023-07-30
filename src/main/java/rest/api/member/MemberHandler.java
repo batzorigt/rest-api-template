@@ -25,7 +25,6 @@ public class MemberHandler {
         ContextHelpers.resultOfAdd(ctx, addedMember);
     }
 
-    @SuppressWarnings("resource")
     public static void routes(Javalin app) {
         // Recommended and preferred way of route definition
         app.routes(() -> {

@@ -1,5 +1,7 @@
 package rest.api;
 
+import io.javalin.Javalin;
+import io.javalin.micrometer.MicrometerPlugin;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.jvm.JvmCompilationMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
@@ -30,8 +32,9 @@ public class Micrometer {
     });
 
     @SuppressWarnings("resource")
-    public Micrometer() {
+    public Micrometer(Javalin javalin) {
         Metrics.addRegistry(registry);
+        registry.config().commonTags("application", "rapit");
 
         new JvmGcMetrics().bindTo(Metrics.globalRegistry);
         new JvmHeapPressureMetrics().bindTo(Metrics.globalRegistry);
@@ -42,6 +45,10 @@ public class Micrometer {
         new UptimeMetrics().bindTo(Metrics.globalRegistry);
         new FileDescriptorMetrics().bindTo(Metrics.globalRegistry);
         new ProcessorMetrics().bindTo(Metrics.globalRegistry);
+        // new DiskSpaceMetrics(new File(System.getProperty("user.dir"))).bindTo(registry);
+        
+        MicrometerPlugin micrometerPlugin = MicrometerPlugin.Companion.create(cfg -> cfg.registry = registry);
+        javalin.cfg.plugins.register(micrometerPlugin);
     }
 
     public String scrape() {

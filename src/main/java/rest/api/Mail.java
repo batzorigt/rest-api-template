@@ -79,15 +79,15 @@ public interface Mail {
         }
 
         Properties props = new Properties();
-        props.put("mail.smtp.host", API.config.smtpHost());
-        props.put("mail.smtp.port", API.config.smtpPort());
-        props.put("mail.smtp.auth", API.config.smtpAuth());
-        props.put("mail.smtp.starttls.enable", API.config.smtpStartTls());
+        props.put("mail.smtp.host", API.cfg.smtpHost());
+        props.put("mail.smtp.port", API.cfg.smtpPort());
+        props.put("mail.smtp.auth", API.cfg.smtpAuth());
+        props.put("mail.smtp.starttls.enable", API.cfg.smtpStartTls());
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(API.config.smtpUsername(), API.config.smtpPassword());
+                return new PasswordAuthentication(API.cfg.smtpUsername(), API.cfg.smtpPassword());
             }
         });
 
