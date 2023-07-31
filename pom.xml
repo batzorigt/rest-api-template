@@ -163,7 +163,7 @@
 				<version>3.3.2</version>
 				<configuration>
 					<from>
-						<image>eclipse-temurin:17.0.7_7-jre-alpine</image>
+						<image>bellsoft/liberica-runtime-container:jre-17.0.8_7-slim-stream-musl-230731@sha256:ceb590a0ad726889a8df275b31b9b80d3ce1ed4c4d3e38417d730a0d1703b705</image>
 					</from>
 					<to>
 						<image>${project.groupId}.${project.artifactId}</image>
