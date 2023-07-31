@@ -167,7 +167,7 @@
 				<version>3.3.2</version>
 				<configuration>
 					<from>
-						<image>eclipse-temurin:20.0.2_9-jre-alpine@sha256:ecfed6661a94d0280d8ce9515f8edd5f4e1bab6fd3cb7ef32487383abb1525ea</image>
+						<image>bellsoft/liberica-openjre-alpine-musl:20.0.2-10</image>
 					</from>
 					<to>
 						<image>${project.groupId}.${project.artifactId}</image>
