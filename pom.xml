@@ -167,7 +167,7 @@
 				<version>3.3.2</version>
 				<configuration>
 					<from>
-						<image>bellsoft/liberica-openjre-alpine-musl:20.0.2-10</image>
+						<image>docker://bellsoft/liberica-openjre-alpine-musl:20.0.2-10</image>
 					</from>
 					<to>
 						<image>${project.groupId}.${project.artifactId}</image>
