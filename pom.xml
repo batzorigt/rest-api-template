@@ -386,7 +386,7 @@
 		</dependency>
 
 		<!-- TODO use later in production to enhance load time -->
-		<!-- java -javaagent:ebean-agent-${ebean.version}.jar rest-api-template.jar -->
+		<!-- java -javaagent:ebean-agent-${ebean.version}.jar -jar rest-api-template.jar -->
 
 		<!-- <dependency> -->
 		<!-- <groupId>io.ebean</groupId> -->
