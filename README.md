@@ -22,7 +22,7 @@ mvn exec:java
 # run from docker image
 cd target
 docker load -i jib-image.tar
-docker run batzorigt.rentsen.rest-api-template
+docker run -p 8080:8080 batzorigt.rentsen.rest-api-template
 ```
 
 # IntelliJ IDEA
