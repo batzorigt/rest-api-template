@@ -2,6 +2,7 @@
 
 ```
 git clone git@github.com:batzorigt/rest-api-template.git
+cd rest-api-template
 
 # pull docker image into local docker registry
 docker pull bellsoft/liberica-openjre-alpine-musl:20.0.2-10
