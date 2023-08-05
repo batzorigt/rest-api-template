@@ -14,11 +14,13 @@ mvn package
 # Run
 
 ```
+cd rest-api-template
+
 # run from jar file
 mvn exec:java
 
 # run from docker image
-cd ${project-home-dir}/target
+cd target
 docker load -i jib-image.tar
 docker run batzorigt.rentsen.rest-api-template
 ```
