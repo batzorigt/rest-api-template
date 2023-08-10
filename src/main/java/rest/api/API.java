@@ -71,7 +71,7 @@ public class API {
 
         // TODO set true to Config#xsrfProtectionEnabled to protect from XSRF
         if (cfg.xsrfProtectionEnabled()) {
-            XSRFHandler.handle(ctx);
+            XSRFFilter.handle(ctx);
         }
     }
 
