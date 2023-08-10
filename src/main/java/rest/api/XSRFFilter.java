@@ -5,7 +5,7 @@ import io.javalin.http.Cookie;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.util.JavalinLogger;
 
-public enum XSRFHandler {
+public enum XSRFFilter {
     ;
 
     private static final boolean nagHttps = true;

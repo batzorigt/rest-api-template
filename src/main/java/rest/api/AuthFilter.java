@@ -6,7 +6,7 @@ import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
 import kong.unirest.json.JSONObject;
 
-public interface AuthHandler {
+public interface AuthFilter {
 
     static final String secureToken = "secure-token";
 
