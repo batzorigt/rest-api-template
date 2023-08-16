@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test;
 public class IOTest {
 
     @Test
-    void singleLineStringFromClassPathFile() throws Exception {
+    void singleLineStringFromClassPathFile()  {
         String expectedValue = "select * from users where name like 'バト%'";
-        String actualValue = IO.singleLineFromClassPath("query.sql");
+        String actualValue = IO.readAsSingleLineFromClassPath("query.sql");
         assertEquals(expectedValue, actualValue);
     }
 
     @Test
-    void singleLineStringFromFile() throws Exception {
+    void singleLineStringFromFile() {
         String expectedValue = "select * from users where name like 'バト%'";
-        String actualValue = IO.singleLineFromFile(Files.currentFolder().getPath() + "/src/test/resources/query.sql");
+        String actualValue = IO.readAsSingleLineFromFileSystem(Files.currentFolder().getPath() + "/src/test/resources/query.sql");
         assertEquals(expectedValue, actualValue);
     }
 

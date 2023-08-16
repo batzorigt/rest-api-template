@@ -15,15 +15,15 @@ public interface IO {
         }
     }
 
-    static String singleLine(String multiLines) {
+    static String toSingleLine(String multiLines) {
         return multiLines.replaceAll("[\\t\\n\\r\\s]+", " ");
     }
 
-    static String singleLineFromClassPath(String fileName) {
-        return singleLine(multiLineFromClassPath(fileName));
+    static String readAsSingleLineFromClassPath(String fileName) {
+        return toSingleLine(readFromClassPath(fileName));
     }
 
-    static String multiLineFromClassPath(String fileName) {
+    static String readFromClassPath(String fileName) {
         try (InputStream inputStream = IO.class.getClassLoader().getResourceAsStream(fileName);
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
@@ -40,11 +40,11 @@ public interface IO {
         }
     }
 
-    static String singleLineFromFile(String fileName) {
-        return singleLine(multiLineFromFile(fileName));
+    static String readAsSingleLineFromFileSystem(String fileName) {
+        return toSingleLine(readFromFileSystem(fileName));
     }
 
-    static String multiLineFromFile(String fileName) {
+    static String readFromFileSystem(String fileName) {
         try {
             return Files.readString(new File(fileName).toPath());
         } catch (Throwable e) {
