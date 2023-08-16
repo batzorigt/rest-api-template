@@ -17,7 +17,7 @@ mvn package
 cd rest-api-template/target
 
 # run jar file
-java -javaagent:ebean-agent-13.20.1.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
+java -javaagent:../src/main/jib/ebean-agent-13.20.1.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
 
 # run as docker container
 docker load -i jib-image.tar
