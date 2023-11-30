@@ -47,9 +47,10 @@ configuration: https://matteobaccan.github.io/owner/
 orm: https://ebean.io/
 bean mappings: https://mapstruct.org/
 templating: https://jte.gg/
-validation: javalin built validators + custom bean validator using hibernate-validator
+validation: javalin built-in validators + custom java bean validator using hibernate-validator
 monitoring: micrometer plugin for prometheus
 logging: log4j2
+testing: JUnit5, Testcontainers for Java, mockito, jmockit
 ```
 
 # Architecture
@@ -75,7 +76,4 @@ security token generator/signer/verifier, i18n localized message loader, file lo
 
 Exception handlers:
 Simple and centralized exception handling.
-
-Test:
-JUnit5, Testcontainers for Java, ...
 ```
