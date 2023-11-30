@@ -57,11 +57,21 @@ logging: log4j2
 ```
 http requests --> filters --> handlers --> services --> orms --> rdb
 
-Filters: Security Filters: AuthHandler, XSRFHandler, before handlers and after handlers, security header adders. 
-Handlers: Receive http requests and validate request parameters or body. Call services. Manage database transactions.
-Services: Business logics. Call domains to access database
-ORMs: Data access layer. Easily testable and static typed & fine tuned queries which are generated automaticallly.
-Helpers: Mailers, validators, template based text generator, encryptor/decryptor, base 64 encoder/decoder,
+Filters:
+AuthHandler, XSRFHandler, before handlers and after handlers, security header adders. 
+
+Handlers:
+Receive http requests and validate request parameters or body. Call services. Manage database transactions.
+
+Services:
+Business logics. Call domains to access database
+
+ORMs:
+Data access layer. Easily testable and static typed & fine tuned queries which are generated automaticallly.
+
+Helpers:
+Mailers, validators, template based text generator, encryptor/decryptor, base 64 encoder/decoder,
 security token generator/signer/verifier, i18n localized message loader, file loaders, configurator etc.
+
 Exception handlers: Simple and centralized exception handling.
 ```
