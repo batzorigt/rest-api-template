@@ -43,13 +43,21 @@ https://mapstruct.org/documentation/ide-support/
 
 ```
 web framework: https://javalin.io/
+
 configuration: https://matteobaccan.github.io/owner/
+
 orm: https://ebean.io/
+
 bean mappings: https://mapstruct.org/
+
 templating: https://jte.gg/
+
 validation: javalin built-in validators + custom java bean validator using hibernate-validator
+
 monitoring: micrometer plugin for prometheus
+
 logging: log4j2
+
 testing: JUnit5, Testcontainers for Java, mockito, jmockit
 ```
 
