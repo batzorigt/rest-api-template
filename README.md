@@ -73,5 +73,9 @@ Helpers:
 Mailers, validators, template based text generator, encryptor/decryptor, base 64 encoder/decoder,
 security token generator/signer/verifier, i18n localized message loader, file loaders, configurator etc.
 
-Exception handlers: Simple and centralized exception handling.
+Exception handlers:
+Simple and centralized exception handling.
+
+Test:
+JUnit5, Testcontainers for Java, ...
 ```
