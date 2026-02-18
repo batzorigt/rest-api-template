@@ -31,7 +31,7 @@
 				<env.DB_HOST_NAME>localhost</env.DB_HOST_NAME>
 				<env.DB_NAME>rapit</env.DB_NAME>
 				<env.DB_USER_NAME>postgres</env.DB_USER_NAME>
-				<env.DB_PASSWORD>postgres</env.DB_PASSWORD>
+				<env.DB_PASSWORD>pg1002sql</env.DB_PASSWORD>
 			</properties>
 		</profile>
 	</profiles>
@@ -336,6 +336,16 @@
 		<dependency>
 			<groupId>com.aayushatharva.brotli4j</groupId>
 			<artifactId>native-osx-x86_64</artifactId>
+			<version>${brotli4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aayushatharva.brotli4j</groupId>
+			<artifactId>native-linux-x86_64</artifactId>
+			<version>${brotli4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aayushatharva.brotli4j</groupId>
+			<artifactId>native-linux-aarch64</artifactId>
 			<version>${brotli4j.version}</version>
 		</dependency>
 		<!-- <dependency> -->
