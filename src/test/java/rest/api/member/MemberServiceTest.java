@@ -34,7 +34,7 @@ public class MemberServiceTest {
 
         // using fetch to get only specified fields
         DMember foundByFetch = new QDMember().name.eq("Batzorigt").phones.phoneNo.eq("88381882").fetch("phones",
-                "phone_no").findOne();
+                "phoneNo").findOne();
         Assertions.assertEquals(result.getId(), foundByFetch.getId());
         Assertions.assertEquals(result.getCreatedAt(), foundByFetch.getCreatedAt());
         Assertions.assertEquals(result.getUpdatedAt(), foundByFetch.getUpdatedAt());
