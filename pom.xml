@@ -27,12 +27,6 @@
 					<name>!env.DB_HOST_NAME</name>
 				</property>
 			</activation>
-			<properties>
-				<env.DB_HOST_NAME>localhost</env.DB_HOST_NAME>
-				<env.DB_NAME>rapit</env.DB_NAME>
-				<env.DB_USER_NAME>postgres</env.DB_USER_NAME>
-				<env.DB_PASSWORD>pg1002sql</env.DB_PASSWORD>
-			</properties>
 		</profile>
 	</profiles>
 
