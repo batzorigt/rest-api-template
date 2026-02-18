@@ -1,5 +1,6 @@
 package rest.api;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -12,8 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import kong.unirest.json.JSONObject;
 import rest.api.member.Member;
-import rest.api.member.MemberService;
-import rest.api.member.MemberToAdd;
+import rest.api.member.Phone;
 
 public class ContextHelpersTest {
 
@@ -32,8 +32,16 @@ public class ContextHelpersTest {
 
     @Test
     void setSuccessResult() {
-        MemberToAdd member = new MemberToAdd("Batzorigt", List.of("88381882"));
-        Member expected = MemberService.addMember(member);
+        // Create a Member directly without DB
+        Member expected = new Member();
+        expected.setId(1);
+        expected.setName("Batzorigt");
+        expected.setCreatedAt(new Date());
+        expected.setUpdatedAt(new Date());
+
+        Phone phone = new Phone();
+        phone.setPhoneNo("88381882");
+        expected.setPhones(List.of(phone));
 
         String msg = I18N.message("sucessfully.saved", Locale.JAPAN);
         String json = API.jsonMapper.toJsonString(expected, expected.getClass());

@@ -10,12 +10,13 @@
 
 	<properties>
 		<encoding>UTF-8</encoding>
-		<ebean.version>13.20.1</ebean.version>
-		<javalin.version>5.6.1</javalin.version>
-		<jte.version>3.0.1</jte.version>
-		<mapstruct.version>1.5.5.Final</mapstruct.version>
-		<lombok.version>1.18.28</lombok.version>
-		
+		<ebean.version>17.2.1</ebean.version>
+		<javalin.version>6.7.0</javalin.version>
+		<jte.version>3.2.2</jte.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
+		<lombok.version>1.18.42</lombok.version>
+		<ebean-migration.version>14.3.0</ebean-migration.version>
+		<brotli4j.version>1.16.0</brotli4j.version>
 	</properties>
 
 	<profiles>
@@ -29,8 +30,8 @@
 			<properties>
 				<env.DB_HOST_NAME>localhost</env.DB_HOST_NAME>
 				<env.DB_NAME>rapit</env.DB_NAME>
-				<env.DB_USER_NAME>username</env.DB_USER_NAME>
-				<env.DB_PASSWORD>password</env.DB_PASSWORD>
+				<env.DB_USER_NAME>postgres</env.DB_USER_NAME>
+				<env.DB_PASSWORD>postgres</env.DB_PASSWORD>
 			</properties>
 		</profile>
 	</profiles>
@@ -41,7 +42,6 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 				<excludes>
-					<exclude>dbmigration/**</exclude>
 					<exclude>jte/**</exclude>
 					<exclude>**/.DS_Store/**</exclude>
 					<exclude>**/.gitignore/**</exclude>
@@ -53,10 +53,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
+				<version>3.15.0</version>
 				<configuration>
-					<source>21</source>
-					<target>21</target>
+					<source>25</source>
+					<target>25</target>
 					<compilerArgs>--enable-preview</compilerArgs>
 					
 					<excludes>
@@ -88,7 +88,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.6.3</version>
 				<configuration>
 					<mainClass>rest.api.API</mainClass>
 					<systemProperties>
@@ -105,7 +105,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.1</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -121,13 +121,14 @@
 										<Multi-Release>true</Multi-Release>
 									</manifestEntries>
 								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 							</transformers>
 							<filters>
 								<filter>
 									<artifact>batzorigt.rentsen:rest-api-template</artifact>
 									<excludes>
 										<exclude>rest/api/GenerateDbMigration.class</exclude>
-										<exclude>dbmigration/**</exclude>
 										<exclude>jte/**</exclude>
 										<exclude>**/.DS_Store/**</exclude>
 										<exclude>**/.gitignore/**</exclude>
@@ -141,7 +142,7 @@
 			<plugin>
 				<groupId>io.repaint.maven</groupId>
 				<artifactId>tiles-maven-plugin</artifactId>
-				<version>2.36</version>
+				<version>2.43</version>
 				<extensions>true</extensions>
 				<configuration>
 					<tiles>
@@ -152,22 +153,22 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.5.4</version>
 				<configuration>
 		            <argLine>--enable-preview</argLine>
 		        </configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.5.4</version>
 			</plugin>
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.3.2</version>
+				<version>3.5.1</version>
 				<configuration>
 					<from>
-						<image>docker://bellsoft/liberica-openjre-alpine-musl:21</image>
+						<image>bellsoft/liberica-openjre-alpine-musl:25</image>
 					</from>
 					<to>
 						<image>${project.groupId}.${project.artifactId}</image>
@@ -225,13 +226,13 @@
 		<dependency>
 		    <groupId>jakarta.validation</groupId>
 		    <artifactId>jakarta.validation-api</artifactId>
-		    <version>3.0.2</version>
+		    <version>3.1.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>8.0.1.Final</version>
+			<version>8.0.3.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
@@ -251,17 +252,17 @@
 		<dependency>
 		    <groupId>io.micrometer</groupId>
 		    <artifactId>micrometer-registry-prometheus</artifactId>
-		    <version>1.11.2</version>
+		    <version>1.16.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
+			<version>3.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.4</version>
+			<version>4.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapstruct</groupId>
@@ -276,25 +277,25 @@
 		<dependency>
 		    <groupId>com.sun.mail</groupId>
 		    <artifactId>jakarta.mail</artifactId>
-		    <version>2.0.1</version>
+		    <version>2.0.2</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
-		    <version>2.0.7</version>
+		    <version>2.0.17</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.apache.logging.log4j</groupId>
 		    <artifactId>log4j-slf4j2-impl</artifactId>
-		    <version>2.20.0</version>
+		    <version>2.25.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
-			<version>3.4.4</version>
+			<version>4.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -312,6 +313,31 @@
 			<artifactId>ebean-querybean</artifactId>
 			<version>${ebean.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.ebean</groupId>
+			<artifactId>ebean-postgres</artifactId>
+			<version>${ebean.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.ebean</groupId>
+			<artifactId>ebean-migration</artifactId>
+			<version>${ebean-migration.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aayushatharva.brotli4j</groupId>
+			<artifactId>brotli4j</artifactId>
+			<version>${brotli4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aayushatharva.brotli4j</groupId>
+			<artifactId>native-osx-aarch64</artifactId>
+			<version>${brotli4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aayushatharva.brotli4j</groupId>
+			<artifactId>native-osx-x86_64</artifactId>
+			<version>${brotli4j.version}</version>
+		</dependency>
 		<!-- <dependency> -->
 		<!-- <groupId>mysql</groupId> -->
 		<!-- <artifactId>mysql-connector-java</artifactId> -->
@@ -321,13 +347,13 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.6.0</version>
+			<version>42.7.10</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.15.2</version>
+			<version>2.21.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.konghq</groupId>
@@ -345,12 +371,11 @@
 			<groupId>io.ebean</groupId>
 			<artifactId>ebean-ddl-generator</artifactId>
 			<version>${ebean.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>jaxb-runtime</artifactId>
-			<version>4.0.3</version>
+			<version>4.0.6</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -369,19 +394,19 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.10.0</version>
+			<version>5.14.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.4.0</version>
+			<version>5.21.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jmockit</groupId>
 			<artifactId>jmockit</artifactId>
-			<version>1.49</version>
+			<version>1.50</version>
 			<scope>test</scope>
 		</dependency>
 

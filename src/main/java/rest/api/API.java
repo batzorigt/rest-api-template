@@ -9,35 +9,36 @@ import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import io.javalin.http.HttpResponseException;
+import io.javalin.json.JavalinJackson;
 import io.javalin.json.JsonMapper;
 import io.javalin.security.BasicAuthCredentials;
-import io.prometheus.client.exporter.common.TextFormat;
 import rest.api.genre.GenreHandler;
 import rest.api.member.MemberHandler;
 
 public class API {
 
-    public static JsonMapper jsonMapper;
+    public static JsonMapper jsonMapper = new JavalinJackson();
     private final Javalin api = Javalin.create(API::config);
     public static final Config cfg = ConfigCache.getOrCreate(Config.class);
 
     private static void config(JavalinConfig config) {
-    	config.http.generateEtags = true;
-    	config.http.asyncTimeout = cfg.httpAsyncTimeout();
-    	config.http.defaultContentType = "application/json";
-    	config.http.maxRequestSize = cfg.httpMaxRequestSize();
+        config.jsonMapper(jsonMapper);
+        config.http.generateEtags = true;
+        config.http.asyncTimeout = cfg.httpAsyncTimeout();
+        config.http.defaultContentType = "application/json";
+        config.http.maxRequestSize = cfg.httpMaxRequestSize();
 
-    	config.compression.gzipOnly();
-    	config.showJavalinBanner = false;
-        config.routing.contextPath = API.cfg.contextPath();
+        config.http.brotliAndGzipCompression();
+        config.showJavalinBanner = false;
+        config.router.contextPath = API.cfg.contextPath();
 
-        config.plugins.enableDevLogging(); 
+        config.bundledPlugins.enableDevLogging();
         String[] hosts = API.cfg.allowedOrigins();
-        
-        if(hosts.length > 0) {
-            config.plugins.enableCors(cors -> {
-                cors.add(it -> {
-                    if(hosts.length > 1) {
+
+        if (hosts.length > 0) {
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(it -> {
+                    if (hosts.length > 1) {
                         it.allowHost(hosts[0], Arrays.copyOfRange(hosts, 1, hosts.length));
                     } else {
                         it.allowHost(hosts[0]);
@@ -45,19 +46,19 @@ public class API {
                 });
             });
         }
-        
+
     }
 
     private void enableMicrometer(Javalin api) {
         var micrometer = new Micrometer(api);
 
         api.get("/metrics", ctx -> {
-        	BasicAuthCredentials credentials = ctx.basicAuthCredentials();
-        	
+            BasicAuthCredentials credentials = ctx.basicAuthCredentials();
+
             if (credentials != null) {
                 if (API.cfg.monitoringUsername().equals(credentials.getUsername()) && API.cfg.monitoringPassword()
                         .equals(credentials.getPassword())) {
-                    ctx.contentType(TextFormat.CONTENT_TYPE_004).result(micrometer.scrape());
+                    ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(micrometer.scrape());
                 }
             } else {
                 ctx.status(404);
@@ -92,14 +93,13 @@ public class API {
         new API().start(cfg.portNo());
     }
 
-    public void start(int portNo)  {
+    public void start(int portNo) {
         api.before(this::commonRequestFilter);
         api.after(this::commonResponseFilter);
         api.exception(Exception.class, ExceptionHandlers::exceptionHandler);
         api.exception(HttpResponseException.class, ExceptionHandlers::httpResponseExceptionHandler);
 
         enableMicrometer(api);
-        jsonMapper = (JsonMapper) api.cfg.pvt.appAttributes.get("javalin-json-mapper");
 
         api.events(event -> {
             event.serverStopping(() -> {

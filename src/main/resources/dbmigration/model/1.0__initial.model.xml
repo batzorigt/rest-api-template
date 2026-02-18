@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="genres" pkName="pk_genres">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar(10)"/>
+            <column name="key" type="varchar"/>
+            <column name="image_path" type="varchar"/>
+            <column name="image_key" type="varchar"/>
+            <column name="order_number" type="integer" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="dmember" pkName="pk_dmember">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar(10)"/>
+            <column name="sex" type="integer"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="dphone" pkName="pk_dphone">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="phone_no" type="varchar"/>
+            <column name="member_id" type="integer" references="dmember.id" foreignKeyName="fk_dphone_member_id" foreignKeyIndex="ix_dphone_member_id"/>
+            <column name="is_home_phone_no" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="created_at" type="timestamp" notnull="true"/>
+            <column name="updated_at" type="timestamp" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

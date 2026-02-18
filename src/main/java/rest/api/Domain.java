@@ -2,9 +2,9 @@ package rest.api;
 
 import java.util.Date;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 
 import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;

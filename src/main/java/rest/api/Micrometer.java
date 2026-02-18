@@ -12,8 +12,8 @@ import io.micrometer.core.instrument.binder.logging.Log4j2Metrics;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
 public class Micrometer {
 
@@ -45,10 +45,11 @@ public class Micrometer {
         new UptimeMetrics().bindTo(Metrics.globalRegistry);
         new FileDescriptorMetrics().bindTo(Metrics.globalRegistry);
         new ProcessorMetrics().bindTo(Metrics.globalRegistry);
-        // new DiskSpaceMetrics(new File(System.getProperty("user.dir"))).bindTo(registry);
-        
-        MicrometerPlugin micrometerPlugin = MicrometerPlugin.Companion.create(cfg -> cfg.registry = registry);
-        javalin.cfg.plugins.register(micrometerPlugin);
+        // new DiskSpaceMetrics(new
+        // File(System.getProperty("user.dir"))).bindTo(registry);
+
+        MicrometerPlugin micrometerPlugin = new MicrometerPlugin(cfg -> cfg.registry = registry);
+        javalin.unsafeConfig().registerPlugin(micrometerPlugin);
     }
 
     public String scrape() {
