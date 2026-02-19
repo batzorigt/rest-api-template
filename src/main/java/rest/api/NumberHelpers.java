@@ -2,7 +2,8 @@ package rest.api;
 
 public interface NumberHelpers {
 
-    static <T extends Number> T nullIfZero(T value) {
+    @SuppressWarnings("null")
+	static <T extends Number> T nullIfZero(T value) {
         if (value == null) {
             return null;
         }

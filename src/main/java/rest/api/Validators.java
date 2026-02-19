@@ -22,7 +22,9 @@ public abstract class Validators {
 
     private static final Locale defaultLocale = Locale.JAPANESE;
     private static final Set<Locale> allowedLocales = Set.of(defaultLocale, Locale.ENGLISH);
-    private static final ValidatorFactory factory = Validation.byDefaultProvider().configure().messageInterpolator(
+    
+    @SuppressWarnings("null")
+	private static final ValidatorFactory factory = Validation.byDefaultProvider().configure().messageInterpolator(
             new ParameterMessageInterpolator(allowedLocales, defaultLocale, new DefaultLocaleResolver(), false))
             .buildValidatorFactory();
 
