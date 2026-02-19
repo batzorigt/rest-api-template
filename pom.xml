@@ -40,9 +40,6 @@
 				<configuration>
 					<source>25</source>
 					<target>25</target>
-					<compilerArgs>
-						<arg>--enable-preview</arg>
-					</compilerArgs>
 					<excludes>
 						<exclude>dbmigration/**</exclude>
 						<exclude>jte/**</exclude>
@@ -117,7 +114,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.4</version>
 				<configuration>
-		            <argLine>--enable-preview --enable-native-access=ALL-UNNAMED -javaagent:${settings.localRepository}/io/ebean/ebean-agent/${ebean.version}/ebean-agent-${ebean.version}.jar</argLine>
+		            <argLine>--enable-native-access=ALL-UNNAMED -javaagent:${settings.localRepository}/io/ebean/ebean-agent/${ebean.version}/ebean-agent-${ebean.version}.jar</argLine>
 		        </configuration>
 			</plugin>
 			<plugin>
@@ -138,8 +135,8 @@
 					<container>
 						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
 						<jvmFlags>
-							<jvmFlag>--enable-preview</jvmFlag>
 							<jvmFlag>-javaagent:ebean-agent-${ebean.version}.jar</jvmFlag>
+							<jvmFlag>--enable-native-access=ALL-UNNAMED</jvmFlag>
 							<jvmFlag>-Dlog4j2.formatMsgNoLookups=true</jvmFlag>
 							<jvmFlag>-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</jvmFlag>
 							<jvmFlag>-Dlog4j.configurationFile=file:/log4j2.xml</jvmFlag>
