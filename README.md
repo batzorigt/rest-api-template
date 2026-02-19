@@ -2,7 +2,7 @@
 
 ```
 git clone git@github.com:batzorigt/rest-api-template.git
-cd rest-api-template
+cd /path/to/rest-api-template
 
 # build uber jar and docker image
 mvn package
@@ -11,12 +11,19 @@ mvn package
 # Run
 
 ```
-cd rest-api-template/target
+cd /path/to/rest-api-template/target
 
 # run jar file
 java -javaagent:../src/main/jib/ebean-agent-17.2.1.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
 
 # run as docker container
+docker load -i jib-image.tar
+docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
+
+# run on podman
+chmod +x /path/to/rest-api-template/docker
+export PATH="/path/to/rest-api-template:$PATH"
+cd /path/to/rest-api-template/target
 docker load -i jib-image.tar
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
 ```
