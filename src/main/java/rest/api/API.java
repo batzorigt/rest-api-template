@@ -55,13 +55,13 @@ public class API {
         api.get("/metrics", ctx -> {
             BasicAuthCredentials credentials = ctx.basicAuthCredentials();
 
-            if (credentials != null) {
+            if (credentials == null) {
+                ctx.status(404);
+            } else {
                 if (API.cfg.monitoringUsername().equals(credentials.getUsername()) && API.cfg.monitoringPassword()
                         .equals(credentials.getPassword())) {
                     ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(micrometer.scrape());
                 }
-            } else {
-                ctx.status(404);
             }
         });
     }

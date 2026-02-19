@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-@SuppressWarnings("serial")
 public class PagedData<T> implements Serializable {
 
     public static String PAGE_NUMBER = "pageNumber";
