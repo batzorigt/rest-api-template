@@ -28,7 +28,7 @@ public class API {
         config.http.defaultContentType = "application/json";
         config.http.maxRequestSize = cfg.httpMaxRequestSize();
 
-        config.http.brotliAndGzipCompression();
+        config.http.gzipOnlyCompression();
         config.showJavalinBanner = false;
         config.router.contextPath = API.cfg.contextPath();
 
