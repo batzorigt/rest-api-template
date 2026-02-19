@@ -14,7 +14,7 @@ mvn package
 cd rest-api-template/target
 
 # run jar file
-java -javaagent:../src/main/jib/ebean-agent-17.2.1.jar --enable-native-access=ALL-UNNAMED -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
+java -javaagent:../src/main/jib/ebean-agent-17.2.1.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
 
 # run as docker container
 docker load -i jib-image.tar
