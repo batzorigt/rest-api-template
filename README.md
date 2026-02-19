@@ -4,9 +4,6 @@
 git clone git@github.com:batzorigt/rest-api-template.git
 cd rest-api-template
 
-# pull docker image into local docker registry
-docker pull bellsoft/liberica-openjre-alpine-musl:21
-
 # build uber jar and docker image
 mvn package
 ```
@@ -17,11 +14,11 @@ mvn package
 cd rest-api-template/target
 
 # run jar file
-java -javaagent:../src/main/jib/ebean-agent-13.20.1.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
+java -javaagent:../src/main/jib/ebean-agent-17.2.1.jar --enable-native-access=ALL-UNNAMED -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
 
 # run as docker container
 docker load -i jib-image.tar
-docker run -p 8080:8080 batzorigt.rentsen.rest-api-template
+docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
 ```
 
 # IntelliJ IDEA
