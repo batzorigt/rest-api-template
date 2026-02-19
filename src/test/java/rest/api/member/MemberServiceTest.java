@@ -11,7 +11,8 @@ import rest.api.member.query.QDMember;
 
 public class MemberServiceTest {
 
-    @Test
+	@Test
+	@SuppressWarnings("null")
     public void create() {
         MemberToAdd member = new MemberToAdd("Batzorigt", List.of("88381882"));
         Member result = MemberService.addMember(member);

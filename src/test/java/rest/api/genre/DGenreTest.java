@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import io.ebean.DB;
 import rest.api.genre.query.QDGenre;
 
+@SuppressWarnings("null")
 public class DGenreTest {
 
     @BeforeEach
@@ -29,7 +30,7 @@ public class DGenreTest {
         assertFields(result, "key1", "name1", "imageKey1", "imagePath1", 1);
     }
 
-    @Test
+	@Test
     void update() throws Exception {
         DGenre updateTarget = insertRecord("key2", "name2", "imageKey2", "imagePath2", 2);
         Integer id = updateTarget.getId();
