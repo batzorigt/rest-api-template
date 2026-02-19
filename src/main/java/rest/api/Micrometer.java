@@ -1,5 +1,7 @@
 package rest.api;
 
+import org.jspecify.annotations.NonNull;
+
 import io.javalin.Javalin;
 import io.javalin.micrometer.MicrometerPlugin;
 import io.micrometer.core.instrument.Metrics;
@@ -25,7 +27,7 @@ public class Micrometer {
         }
 
         @Override
-        public String prefix() {
+        public @NonNull String prefix() {
             return "rapit";
         }
 

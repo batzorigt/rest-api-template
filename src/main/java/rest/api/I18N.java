@@ -40,6 +40,10 @@ public abstract class I18N {
         if (resource == null && !Locale.JAPAN.equals(locale)) {
             resource = resources.get(Locale.getDefault());
         }
+        
+        if(resource == null) {
+        	throw new IllegalStateException("Resource for " + locale + " is not found");
+        }
 
         return MessageFormat.format(resource.getString(key).trim(), args);
     }
