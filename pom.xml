@@ -24,6 +24,7 @@
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 				<excludes>
+				    <exclude>dbmigration/**</exclude>
 					<exclude>jte/**</exclude>
 					<exclude>**/.DS_Store/**</exclude>
 					<exclude>**/.gitignore/**</exclude>
@@ -91,6 +92,7 @@
 								<filter>
 									<artifact>batzorigt.rentsen:rest-api-template</artifact>
 									<excludes>
+									    <exclude>dbmigration/**</exclude>
 										<exclude>rest/api/GenerateDbMigration.class</exclude>
 										<exclude>jte/**</exclude>
 										<exclude>**/.DS_Store/**</exclude>

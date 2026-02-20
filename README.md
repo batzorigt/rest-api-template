@@ -4,6 +4,17 @@
 git clone git@github.com:batzorigt/rest-api-template.git
 cd /path/to/rest-api-template
 
+# add docker.bat to PATH on windows if you have installed podman instead of docker
+set PATH=%/path/to/rest-api-template%;%PATH% 
+
+# add docker.bat to PATH on windows powershell if you have installed podman instead of docker
+$dir = 'C:\path\to\rest-api-template'
+$env:Path = "$dir;$env:Path"
+
+# add docker to PATH on linux if you have installed podman instead of docker
+chmod +x /path/to/rest-api-template/docker
+export PATH="/path/to/rest-api-template:$PATH"
+
 # build uber jar and docker image
 mvn package
 ```
@@ -17,12 +28,6 @@ cd /path/to/rest-api-template/target
 java -javaagent:../src/main/jib/ebean-agent-17.2.1.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
 
 # run as docker container
-docker load -i jib-image.tar
-docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
-
-# run on podman
-chmod +x /path/to/rest-api-template/docker
-export PATH="/path/to/rest-api-template:$PATH"
 cd /path/to/rest-api-template/target
 docker load -i jib-image.tar
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
