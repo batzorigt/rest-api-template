@@ -5,7 +5,7 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -14,6 +14,7 @@ import rest.api.Domain;
 
 @Data
 @Entity
+@Table(name = "members")
 @EqualsAndHashCode(callSuper = false)
 public class DMember extends Domain {
 
