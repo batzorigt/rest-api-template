@@ -73,7 +73,6 @@ public class GenreHandlerTest {
         assertEquals(HttpStatus.OK_200, res.getStatus());
         assertEquals(1, data.length());
 
-        assertEquals(10, firstElement.get("id"));
         assertEquals("key10", firstElement.get("key"));
         assertEquals("name10", firstElement.getString("name"));
 

@@ -4,12 +4,11 @@
 git clone git@github.com:batzorigt/rest-api-template.git
 cd /path/to/rest-api-template
 
-# add docker.bat to PATH on windows if you have installed podman instead of docker
-set PATH=%/path/to/rest-api-template%;%PATH% 
-
-# add docker.bat to PATH on windows powershell if you have installed podman instead of docker
-$dir = 'C:\path\to\rest-api-template'
-$env:Path = "$dir;$env:Path"
+# create a file symbolic link to podman on windows powershell if you have installed podman instead of docker
+$podmanDir = "C:\Users\your-name\AppData\Local\Programs\Podman"
+New-Item -ItemType SymbolicLink `
+  -Path   "$podmanDir\docker.exe" `
+  -Target "$podmanDir\podman.exe"
 
 # add docker to PATH on linux if you have installed podman instead of docker
 chmod +x /path/to/rest-api-template/docker
