@@ -8,14 +8,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import rest.api.Domain;
 
-@Data
 @Entity
+@Getter
+@Setter
 @Table(name = "members")
-@EqualsAndHashCode(callSuper = false)
 public class DMember extends Domain {
 
     @NotBlank
