@@ -96,11 +96,11 @@ public class DGenreTest {
                                            String imageKey,
                                            String imagePath,
                                            int orderNumber) {
-        genre.setKey(key);
-        genre.setName(name);
-        genre.setImageKey(imageKey);
-        genre.setImagePath(imagePath);
-        genre.setOrderNumber(orderNumber);
+        genre.setKey(key)
+        	.setName(name)
+        	.setImageKey(imageKey)
+        	.setImagePath(imagePath)
+        	.setOrderNumber(orderNumber);
     }
 
     private void assertFields(DGenre result,
