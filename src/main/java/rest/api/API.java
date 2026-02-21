@@ -9,25 +9,22 @@ import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import io.javalin.http.HttpResponseException;
-import io.javalin.json.JavalinJackson;
-import io.javalin.json.JsonMapper;
 import io.javalin.security.BasicAuthCredentials;
 import rest.api.genre.GenreHandler;
 import rest.api.member.MemberHandler;
 
 public class API {
 
-    public static JsonMapper jsonMapper = new JavalinJackson();
     private final Javalin api = Javalin.create(API::config);
     public static final Config cfg = ConfigCache.getOrCreate(Config.class);
 
     private static void config(JavalinConfig config) {
-        config.jsonMapper(jsonMapper);
         config.http.generateEtags = true;
         config.http.asyncTimeout = cfg.httpAsyncTimeout();
         config.http.defaultContentType = "application/json";
         config.http.maxRequestSize = cfg.httpMaxRequestSize();
-
+        
+        config.useVirtualThreads = true;
         config.http.gzipOnlyCompression();
         config.showJavalinBanner = false;
         config.router.contextPath = API.cfg.contextPath();
