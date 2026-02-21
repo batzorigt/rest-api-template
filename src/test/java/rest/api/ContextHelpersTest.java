@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import io.javalin.json.JavalinJackson;
 import kong.unirest.json.JSONObject;
 import rest.api.member.Member;
 import rest.api.member.Phone;
@@ -44,12 +45,13 @@ public class ContextHelpersTest {
         expected.setPhones(List.of(phone));
 
         String msg = I18N.message("sucessfully.saved", Locale.JAPAN);
-        String json = API.jsonMapper.toJsonString(expected, expected.getClass());
+        JavalinJackson jsonMapper = new JavalinJackson();
+		String json = jsonMapper.toJsonString(expected, expected.getClass());
 
         String response = String.format("{\"status\": %d, \"result\": %s, \"msg\": \"%s\"}", HttpStatus.OK_200, json,
                 msg);
         JSONObject jsonObject = new JSONObject(response);
-        Member actual = API.jsonMapper.fromJsonString(jsonObject.get("result").toString(), Member.class);
+        Member actual = jsonMapper.fromJsonString(jsonObject.get("result").toString(), Member.class);
 
         Assertions.assertEquals(200, jsonObject.get("status"));
         Assertions.assertEquals(expected, actual);
