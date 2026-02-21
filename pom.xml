@@ -10,7 +10,7 @@
 
 	<properties>
 		<encoding>UTF-8</encoding>
-		<ebean.version>17.2.1</ebean.version>
+		<ebean.version>17.3.0</ebean.version>
 		<javalin.version>6.7.0</javalin.version>
 		<jte.version>3.2.2</jte.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
