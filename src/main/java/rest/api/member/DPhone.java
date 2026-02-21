@@ -5,14 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import rest.api.Domain;
 
-@Data
 @Entity
+@Getter
+@Setter
 @Table(name = "phone_numbers")
-@EqualsAndHashCode(callSuper = false)
 public class DPhone extends Domain {
 
     private String phoneNo;
