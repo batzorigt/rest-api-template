@@ -4,15 +4,14 @@
 git clone git@github.com:batzorigt/rest-api-template.git
 cd /path/to/rest-api-template
 
+# create a file symbolic link to podman on linux like os if you have installed podman instead of docker
+ln -s $(which podman) /usr/local/bin/docker
+
 # create a file symbolic link to podman on windows powershell if you have installed podman instead of docker
 $podmanDir = "C:\Users\your-name\AppData\Local\Programs\Podman"
 New-Item -ItemType SymbolicLink `
   -Path   "$podmanDir\docker.exe" `
   -Target "$podmanDir\podman.exe"
-
-# add docker to PATH on linux if you have installed podman instead of docker
-chmod +x /path/to/rest-api-template/docker
-export PATH="/path/to/rest-api-template:$PATH"
 
 # build uber jar and docker image
 mvn package
