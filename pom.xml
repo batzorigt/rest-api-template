@@ -46,7 +46,6 @@
 						<exclude>**/.DS_Store/**</exclude>
 						<exclude>**/.gitignore/**</exclude>
 					</excludes>
-
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
@@ -115,7 +114,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.4</version>
 				<configuration>
-		            <argLine>--enable-native-access=ALL-UNNAMED -javaagent:${settings.localRepository}/io/ebean/ebean-agent/${ebean.version}/ebean-agent-${ebean.version}.jar</argLine>
+		            <argLine>-javaagent:${settings.localRepository}/io/ebean/ebean-agent/${ebean.version}/ebean-agent-${ebean.version}.jar</argLine>
 		        </configuration>
 			</plugin>
 			<plugin>
@@ -137,7 +136,6 @@
 						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
 						<jvmFlags>
 							<jvmFlag>-javaagent:ebean-agent-${ebean.version}.jar</jvmFlag>
-							<jvmFlag>--enable-native-access=ALL-UNNAMED</jvmFlag>
 							<jvmFlag>-Dlog4j2.formatMsgNoLookups=true</jvmFlag>
 							<jvmFlag>-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</jvmFlag>
 							<jvmFlag>-Dlog4j.configurationFile=file:/log4j2.xml</jvmFlag>
@@ -155,25 +153,25 @@
 						</goals>
 					</execution>
 				</executions>
-				</plugin>
-				<plugin>
-					<groupId>gg.jte</groupId>
-					<artifactId>jte-maven-plugin</artifactId>
-					<version>${jte.version}</version>
-					<configuration>
-						<sourceDirectory>${basedir}/src/main/resources/jte</sourceDirectory>
-						<targetDirectory>${basedir}/src/main/jib/jte-classes</targetDirectory>
-						<contentType>Html</contentType>
-					</configuration>
-					<executions>
-						<execution>
-							<phase>process-classes</phase>
-							<goals>
-								<goal>precompile</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
+			</plugin>
+			<plugin>
+				<groupId>gg.jte</groupId>
+				<artifactId>jte-maven-plugin</artifactId>
+				<version>${jte.version}</version>
+				<configuration>
+					<sourceDirectory>${basedir}/src/main/resources/jte</sourceDirectory>
+					<targetDirectory>${basedir}/src/main/jib/jte-classes</targetDirectory>
+					<contentType>Html</contentType>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>precompile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -183,12 +181,12 @@
 			<artifactId>javalin</artifactId>
 			<version>${javalin.version}</version>
 		</dependency>
+		
 		<dependency>
 		    <groupId>jakarta.validation</groupId>
 		    <artifactId>jakarta.validation-api</artifactId>
 		    <version>3.1.1</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
@@ -199,11 +197,7 @@
 			<artifactId>hibernate-validator-annotation-processor</artifactId>
 			<version>8.0.1.Final</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.el</groupId>
-			<artifactId>javax.el-api</artifactId>
-			<version>3.0.0</version>
-		</dependency>
+		
 		<dependency>
 		    <groupId>io.javalin</groupId>
 		    <artifactId>javalin-micrometer</artifactId>
@@ -214,6 +208,7 @@
 		    <artifactId>micrometer-registry-prometheus</artifactId>
 		    <version>1.16.3</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -234,24 +229,28 @@
 			<artifactId>jte</artifactId>
 			<version>${jte.version}</version>
 		</dependency>
+		
 		<dependency>
-		    <groupId>com.sun.mail</groupId>
-		    <artifactId>jakarta.mail</artifactId>
-		    <version>2.0.2</version>
+		    <groupId>jakarta.mail</groupId>
+		    <artifactId>jakarta.mail-api</artifactId>
+		    <version>2.1.5</version>
 		</dependency>
-
+		<dependency>
+	        <groupId>org.eclipse.angus</groupId>
+	        <artifactId>angus-mail</artifactId>
+	        <version>2.0.5</version>
+	    </dependency>
+	    
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-api</artifactId>
 		    <version>2.0.17</version>
 		</dependency>
-
 		<dependency>
 		    <groupId>org.apache.logging.log4j</groupId>
 		    <artifactId>log4j-slf4j2-impl</artifactId>
 		    <version>2.25.3</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
@@ -263,6 +262,7 @@
 			<artifactId>owner</artifactId>
 			<version>1.0.12</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>io.ebean</groupId>
 			<artifactId>ebean-querybean</artifactId>
@@ -278,12 +278,12 @@
 			<artifactId>ebean-migration</artifactId>
 			<version>${ebean-migration.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>mysql</groupId> -->
-		<!-- <artifactId>mysql-connector-java</artifactId> -->
-		<!-- <version>8.0.27</version> -->
-		<!-- <scope>runtime</scope> -->
-		<!-- </dependency> -->
+		<dependency>
+			<groupId>io.ebean</groupId>
+			<artifactId>ebean-ddl-generator</artifactId>
+			<version>${ebean.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -305,18 +305,6 @@
 			<groupId>au.com.flyingkite</groupId>
 			<artifactId>mobiledetect</artifactId>
 			<version>1.1.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>io.ebean</groupId>
-			<artifactId>ebean-ddl-generator</artifactId>
-			<version>${ebean.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jaxb</groupId>
-			<artifactId>jaxb-runtime</artifactId>
-			<version>4.0.6</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
