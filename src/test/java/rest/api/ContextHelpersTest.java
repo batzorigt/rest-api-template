@@ -3,10 +3,8 @@ package rest.api;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,22 +16,13 @@ import rest.api.member.Phone;
 
 public class ContextHelpersTest {
 
-    private static API api = new API();
-    private static final int PORT_NO = 1000 + new Random().nextInt(9000);
-
-    @BeforeAll
+	@BeforeAll
     public static void beforeAll() throws Throwable {
-        api.start(PORT_NO);
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        api.stop();
+        I18N.load(Locale.JAPAN);
     }
 
     @Test
     void setSuccessResult() {
-        // Create a Member directly without DB
         Member expected = new Member();
         expected.setId(1);
         expected.setName("Batzorigt");
