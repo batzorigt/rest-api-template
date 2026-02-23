@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.jetty.http.HttpStatus;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.javalin.json.JavalinJackson;
-import kong.unirest.json.JSONObject;
 import rest.api.member.Member;
 import rest.api.member.Phone;
 
