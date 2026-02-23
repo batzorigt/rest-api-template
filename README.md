@@ -23,7 +23,7 @@ mvn package
 cd /path/to/rest-api-template/target
 
 # run jar file
-java -javaagent:../src/main/jib/ebean-agent-17.3.0.jar -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar rest-api-template-1.0.0.jar
+java "-javaagent:../src/main/jib/ebean-agent-17.3.0.jar" "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" -jar rest-api-template-1.0.0.jar
 
 # run as docker container
 cd /path/to/rest-api-template/target
