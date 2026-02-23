@@ -262,6 +262,12 @@
 			<artifactId>owner</artifactId>
 			<version>1.0.12</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20251224</version>
+		    <scope>compile</scope>
+		</dependency>
 		
 		<dependency>
 			<groupId>io.ebean</groupId>
@@ -294,12 +300,6 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.21.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.konghq</groupId>
-			<artifactId>unirest-java</artifactId>
-			<version>3.14.5</version>
-			<classifier>standalone</classifier>
 		</dependency>
 		<dependency>
 			<groupId>au.com.flyingkite</groupId>
@@ -335,6 +335,13 @@
 			<groupId>org.jmockit</groupId>
 			<artifactId>jmockit</artifactId>
 			<version>1.50</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.konghq</groupId>
+			<artifactId>unirest-java</artifactId>
+			<version>3.14.5</version>
+			<classifier>standalone</classifier>
 			<scope>test</scope>
 		</dependency>
 

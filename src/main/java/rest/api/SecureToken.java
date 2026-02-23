@@ -1,8 +1,7 @@
 package rest.api;
 
 import org.apache.commons.lang3.StringUtils;
-
-import kong.unirest.json.JSONObject;
+import org.json.JSONObject;
 
 public interface SecureToken {
 

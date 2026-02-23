@@ -2,9 +2,10 @@ package rest.api;
 
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONObject;
+
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
-import kong.unirest.json.JSONObject;
 
 public interface AuthFilter {
 
