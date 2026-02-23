@@ -1,9 +1,8 @@
 package rest.api;
 
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import kong.unirest.json.JSONObject;
 
 public class CryptoTest {
 
