@@ -6,6 +6,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.internal.engine.messageinterpolation.DefaultLocaleResolver;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
@@ -15,8 +17,6 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import jakarta.validation.metadata.ConstraintDescriptor;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 
 public abstract class Validators {
 
