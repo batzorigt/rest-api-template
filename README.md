@@ -13,7 +13,7 @@ New-Item -ItemType SymbolicLink `
   -Path   "$podmanDir\docker.exe" `
   -Target "$podmanDir\podman.exe"
 
-# build uber jar and docker image
+# build. for uber jar and docker image, need to uncomment 'maven-shade-plugin:execution:phase:goal' and jib-maven-plugin:execution:phase:goal'
 mvn package
 ```
 
@@ -22,8 +22,12 @@ mvn package
 ```
 cd /path/to/rest-api-template/target
 
-# run jar file
+# run uber jar file
 java "-javaagent:../src/main/jib/ebean-agent-17.3.0.jar" "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" -jar rest-api-template-1.0.0.jar
+
+# run thin jar file
+mvn dependency:copy-dependencies -DoutputDirectory=target/lib
+java "-javaagent:src/main/jib/ebean-agent-17.3.0.jar" "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" -cp "target/classes;target/lib/*" rest.api.API
 
 # run as docker container
 cd /path/to/rest-api-template/target

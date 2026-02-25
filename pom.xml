@@ -42,6 +42,7 @@
 					<target>25</target>
 					<excludes>
 						<exclude>dbmigration/**</exclude>
+						<exclude>rest/api/GenerateDbMigration.java</exclude>
 						<exclude>jte/**</exclude>
 						<exclude>**/.DS_Store/**</exclude>
 						<exclude>**/.gitignore/**</exclude>
@@ -67,14 +68,19 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.5.0</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.6.1</version>
 				<executions>
 					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
+<!--						<phase>package</phase>-->
+<!--						<goals>-->
+<!--							<goal>shade</goal>-->
+<!--						</goals>-->
 						<configuration>
 							<transformers>
 								<transformer
@@ -145,14 +151,14 @@
 						<mainClass>rest.api.API</mainClass>
 					</container>
 				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>buildTar</goal>
-						</goals>
-					</execution>
-				</executions>
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<phase>package</phase>-->
+<!--						<goals>-->
+<!--							<goal>buildTar</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
 			</plugin>
 			<plugin>
 				<groupId>gg.jte</groupId>
@@ -322,7 +328,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.14.3</version>
+			<version>6.0.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
