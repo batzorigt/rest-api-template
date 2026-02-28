@@ -107,6 +107,8 @@ ENV JAVA_HOME="/opt/jre"
 # -Xshare:on: Use CDS for faster startup
 ENTRYPOINT ["java", \
     "-javaagent:ebean-agent.jar", \
+    "-Dlog4j2.formatMsgNoLookups=true", \
+    "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector", \
     "-XX:+UnlockDiagnosticVMOptions", \
     "-XX:+AllowArchivingWithJavaAgent", \
     "-XX:+UseZGC", \
