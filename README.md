@@ -1,13 +1,15 @@
 # if you have installed podman instead of docker
 
 ## create a file symbolic link to podman on Linux / macOS
-ln -s $(which podman) /usr/local/bin/docker
+`ln -s $(which podman) /usr/local/bin/docker`
 
 ## create a file symbolic link to podman on windows powershell
+```
 $podmanDir = "C:\Users\your-name\AppData\Local\Programs\Podman"
 New-Item -ItemType SymbolicLink `
   -Path   "$podmanDir\docker.exe" `
   -Target "$podmanDir\podman.exe"
+```
 
 # Build and Optimization
 
