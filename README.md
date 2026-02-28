@@ -25,13 +25,29 @@ cd /path/to/rest-api-template/target
 # run jar file
 java "-javaagent:../src/main/jib/ebean-agent-17.3.0.jar" "-Dlog4j2.formatMsgNoLookups=true" "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" -jar rest-api-template-1.0.0.jar
 
+# if you have cds archive
+java
+    "-javaagent:ebean-agent.jar" \
+    "-Dlog4j2.formatMsgNoLookups=true" \
+    "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" \
+    "-XX:+UnlockDiagnosticVMOptions" \
+    "-XX:+AllowArchivingWithJavaAgent" \
+    "-XX:+UseZGC" \
+    "-XX:MaxRAMPercentage=75.0" \
+    "-XX:+ExitOnOutOfMemoryError" \
+    "-Xshare:on" \
+    "-XX:SharedArchiveFile=app-cds.jsa" \
+    "-Djdk.virtualThreadScheduler.parallelism=2" \
+    "-jar app.jar"
+
+
 # run as docker container if you enabled jib-maven-plugin
 docker load -i jib-image.tar
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
 
 # run as docker container using Dockerfile
 cd /path/to/rest-api-template
-docker build -t batzorigt.rentsen/rest-api-template:20260228 .
+docker build --format docker -t batzorigt.rentsen/rest-api-template:20260228 .
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen/rest-api-template:20260228
 ```
 
