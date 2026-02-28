@@ -23,7 +23,7 @@ public class API {
         config.http.asyncTimeout = cfg.httpAsyncTimeout();
         config.http.defaultContentType = "application/json";
         config.http.maxRequestSize = cfg.httpMaxRequestSize();
-        
+
         config.useVirtualThreads = true;
         config.http.gzipOnlyCompression();
         config.showJavalinBanner = false;
@@ -108,11 +108,11 @@ public class API {
             });
         });
 
-        api.start(portNo);
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-
         I18N.load(Locale.JAPAN);
         routes();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+        api.start(portNo);
     }
 
     public void stop() {
