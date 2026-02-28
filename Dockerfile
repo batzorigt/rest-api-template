@@ -88,6 +88,10 @@ RUN java -XX:+UnlockDiagnosticVMOptions \
 FROM bellsoft/alpaquita-linux-base:latest
 WORKDIR /opt/app
 
+LABEL org.opencontainers.image.title="Rest API Template" \
+      org.opencontainers.image.authors="Batzorigt Rentsen" \
+      org.opencontainers.image.version="1.0.0"
+
 # Security: Create a non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
@@ -101,6 +105,9 @@ COPY --from=cds-builder /opt/app/app-cds.jsa ./app-cds.jsa
 ENV PATH="/opt/jre/bin:$PATH"
 ENV JAVA_HOME="/opt/jre"
 
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+  CMD wget -no-check-certificate --quiet --tries=1 --spider http://localhost:8080/v1/genres || exit 1
+
 # Virtual Threads and Performance Tuning
 # -XX:+UseZGC: Low latency, generational by default in Java 25
 # -XX:MaxRAMPercentage: Better container awareness
@@ -113,6 +120,7 @@ ENTRYPOINT ["java", \
     "-XX:+AllowArchivingWithJavaAgent", \
     "-XX:+UseZGC", \
     "-XX:MaxRAMPercentage=75.0", \
+    "-XX:+ExitOnOutOfMemoryError", \
     "-Xshare:on", \
     "-XX:SharedArchiveFile=app-cds.jsa", \
     "-Djdk.virtualThreadScheduler.parallelism=2", \
