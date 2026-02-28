@@ -63,7 +63,7 @@ RUN ./jdk-full/bin/jlink \
     --output /opt/jre
 
 # --- Stage 3: Generate AppCDS archive ---
-FROM bellsoft/alpaquita-linux-gcc:latest AS cds-builder
+FROM bellsoft/alpaquita-linux-base:musl AS cds-builder
 WORKDIR /opt/app
 
 COPY --from=jre-builder /opt/jre /opt/jre
@@ -85,7 +85,7 @@ RUN java -XX:+UnlockDiagnosticVMOptions \
     -jar app.jar || true
 
 # --- Stage 4: Final runtime image ---
-FROM bellsoft/alpaquita-linux-base:latest
+FROM bellsoft/alpaquita-linux-base:musl
 WORKDIR /opt/app
 
 LABEL org.opencontainers.image.title="Rest API Template" \
