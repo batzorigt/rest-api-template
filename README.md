@@ -1,54 +1,73 @@
-# Build
+# if you have installed podman instead of docker
 
-```
-git clone git@github.com:batzorigt/rest-api-template.git
-cd /path/to/rest-api-template
-
-# create a file symbolic link to podman on linux like os if you have installed podman instead of docker
+# create a file symbolic link to podman on Linux / macOS
 ln -s $(which podman) /usr/local/bin/docker
 
-# create a file symbolic link to podman on windows powershell if you have installed podman instead of docker
+# create a file symbolic link to podman on windows powershell
 $podmanDir = "C:\Users\your-name\AppData\Local\Programs\Podman"
 New-Item -ItemType SymbolicLink `
   -Path   "$podmanDir\docker.exe" `
   -Target "$podmanDir\podman.exe"
 
-# build. for uber jar and docker image, need to enable (uncomment correspondent section) maven-shade-plugin and jib-maven-plugin
+# Build and Optimization
+
+To build the application and generate AppCDS optimization locally:
+
+```bash
+# Linux / macOS
+./build.sh
+
+# Windows
+build.bat
+```
+
+Alternatively, you can build manually:
+```bash
 mvn package
 ```
 
 # Run
 
+### Using Scripts (Recommended)
+This will use the optimal JVM settings and AppCDS if available:
+
+```bash
+# Linux / macOS
+./run.sh
+
+# Windows
+run.bat
 ```
-cd /path/to/rest-api-template/target
 
-# run jar file
-java "-javaagent:../src/main/jib/ebean-agent-17.3.0.jar" "-Dlog4j2.formatMsgNoLookups=true" "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" -jar rest-api-template-1.0.0.jar
+### Manual Execution
+If you prefer manual control:
 
-# if you have cds archive
-java
-    "-javaagent:ebean-agent.jar" \
-    "-Dlog4j2.formatMsgNoLookups=true" \
-    "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector" \
-    "-XX:+UnlockDiagnosticVMOptions" \
-    "-XX:+AllowArchivingWithJavaAgent" \
-    "-XX:+UseZGC" \
-    "-XX:MaxRAMPercentage=75.0" \
-    "-XX:+ExitOnOutOfMemoryError" \
-    "-Xshare:on" \
-    "-XX:SharedArchiveFile=app-cds.jsa" \
-    "-Djdk.virtualThreadScheduler.parallelism=2" \
-    "-jar app.jar"
+```bash
+# Standard run
+java -javaagent:src/main/jib/ebean-agent-17.3.0.jar \
+     -Dlog4j2.formatMsgNoLookups=true \
+     -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector \
+     -jar target/rest-api-template-1.0.0.jar
 
+# Run with AppCDS (requires app-cds.jsa from build step)
+java -javaagent:src/main/jib/ebean-agent-17.3.0.jar \
+     -Dlog4j2.formatMsgNoLookups=true \
+     -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector \
+     -XX:+UnlockDiagnosticVMOptions -XX:+AllowArchivingWithJavaAgent \
+     -XX:+UseZGC -Xshare:on -XX:SharedArchiveFile=app-cds.jsa \
+     -jar target/rest-api-template-1.0.0.jar
+```
 
-# run as docker container if you enabled jib-maven-plugin
-docker load -i jib-image.tar
-docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.rest-api-template
+### Docker
+```bash
+# Using Dockerfile (Recommended)
+docker build --format docker -t rest-api-template .
+docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal rest-api-template
 
-# run as docker container using Dockerfile
-cd /path/to/rest-api-template
-docker build --format docker -t batzorigt.rentsen/rest-api-template:20260228 .
-docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen/rest-api-template:20260228
+# Using jib-maven-plugin (if enabled)
+mvn jib:buildTar # or mvn package
+docker load -i target/jib-image.tar
+docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal rest-api-template
 ```
 
 # IntelliJ IDEA
