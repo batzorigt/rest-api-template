@@ -32,7 +32,7 @@ docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen.r
 # run as docker container using Dockerfile
 cd /path/to/rest-api-template
 docker build -t batzorigt.rentsen/rest-api-template:20260228 .
-docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal rest-api-template
+docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal batzorigt.rentsen/rest-api-template:20260228
 ```
 
 # IntelliJ IDEA
