@@ -17,7 +17,8 @@ RUN chmod +x mvnw
 RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B
 
 # Download ebean-agent for runtime enhancement (Automated)
-RUN ./mvnw dependency:copy -Dartifact=io.ebean:ebean-agent:${EBEAN_AGENT_VERSION}:jar -DoutputDirectory=/home/app -Dmdep.useBaseVersion=true && \
+RUN --mount=type=cache,target=/root/.m2 \
+    ./mvnw dependency:copy -Dartifact=io.ebean:ebean-agent:${EBEAN_AGENT_VERSION}:jar -DoutputDirectory=/home/app -Dmdep.useBaseVersion=true && \
     mv /home/app/ebean-agent-${EBEAN_AGENT_VERSION}.jar /home/app/ebean-agent.jar
 
 # Copy source and build the application
@@ -68,7 +69,7 @@ RUN ./jdk-full/bin/jdeps \
 # Create custom JRE using the jmods from the full JDK
 RUN ./jdk-full/bin/jlink \
     --module-path ./jdk-full/jmods \
-    --add-modules $(cat modules.txt),jdk.crypto.ec,jdk.management \
+    --add-modules $(cat modules.txt),jdk.management \
     --strip-debug \
     --no-man-pages \
     --no-header-files \
@@ -91,7 +92,7 @@ RUN java -XX:+UnlockDiagnosticVMOptions \
     -XX:+AllowArchivingWithJavaAgent \
     -XX:+UseZGC \
     -javaagent:ebean-agent.jar \
-    --add-modules java.instrument \
+    -Djava.awt.headless=true \
     -Xshare:dump \
     -XX:SharedArchiveFile=app-cds.jsa \
     -jar app.jar || true
@@ -102,40 +103,32 @@ ARG APP_VERSION
 WORKDIR /opt/app
 
 LABEL org.opencontainers.image.title="Rest API Template" \
+      org.opencontainers.image.description="High-performance Java REST API using Javalin and Ebean" \
       org.opencontainers.image.authors="Batzorigt Rentsen" \
       org.opencontainers.image.version="${APP_VERSION}"
 
-# Security: Create a non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Security: Create a non-root user and set permissions
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    chown -R appuser:appgroup /opt/app
 
 # Copy JRE and application files
-COPY --from=jre-builder /opt/jre /opt/jre
-COPY --from=build /home/app/target/*.jar ./app.jar
-COPY --from=build /home/app/target/lib ./lib
-COPY --from=build /home/app/ebean-agent.jar ./ebean-agent.jar
-COPY --from=cds-builder /opt/app/app-cds.jsa ./app-cds.jsa
+COPY --from=jre-builder --chown=appuser:appgroup /opt/jre /opt/jre
+COPY --from=build --chown=appuser:appgroup /home/app/target/*.jar ./app.jar
+COPY --from=build --chown=appuser:appgroup /home/app/target/lib ./lib
+COPY --from=build --chown=appuser:appgroup /home/app/ebean-agent.jar ./ebean-agent.jar
+COPY --from=cds-builder --chown=appuser:appgroup /opt/app/app-cds.jsa ./app-cds.jsa
 
 ENV PATH="/opt/jre/bin:$PATH"
 ENV JAVA_HOME="/opt/jre"
+ENV JAVA_OPTS="-XX:+UnlockDiagnosticVMOptions -XX:+AllowArchivingWithJavaAgent -XX:+UseZGC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError -Xshare:on -XX:SharedArchiveFile=app-cds.jsa -Djdk.virtualThreadScheduler.parallelism=2"
 
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget --no-check-certificate --quiet --tries=1 --spider http://localhost:8080/v1/genres || exit 1
+# Improved Healthcheck: Accept 404 as "Up" for this specific endpoint if DB is empty
+HEALTHCHECK --interval=30s --timeout=1s --start-period=10s --retries=3 \
+  CMD wget --no-check-certificate --quiet --tries=1 --spider http://localhost:8080/v1/genres || \
+      wget --no-check-certificate --quiet --tries=1 --spider --server-response http://localhost:8080/v1/genres 2>&1 | grep -q "404 Not Found" || exit 1
 
 # Performance Tuning and Runtime Configuration
-ENTRYPOINT ["java", \
-    "-javaagent:ebean-agent.jar", \
-    "-Dlog4j2.formatMsgNoLookups=true", \
-    "-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector", \
-    "-XX:+UnlockDiagnosticVMOptions", \
-    "-XX:+AllowArchivingWithJavaAgent", \
-    "-XX:+UseZGC", \
-    "-XX:MaxRAMPercentage=75.0", \
-    "-XX:+ExitOnOutOfMemoryError", \
-    "-Xshare:on", \
-    "-XX:SharedArchiveFile=app-cds.jsa", \
-    "-Djdk.virtualThreadScheduler.parallelism=2", \
-    "-jar", \
-    "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -javaagent:ebean-agent.jar -Dlog4j2.formatMsgNoLookups=true -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar app.jar"]
 
 USER appuser
 EXPOSE 8080
