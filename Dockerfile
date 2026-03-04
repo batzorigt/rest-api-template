@@ -1,33 +1,36 @@
 # --- Stage 1: Build the application ---
+# Use the full JDK image for building
 FROM bellsoft/liberica-openjdk-alpine:25 AS build
 WORKDIR /home/app
 
-# Install Maven
-RUN apk add --no-cache maven
+# Copy Maven Wrapper and pom.xml first to cache dependencies
+COPY .mvn .mvn
+COPY mvnw pom.xml lombok.config ./
+RUN chmod +x mvnw
 
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-COPY lombok.config .
-RUN mvn dependency:go-offline -B
+# Download dependencies (this layer will be cached unless pom.xml changes)
+RUN ./mvnw dependency:go-offline -B
 
-# Download ebean-agent for runtime enhancement
-#RUN wget -q https://repo1.maven.org/maven2/io/ebean/ebean-agent/17.3.0/ebean-agent-17.3.0.jar -O ebean-agent.jar
+# Copy Ebean agent (assumed to be in the project structure)
 COPY src/main/jib/ebean-agent-17.3.0.jar ./ebean-agent.jar
 
-# Copy source and build
+# Copy source and build the application
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
-# --- Stage 2: Download Standard JDK (not Lite) to get jmods for jlink ---
+# --- Stage 2: Download Standard JDK (to get jmods for jlink) ---
+# We use Alpine as a base to download the musl-based JDK
 FROM bellsoft/liberica-openjdk-alpine:25 AS jdk-downloader
+ARG TARGETARCH
 WORKDIR /opt/jdk-download
 
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    ARCH=$(uname -m) && \
+RUN ARCH=$TARGETARCH && \
     if [ "$ARCH" = "x86_64" ]; then \
         URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-x64-musl.tar.gz"; \
-    else \
+    elif [ "$ARCH" = "arm64" ]; then \
         URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-aarch64-musl.tar.gz"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
     fi && \
     wget -q $URL -O jdk.tar.gz && \
     tar -xzf jdk.tar.gz && \
@@ -44,7 +47,7 @@ RUN apk add --no-cache binutils
 # Copy the full JDK from the downloader stage
 COPY --from=jdk-downloader /opt/jdk-download/jdk-full ./jdk-full
 
-# Copy the built JAR to analyze dependencies
+# Copy the built JAR and its dependencies to analyze required modules
 COPY --from=build /home/app/target/*.jar ./app.jar
 COPY --from=build /home/app/target/lib ./lib
 
@@ -58,7 +61,6 @@ RUN ./jdk-full/bin/jdeps \
     app.jar > modules.txt
 
 # Create custom JRE using the jmods from the full JDK
-# --compress zip-6 is the new syntax for jlink compression
 RUN ./jdk-full/bin/jlink \
     --module-path ./jdk-full/jmods \
     --add-modules $(cat modules.txt),jdk.crypto.ec,jdk.management \
@@ -79,8 +81,7 @@ COPY --from=build /home/app/ebean-agent.jar ./ebean-agent.jar
 
 ENV PATH="/opt/jre/bin:$PATH"
 
-# 1. Create a dynamic archive for the application
-# IMPORTANT: Use the same flags as runtime (especially -XX:+UseZGC and modules added by agents)
+# Create a dynamic archive for the application
 RUN java -XX:+UnlockDiagnosticVMOptions \
     -XX:+AllowArchivingWithJavaAgent \
     -XX:+UseZGC \
@@ -112,12 +113,9 @@ ENV PATH="/opt/jre/bin:$PATH"
 ENV JAVA_HOME="/opt/jre"
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -no-check-certificate --quiet --tries=1 --spider http://localhost:8080/v1/genres || exit 1
+  CMD wget --no-check-certificate --quiet --tries=1 --spider http://localhost:8080/v1/genres || exit 1
 
-# Virtual Threads and Performance Tuning
-# -XX:+UseZGC: Low latency, generational by default in Java 25
-# -XX:MaxRAMPercentage: Better container awareness
-# -Xshare:on: Use CDS for faster startup
+# Performance Tuning and Runtime Configuration
 ENTRYPOINT ["java", \
     "-javaagent:ebean-agent.jar", \
     "-Dlog4j2.formatMsgNoLookups=true", \

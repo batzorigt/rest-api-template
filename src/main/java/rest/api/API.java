@@ -116,6 +116,7 @@ public class API {
     }
 
     public void stop() {
+    	// graceful shutdown
         api.stop();
     }
 
