@@ -69,7 +69,7 @@ RUN ./jdk-full/bin/jdeps \
 # Create custom JRE using the jmods from the full JDK
 RUN ./jdk-full/bin/jlink \
     --module-path ./jdk-full/jmods \
-    --add-modules $(cat modules.txt),jdk.management \
+    --add-modules $(cat modules.txt),jdk.management,jdk.crypto.ec \
     --strip-debug \
     --no-man-pages \
     --no-header-files \
