@@ -18,22 +18,14 @@ COPY src/main/jib/ebean-agent-17.3.0.jar ./ebean-agent.jar
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# --- Stage 2: Create a minimal JRE with jlink ---
-FROM bellsoft/liberica-openjdk-alpine:25 AS jre-builder
-WORKDIR /opt/jre-build
+# --- Stage 2: Download Standard JDK (not Lite) to get jmods for jlink ---
+FROM bellsoft/liberica-openjdk-alpine:25 AS jdk-downloader
+WORKDIR /opt/jdk-download
 
-# Install binutils for objcopy (required by --strip-debug)
-RUN apk add --no-cache binutils
-
-# Copy the built JAR to analyze dependencies
-COPY --from=build /home/app/target/*.jar ./app.jar
-COPY --from=build /home/app/target/lib ./lib
-
-# Download Standard JDK (not Lite) to get jmods for jlink
-# Detect architecture and download the right one
-RUN ARCH=$(uname -m) && \
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
-        URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-amd64-musl.tar.gz"; \
+        URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-x64-musl.tar.gz"; \
     else \
         URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-aarch64-musl.tar.gz"; \
     fi && \
@@ -41,6 +33,20 @@ RUN ARCH=$(uname -m) && \
     tar -xzf jdk.tar.gz && \
     rm jdk.tar.gz && \
     mv jdk-25.0.2* jdk-full
+
+# --- Stage 3: Create a minimal JRE with jlink ---
+FROM bellsoft/liberica-openjdk-alpine:25 AS jre-builder
+WORKDIR /opt/jre-build
+
+# Install binutils for objcopy (required by --strip-debug)
+RUN apk add --no-cache binutils
+
+# Copy the full JDK from the downloader stage
+COPY --from=jdk-downloader /opt/jdk-download/jdk-full ./jdk-full
+
+# Copy the built JAR to analyze dependencies
+COPY --from=build /home/app/target/*.jar ./app.jar
+COPY --from=build /home/app/target/lib ./lib
 
 # Determine required modules using jdeps
 RUN ./jdk-full/bin/jdeps \
@@ -62,7 +68,7 @@ RUN ./jdk-full/bin/jlink \
     --compress zip-6 \
     --output /opt/jre
 
-# --- Stage 3: Generate AppCDS archive ---
+# --- Stage 4: Generate AppCDS archive ---
 FROM bellsoft/alpaquita-linux-base:musl AS cds-builder
 WORKDIR /opt/app
 
@@ -84,7 +90,7 @@ RUN java -XX:+UnlockDiagnosticVMOptions \
     -XX:SharedArchiveFile=app-cds.jsa \
     -jar app.jar || true
 
-# --- Stage 4: Final runtime image ---
+# --- Stage 5: Final runtime image ---
 FROM bellsoft/alpaquita-linux-base:musl
 WORKDIR /opt/app
 
