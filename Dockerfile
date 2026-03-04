@@ -1,6 +1,11 @@
+# --- Global Arguments ---
+ARG JAVA_VERSION=25.0.2+12
+ARG EBEAN_AGENT_VERSION=17.3.0
+ARG APP_VERSION=1.0.0
+
 # --- Stage 1: Build the application ---
-# Use the full JDK image for building
 FROM bellsoft/liberica-openjdk-alpine:25 AS build
+ARG EBEAN_AGENT_VERSION
 WORKDIR /home/app
 
 # Copy Maven Wrapper and pom.xml first to cache dependencies
@@ -11,31 +16,31 @@ RUN chmod +x mvnw
 # Download dependencies (using BuildKit cache mount for faster rebuilds)
 RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B
 
-# Copy Ebean agent (assumed to be in the project structure)
-COPY src/main/jib/ebean-agent-17.3.0.jar ./ebean-agent.jar
+# Download ebean-agent for runtime enhancement (Automated)
+RUN ./mvnw dependency:copy -Dartifact=io.ebean:ebean-agent:${EBEAN_AGENT_VERSION}:jar -DoutputDirectory=/home/app -Dmdep.useBaseVersion=true && \
+    mv /home/app/ebean-agent-${EBEAN_AGENT_VERSION}.jar /home/app/ebean-agent.jar
 
 # Copy source and build the application
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -DskipTests
+# -T 1C: Uses 1 thread per core to speed up the build
+RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -DskipTests -B -T 1C
 
 # --- Stage 2: Download Standard JDK (to get jmods for jlink) ---
-# We use Alpine as a base to download the musl-based JDK
 FROM bellsoft/liberica-openjdk-alpine:25 AS jdk-downloader
 ARG TARGETARCH
+ARG JAVA_VERSION
 WORKDIR /opt/jdk-download
 
-RUN ARCH=$TARGETARCH && \
-    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
-        URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-x64-musl.tar.gz"; \
-    elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then \
-        URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-aarch64-musl.tar.gz"; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
+RUN case "${TARGETARCH}" in \
+    "amd64"|"x86_64") ARCH="x64" ;; \
+    "arm64"|"aarch64") ARCH="aarch64" ;; \
+    *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1 ;; \
+    esac && \
+    URL="https://download.bell-sw.com/java/${JAVA_VERSION}/bellsoft-jdk${JAVA_VERSION}-linux-${ARCH}-musl.tar.gz" && \
     wget -q $URL -O jdk.tar.gz && \
     tar -xzf jdk.tar.gz && \
     rm jdk.tar.gz && \
-    mv jdk-25.0.2* jdk-full
+    mv jdk-* jdk-full
 
 # --- Stage 3: Create a minimal JRE with jlink ---
 FROM bellsoft/liberica-openjdk-alpine:25 AS jre-builder
@@ -93,11 +98,12 @@ RUN java -XX:+UnlockDiagnosticVMOptions \
 
 # --- Stage 5: Final runtime image ---
 FROM bellsoft/alpaquita-linux-base:musl
+ARG APP_VERSION
 WORKDIR /opt/app
 
 LABEL org.opencontainers.image.title="Rest API Template" \
       org.opencontainers.image.authors="Batzorigt Rentsen" \
-      org.opencontainers.image.version="1.0.0"
+      org.opencontainers.image.version="${APP_VERSION}"
 
 # Security: Create a non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
