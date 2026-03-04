@@ -8,15 +8,15 @@ COPY .mvn .mvn
 COPY mvnw pom.xml lombok.config ./
 RUN chmod +x mvnw
 
-# Download dependencies (this layer will be cached unless pom.xml changes)
-RUN ./mvnw dependency:go-offline -B
+# Download dependencies (using BuildKit cache mount for faster rebuilds)
+RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B
 
 # Copy Ebean agent (assumed to be in the project structure)
 COPY src/main/jib/ebean-agent-17.3.0.jar ./ebean-agent.jar
 
 # Copy source and build the application
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -DskipTests
 
 # --- Stage 2: Download Standard JDK (to get jmods for jlink) ---
 # We use Alpine as a base to download the musl-based JDK
@@ -25,9 +25,9 @@ ARG TARGETARCH
 WORKDIR /opt/jdk-download
 
 RUN ARCH=$TARGETARCH && \
-    if [ "$ARCH" = "x86_64" ]; then \
+    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
         URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-x64-musl.tar.gz"; \
-    elif [ "$ARCH" = "arm64" ]; then \
+    elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then \
         URL="https://download.bell-sw.com/java/25.0.2+12/bellsoft-jdk25.0.2+12-linux-aarch64-musl.tar.gz"; \
     else \
         echo "Unsupported architecture: $ARCH" && exit 1; \
