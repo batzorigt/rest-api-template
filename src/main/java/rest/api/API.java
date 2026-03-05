@@ -58,6 +58,8 @@ public class API {
                 if (API.cfg.monitoringUsername().equals(credentials.getUsername()) && API.cfg.monitoringPassword()
                         .equals(credentials.getPassword())) {
                     ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(micrometer.scrape());
+                } else {
+                    ctx.status(401);
                 }
             }
         });
@@ -77,7 +79,7 @@ public class API {
         ctx.res().addHeader("Cross-Origin-Resource-Policy", "same-origin");
         ctx.res().addHeader("X-XSS-Protection", "1; mode=block");
         ctx.res().addHeader("Cache-Control", "no-store");
-        ctx.res().addHeader("Content_security_policy",
+        ctx.res().addHeader("Content-Security-Policy",
                 "frame-ancestors 'none'; default-src 'self' style-src 'self' 'unsafe-inline';");
         ctx.res().addHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
         ctx.res().addHeader("X-Content-Type-Options", "nosniff");
