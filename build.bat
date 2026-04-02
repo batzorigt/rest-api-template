@@ -11,12 +11,6 @@ if not defined EBEAN_VERSION (
     exit /b 1
 )
 
-set "AGENT_FILE=src\main\jib\ebean-agent-%EBEAN_VERSION%.jar"
-if not exist "%AGENT_FILE%" (
-    echo Error: %AGENT_FILE% not found. Please sync the agent jar with pom.xml ebean.version.
-    exit /b 1
-)
-
 echo Step 1: Building with Maven...
 call mvn clean package -DskipTests
 
@@ -24,6 +18,13 @@ if %ERRORLEVEL% neq 0 (
     echo Error: Maven build failed.
     exit /b 1
 )
+
+set "AGENT_FILE=src\main\jib\ebean-agent-%EBEAN_VERSION%.jar"
+if not exist "%AGENT_FILE%" (
+    echo Error: %AGENT_FILE% not found. Please sync the agent jar with pom.xml ebean.version.
+    exit /b 1
+)
+
 
 echo Step 2: Generating AppCDS archive...
 rem This requires Java 25 and matches the Dockerfile optimization
