@@ -97,6 +97,26 @@
 						<includeScope>runtime</includeScope>
 					</configuration>
 					</execution>
+					<execution>
+						<id>copy-ebean-agent-to-jib</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<overWriteIfNewer>false</overWriteIfNewer>
+							<artifactItems>
+								<artifactItem>
+									<groupId>io.ebean</groupId>
+									<artifactId>ebean-agent</artifactId>
+									<version>${ebean.version}</version>
+									<type>jar</type>
+									<outputDirectory>${project.basedir}/src/main/jib</outputDirectory>
+									<destFileName>ebean-agent-${ebean.version}.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
 				</executions>
 				</plugin>
 			<!--<plugin>
