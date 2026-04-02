@@ -2,7 +2,18 @@
 
 # Project configuration
 JAR_FILE="target/rest-api-template-1.0.0.jar"
-AGENT_FILE="src/main/jib/ebean-agent-17.3.0.jar"
+EBEAN_VERSION="$(sed -n 's:.*<ebean.version>\(.*\)</ebean.version>.*:\1:p' pom.xml | head -n 1)"
+AGENT_FILE="src/main/jib/ebean-agent-${EBEAN_VERSION}.jar"
+
+if [ -z "$EBEAN_VERSION" ]; then
+    echo "Error: Could not read ebean.version from pom.xml."
+    exit 1
+fi
+
+if [ ! -f "$AGENT_FILE" ]; then
+    echo "Error: $AGENT_FILE not found. Please sync the agent jar with pom.xml ebean.version."
+    exit 1
+fi
 
 echo "Step 1: Building with Maven..."
 mvn clean package -DskipTests
