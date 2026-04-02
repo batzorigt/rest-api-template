@@ -1,8 +1,8 @@
 package rest.api.member;
 
 import io.ebean.annotation.Transactional;
-import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.router.JavalinDefaultRoutingApi;
 import rest.api.ContextHelpers;
 import rest.api.Validators;
 
@@ -21,8 +21,8 @@ public class MemberHandler {
         ContextHelpers.resultOfAdd(ctx, addedMember);
     }
 
-    public static void routes(Javalin app) {
-        // Direct route registration (Javalin 6)
+    public static void routes(JavalinDefaultRoutingApi app) {
+        // Direct route registration
         app.post("members", MemberHandler::addMember);
         app.get("members/{id}", MemberHandler::getMember);
     }

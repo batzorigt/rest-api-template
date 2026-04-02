@@ -52,12 +52,6 @@ public enum XSRFFilter {
     }
 
     private static Cookie cookie(final String token) {
-        Cookie cookie = new Cookie(cookieName, token, "/", -1, API.cfg.isSecure(), 0, true, null, null, null);
-
-        cookie.setPath(cookiePath);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(API.cfg.isSecure());
-
-        return cookie;
+        return new Cookie(cookieName, token, cookiePath, -1, API.cfg.isSecure(), true);
     }
 }

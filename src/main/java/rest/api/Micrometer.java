@@ -51,7 +51,7 @@ public class Micrometer {
         // File(System.getProperty("user.dir"))).bindTo(registry);
 
         MicrometerPlugin micrometerPlugin = new MicrometerPlugin(cfg -> cfg.registry = registry);
-        javalin.unsafeConfig().registerPlugin(micrometerPlugin);
+        javalin.unsafe.registerPlugin(micrometerPlugin);
     }
 
     public String scrape() {

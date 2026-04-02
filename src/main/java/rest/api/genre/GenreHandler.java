@@ -1,8 +1,8 @@
 package rest.api.genre;
 
 import io.ebean.annotation.Transactional;
-import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.router.JavalinDefaultRoutingApi;
 import rest.api.ContextHelpers;
 import rest.api.PagedData;
 
@@ -17,7 +17,7 @@ public class GenreHandler {
         ContextHelpers.resultOfGet(ctx, result);
     }
 
-    public static void routes(Javalin app) {
+    public static void routes(JavalinDefaultRoutingApi app) {
         app.get("genres", GenreHandler::getGenres);
     }
 }
