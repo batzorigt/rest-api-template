@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.aeonbits.owner.ConfigCache;
 
 import io.javalin.Javalin;
+import io.javalin.compression.CompressionStrategy;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import io.javalin.http.HttpResponseException;
@@ -24,9 +25,9 @@ public class API {
         config.http.defaultContentType = "application/json";
         config.http.maxRequestSize = cfg.httpMaxRequestSize();
 
-        config.useVirtualThreads = true;
-        config.http.gzipOnlyCompression();
-        config.showJavalinBanner = false;
+        config.concurrency.useVirtualThreads = true;
+        config.http.compressionStrategy = CompressionStrategy.GZIP;
+        config.startup.showJavalinBanner = false;
         config.router.contextPath = API.cfg.contextPath();
 
         config.bundledPlugins.enableDevLogging();
@@ -49,7 +50,7 @@ public class API {
     private void enableMicrometer(Javalin api) {
         var micrometer = new Micrometer(api);
 
-        api.get("/metrics", ctx -> {
+        api.unsafe.routes.get("/metrics", ctx -> {
             BasicAuthCredentials credentials = ctx.basicAuthCredentials();
 
             if (credentials == null) {
@@ -93,21 +94,19 @@ public class API {
     }
 
     public void start(int portNo) {
-        api.before(this::commonRequestFilter);
-        api.after(this::commonResponseFilter);
-        api.exception(Exception.class, ExceptionHandlers::exceptionHandler);
-        api.exception(HttpResponseException.class, ExceptionHandlers::httpResponseExceptionHandler);
+        api.unsafe.routes.before(this::commonRequestFilter);
+        api.unsafe.routes.after(this::commonResponseFilter);
+        api.unsafe.routes.exception(Exception.class, ExceptionHandlers::exceptionHandler);
+        api.unsafe.routes.exception(HttpResponseException.class, ExceptionHandlers::httpResponseExceptionHandler);
 
         enableMicrometer(api);
 
-        api.events(event -> {
-            event.serverStopping(() -> {
-                // TODO do something here before stop
-                // the code for graceful shutdown is here
-            });
-            event.serverStopped(() -> {
-                // TODO do something here after stopped
-            });
+        api.unsafe.events.serverStopping(() -> {
+            // TODO do something here before stop
+            // the code for graceful shutdown is here
+        });
+        api.unsafe.events.serverStopped(() -> {
+            // TODO do something here after stopped
         });
 
         I18N.load(Locale.JAPAN);
@@ -123,8 +122,8 @@ public class API {
     }
 
     private void routes() {
-        GenreHandler.routes(api);
-        MemberHandler.routes(api);
+        GenreHandler.routes(api.unsafe.routes);
+        MemberHandler.routes(api.unsafe.routes);
     }
 
 }
