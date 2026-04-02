@@ -14,26 +14,33 @@ public interface SecureToken {
             return null;
         }
 
-        String[] tokens = token.split("\\.");
-
-        if (tokens.length != 3) {
+        int lastIndexOfDot = token.lastIndexOf('.');
+        if (lastIndexOfDot == -1) {
             return null;
         }
 
-        String saltPlusToken = tokens[0] + "." + tokens[1];
-        String signature = XSRFToken.sign(saltPlusToken);
+        int secondLastIndexOfDot = token.lastIndexOf('.', lastIndexOfDot - 1);
+        if (secondLastIndexOfDot == -1) {
+            return null;
+        }
 
-        if (!signature.equals(tokens[2])) {
+        String encryptedPayload = token.substring(0, secondLastIndexOfDot);
+        String timestamp = token.substring(secondLastIndexOfDot + 1, lastIndexOfDot);
+        String receivedSignature = token.substring(lastIndexOfDot + 1);
+        String saltPlusToken = encryptedPayload + "." + timestamp;
+        String expectedSignature = XSRFToken.sign(saltPlusToken);
+
+        if (!Crypto.constantTimeEquals(expectedSignature, receivedSignature)) {
             return null;
         }
 
         try {
-            if (System.currentTimeMillis() <= Long.parseLong(tokens[1]) + timeout) {
-                return new JSONObject(Crypto.decrypt(API.cfg.encryptionKey(), tokens[0]));
+            if (System.currentTimeMillis() <= Long.parseLong(timestamp) + timeout) {
+                return new JSONObject(Crypto.decrypt(API.cfg.encryptionKey(), encryptedPayload));
             }
 
             return null;
-        } catch (Throwable unused) {
+        } catch (Exception unused) {
             return null;
         }
     }

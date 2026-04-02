@@ -21,7 +21,7 @@ if %ERRORLEVEL% neq 0 (
 
 set "AGENT_FILE=src\main\jib\ebean-agent-%EBEAN_VERSION%.jar"
 if not exist "%AGENT_FILE%" (
-    echo Error: %AGENT_FILE% not found. Please sync the agent jar with pom.xml ebean.version.
+    echo Error: %AGENT_FILE% not found. Maven package should generate it from pom.xml ebean.version.
     exit /b 1
 )
 

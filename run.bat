@@ -13,7 +13,7 @@ if not defined EBEAN_VERSION (
 
 set "AGENT_FILE=src\main\jib\ebean-agent-%EBEAN_VERSION%.jar"
 if not exist "%AGENT_FILE%" (
-    echo Error: %AGENT_FILE% not found. Please sync the agent jar with pom.xml ebean.version.
+    echo Error: %AGENT_FILE% not found. Run 'mvn clean package -DskipTests' to generate it.
     exit /b 1
 )
 
