@@ -31,7 +31,8 @@ mvn package
 # Run
 
 ### Using Scripts (Recommended)
-This will use the optimal JVM settings and AppCDS if available:
+This will use the optimal JVM settings and AppCDS if available.
+The scripts read `<ebean.version>` from `pom.xml` and use `src/main/jib/ebean-agent-<version>.jar`.
 
 ```bash
 # Linux / macOS
@@ -46,13 +47,13 @@ If you prefer manual control:
 
 ```bash
 # Standard run
-java -javaagent:src/main/jib/ebean-agent-17.3.0.jar \
+java -javaagent:src/main/jib/ebean-agent-<ebean-version>.jar \
      -Dlog4j2.formatMsgNoLookups=true \
      -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector \
      -jar target/rest-api-template-1.0.0.jar
 
 # Run with AppCDS (requires app-cds.jsa from build step)
-java -javaagent:src/main/jib/ebean-agent-17.3.0.jar \
+java -javaagent:src/main/jib/ebean-agent-<ebean-version>.jar \
      -Dlog4j2.formatMsgNoLookups=true \
      -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector \
      -XX:+UnlockDiagnosticVMOptions -XX:+AllowArchivingWithJavaAgent \

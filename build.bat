@@ -3,7 +3,19 @@ setlocal
 
 rem Project configuration
 set JAR_FILE=target\rest-api-template-1.0.0.jar
-set AGENT_FILE=src\main\jib\ebean-agent-17.3.0.jar
+set "EBEAN_VERSION="
+for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "[xml]$p=Get-Content 'pom.xml'; $p.project.properties.'ebean.version'"`) do set "EBEAN_VERSION=%%V"
+
+if not defined EBEAN_VERSION (
+    echo Error: Could not read ebean.version from pom.xml.
+    exit /b 1
+)
+
+set "AGENT_FILE=src\main\jib\ebean-agent-%EBEAN_VERSION%.jar"
+if not exist "%AGENT_FILE%" (
+    echo Error: %AGENT_FILE% not found. Please sync the agent jar with pom.xml ebean.version.
+    exit /b 1
+)
 
 echo Step 1: Building with Maven...
 call mvn clean package -DskipTests

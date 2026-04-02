@@ -1,11 +1,9 @@
 # --- Global Arguments ---
 ARG JAVA_VERSION=25.0.2+12
-ARG EBEAN_AGENT_VERSION=17.3.0
 ARG APP_VERSION=1.0.0
 
 # --- Stage 1: Build the application ---
 FROM bellsoft/liberica-openjdk-alpine:25 AS build
-ARG EBEAN_AGENT_VERSION
 WORKDIR /home/app
 
 # Copy Maven Wrapper and pom.xml first to cache dependencies
@@ -16,8 +14,9 @@ RUN chmod +x mvnw
 # Download dependencies (using BuildKit cache mount for faster rebuilds)
 RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B
 
-# Download ebean-agent for runtime enhancement (Automated)
+# Download ebean-agent for runtime enhancement (resolved from pom.xml property)
 RUN --mount=type=cache,target=/root/.m2 \
+    EBEAN_AGENT_VERSION=$(./mvnw -q -DforceStdout help:evaluate -Dexpression=ebean.version) && \
     ./mvnw dependency:copy -Dartifact=io.ebean:ebean-agent:${EBEAN_AGENT_VERSION}:jar -DoutputDirectory=/home/app -Dmdep.useBaseVersion=true && \
     mv /home/app/ebean-agent-${EBEAN_AGENT_VERSION}.jar /home/app/ebean-agent.jar
 
