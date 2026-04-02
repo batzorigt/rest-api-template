@@ -10,16 +10,16 @@ if [ -z "$EBEAN_VERSION" ]; then
     exit 1
 fi
 
-if [ ! -f "$AGENT_FILE" ]; then
-    echo "Error: $AGENT_FILE not found. Please sync the agent jar with pom.xml ebean.version."
-    exit 1
-fi
-
 echo "Step 1: Building with Maven..."
 mvn clean package -DskipTests
 
 if [ $? -ne 0 ]; then
     echo "Error: Maven build failed."
+    exit 1
+fi
+
+if [ ! -f "$AGENT_FILE" ]; then
+    echo "Error: $AGENT_FILE not found. Maven package should generate it from pom.xml ebean.version."
     exit 1
 fi
 

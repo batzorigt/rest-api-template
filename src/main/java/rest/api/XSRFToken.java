@@ -33,7 +33,7 @@ public enum XSRFToken {
         String saltPlusToken = token.substring(0, lastIndexOfDot);
         String actualSignature = sign(saltPlusToken);
 
-        if (!actualSignature.equals(expectedSignature)) {
+        if (!Crypto.constantTimeEquals(actualSignature, expectedSignature)) {
             return false;
         }
 
