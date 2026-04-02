@@ -31,6 +31,7 @@ public class API {
         config.router.contextPath = API.cfg.contextPath();
 
         config.bundledPlugins.enableDevLogging();
+        var micrometer = new Micrometer(config);
         String[] hosts = API.cfg.allowedOrigins();
 
         if (hosts.length > 0) {
@@ -45,12 +46,11 @@ public class API {
             });
         }
 
-    }
-
-    private void enableMicrometer(Javalin api) {
-        var micrometer = new Micrometer(api);
-
-        api.unsafe.routes.get("/metrics", ctx -> {
+        config.routes.before(API::commonRequestFilter);
+        config.routes.after(API::commonResponseFilter);
+        config.routes.exception(Exception.class, ExceptionHandlers::exceptionHandler);
+        config.routes.exception(HttpResponseException.class, ExceptionHandlers::httpResponseExceptionHandler);
+        config.routes.get("/metrics", ctx -> {
             BasicAuthCredentials credentials = ctx.basicAuthCredentials();
 
             if (credentials == null) {
@@ -64,9 +64,19 @@ public class API {
                 }
             }
         });
+        GenreHandler.routes(config.routes);
+        MemberHandler.routes(config.routes);
+
+        config.events.serverStopping(() -> {
+            // TODO do something here before stop
+            // the code for graceful shutdown is here
+        });
+        config.events.serverStopped(() -> {
+            // TODO do something here after stopped
+        });
     }
 
-    private void commonRequestFilter(Context ctx) {
+    private static void commonRequestFilter(Context ctx) {
         // TODO uncomment to enable authenticator
         // AuthHandler.handle(ctx);
 
@@ -76,7 +86,7 @@ public class API {
         }
     }
 
-    private void commonResponseFilter(Context ctx) {
+    private static void commonResponseFilter(Context ctx) {
         ctx.res().addHeader("Cross-Origin-Resource-Policy", "same-origin");
         ctx.res().addHeader("X-XSS-Protection", "1; mode=block");
         ctx.res().addHeader("Cache-Control", "no-store");
@@ -94,23 +104,7 @@ public class API {
     }
 
     public void start(int portNo) {
-        api.unsafe.routes.before(this::commonRequestFilter);
-        api.unsafe.routes.after(this::commonResponseFilter);
-        api.unsafe.routes.exception(Exception.class, ExceptionHandlers::exceptionHandler);
-        api.unsafe.routes.exception(HttpResponseException.class, ExceptionHandlers::httpResponseExceptionHandler);
-
-        enableMicrometer(api);
-
-        api.unsafe.events.serverStopping(() -> {
-            // TODO do something here before stop
-            // the code for graceful shutdown is here
-        });
-        api.unsafe.events.serverStopped(() -> {
-            // TODO do something here after stopped
-        });
-
         I18N.load(Locale.JAPAN);
-        routes();
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         api.start(portNo);
@@ -119,11 +113,6 @@ public class API {
     public void stop() {
     	// graceful shutdown
         api.stop();
-    }
-
-    private void routes() {
-        GenreHandler.routes(api.unsafe.routes);
-        MemberHandler.routes(api.unsafe.routes);
     }
 
 }
