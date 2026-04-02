@@ -2,7 +2,7 @@ package rest.api;
 
 import org.jspecify.annotations.NonNull;
 
-import io.javalin.Javalin;
+import io.javalin.config.JavalinConfig;
 import io.javalin.micrometer.MicrometerPlugin;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.binder.jvm.JvmCompilationMetrics;
@@ -34,7 +34,7 @@ public class Micrometer {
     });
 
     @SuppressWarnings("resource")
-    public Micrometer(Javalin javalin) {
+    public Micrometer(JavalinConfig config) {
         Metrics.addRegistry(registry);
         registry.config().commonTags("application", "rapit");
 
@@ -51,7 +51,7 @@ public class Micrometer {
         // File(System.getProperty("user.dir"))).bindTo(registry);
 
         MicrometerPlugin micrometerPlugin = new MicrometerPlugin(cfg -> cfg.registry = registry);
-        javalin.unsafe.registerPlugin(micrometerPlugin);
+        config.registerPlugin(micrometerPlugin);
     }
 
     public String scrape() {
