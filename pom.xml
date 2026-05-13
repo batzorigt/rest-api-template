@@ -10,6 +10,8 @@
 
 	<properties>
 		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ebean.version>17.6.0</ebean.version>
 		<ebean-plugin.version>17.6.0</ebean-plugin.version>
 		<javalin.version>7.2.0</javalin.version>
@@ -39,6 +41,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.15.0</version>
 				<configuration>
+                    <!-- Use the project encoding property to avoid platform-dependent builds -->
+                    <encoding>${project.build.sourceEncoding}</encoding>
 					<source>25</source>
 					<target>25</target>
 					<excludes>
