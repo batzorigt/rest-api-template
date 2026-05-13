@@ -10,12 +10,12 @@
 
 	<properties>
 		<encoding>UTF-8</encoding>
-		<ebean.version>17.3.0</ebean.version>
-		<ebean-plugin.version>17.4.0</ebean-plugin.version>
-		<javalin.version>7.1.0</javalin.version>
-		<jte.version>3.2.3</jte.version>
+		<ebean.version>17.6.0</ebean.version>
+		<ebean-plugin.version>17.6.0</ebean-plugin.version>
+		<javalin.version>7.2.0</javalin.version>
+		<jte.version>3.2.4</jte.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
-		<lombok.version>1.18.44</lombok.version>
+		<lombok.version>1.18.46</lombok.version>
 		<ebean-migration.version>14.3.0</ebean-migration.version>
 	</properties>
 
@@ -260,7 +260,7 @@
 		<dependency>
 		    <groupId>io.micrometer</groupId>
 		    <artifactId>micrometer-registry-prometheus</artifactId>
-		    <version>1.16.4</version>
+		    <version>1.16.5</version>
 		</dependency>
 		
 		<dependency>
@@ -303,7 +303,7 @@
 		<dependency>
 		    <groupId>org.apache.logging.log4j</groupId>
 		    <artifactId>log4j-slf4j2-impl</artifactId>
-		    <version>2.25.4</version>
+		    <version>2.26.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.lmax</groupId>
@@ -347,13 +347,13 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.7.10</version>
+			<version>42.7.11</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.21.2</version>
+			<version>2.21.3</version>
 		</dependency>
 		<dependency>
 			<groupId>au.com.flyingkite</groupId>
