@@ -65,7 +65,8 @@ java -javaagent:src/main/jib/ebean-agent-<ebean-version>.jar \
 ```bash
 # Using Dockerfile (Recommended)
 docker build --format docker -t rest-api-template .
-docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal rest-api-template
+# DB_HOST_NAME = host.containers.internal for windows podman
+docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal -e DB_PASSWORD=password rest-api-template
 
 # Using jib-maven-plugin (if enabled)
 mvn jib:buildTar # or mvn package
