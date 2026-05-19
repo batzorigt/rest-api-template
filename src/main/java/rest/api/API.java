@@ -24,14 +24,13 @@ public class API {
         config.http.asyncTimeout = cfg.httpAsyncTimeout();
         config.http.defaultContentType = "application/json";
         config.http.maxRequestSize = cfg.httpMaxRequestSize();
+        config.http.compressionStrategy = CompressionStrategy.GZIP;
 
         config.concurrency.useVirtualThreads = true;
-        config.http.compressionStrategy = CompressionStrategy.GZIP;
         config.startup.showJavalinBanner = false;
         config.router.contextPath = API.cfg.contextPath();
-
         config.bundledPlugins.enableDevLogging();
-        var micrometer = new Micrometer(config);
+        
         String[] hosts = API.cfg.allowedOrigins();
 
         if (hosts.length > 0) {
@@ -58,14 +57,14 @@ public class API {
             } else {
                 if (API.cfg.monitoringUsername().equals(credentials.getUsername()) && API.cfg.monitoringPassword()
                         .equals(credentials.getPassword())) {
-                    ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(micrometer.scrape());
+                    ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(new Micrometer(config).scrape());
                 } else {
                     ctx.status(401);
                 }
             }
         });
-        GenreHandler.routes(config.routes);
-        MemberHandler.routes(config.routes);
+        
+        routes(config);
 
         config.events.serverStopping(() -> {
             // TODO do something here before stop
@@ -75,6 +74,11 @@ public class API {
             // TODO do something here after stopped
         });
     }
+
+	private static void routes(JavalinConfig config) {
+		GenreHandler.routes(config.routes);
+        MemberHandler.routes(config.routes);
+	}
 
     private static void commonRequestFilter(Context ctx) {
         // TODO uncomment to enable authenticator
@@ -105,7 +109,6 @@ public class API {
 
     public void start(int portNo) {
         I18N.load(Locale.JAPAN);
-
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         api.start(portNo);
     }
