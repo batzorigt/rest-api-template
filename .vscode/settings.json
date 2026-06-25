@@ -1,4 +1,12 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+
+    // Markdown Preview Enhanced - PlantUML online server (Java шаардалгүй)
+    "markdown-preview-enhanced.plantumlServer": "https://www.plantuml.com/plantuml",
+    "markdown-preview-enhanced.usePandocParser": false,
+
+    // PlantUML extension - online server ашиглах
+    "plantuml.server": "https://www.plantuml.com/plantuml",
+    "plantuml.render": "PlantUMLServer"
 }
