@@ -53,4 +53,4 @@ Fix generated-code problems by changing the source (entity/DTO/interface), never
 
 - There is no global auth filter: `API.commonRequestFilter` only runs XSRF, which defaults to disabled (`xsrfProtectionEnabled=false`). Route-level RBAC is separate and **always active** for routes that declare roles: `config.router.handlerWrapper(Authorization::wrap)` validates the `secure-token` cookie and its `role` claim (`rest.api.Role`: `USER < MANAGER < ADMIN`). Routes without roles stay public. Re-enable XSRF only deliberately, never casually.
 - Treat `src/main/resources/dbmigration/*.sql` as generator output: regenerate with `rest.api.GenerateDbMigration#main` after entity changes rather than hand-editing (class is excluded from the Maven build — launch from IDE).
-- Team hard rules (`.kiro/steering/architecture-standards.md`): Javalin/Ebean/MapStruct/JTE/Log4j2 only — no Spring, no XML config, no raw JDBC.
+- Team hard rules (`docs/architecture-standards.md`): Javalin/Ebean/MapStruct/JTE/Log4j2 only — no Spring, no XML config, no raw JDBC.

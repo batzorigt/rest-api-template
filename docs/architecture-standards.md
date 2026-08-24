@@ -1,6 +1,6 @@
 # Architecture Standards
 
-This steering file contains architecture guidelines for the REST API Template project.
+This document contains the architecture guidelines for the REST API Template project. It is tool-agnostic: humans and AI coding agents alike are expected to follow it.
 
 ## C4 Model Usage
 
@@ -35,7 +35,7 @@ title [Diagram Type] - [Feature Name]
 New features require:
 
 1. Architecture decision record (ADR)
-2. Updated ARCHITECTURE.md with C4 diagrams
+2. Updated `docs/architecture.md` with C4 diagrams
 3. Updated package structure documentation
 4. API endpoint documentation (if applicable)
 5. Matching tests shipped in the same task (see Testing Requirements) and the verification loop from `LOOP.md` run to green
