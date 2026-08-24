@@ -41,7 +41,7 @@ After changing entities, run `rest.api.GenerateDbMigration#main` to emit SQL int
 - Feature package layout: `D[Entity].java` (Ebean `@Entity` extends `Domain`), `[Entity].java` (DTO with nested MapStruct `Convertor`), `[Feature]ToAdd.java` (request DTO), `[Feature]Handler.java` (static `routes()` registration), `[Feature]Service.java`.
 - New routes go in the feature handler's static `routes()`, called from `API.config`.
 - Route protection (RBAC): declare allowed roles as extra route args (`app.post("genres", h, Role.MANAGER)`). `rest.api.Role` is `USER < MANAGER < ADMIN`; higher levels satisfy lower requirements; routes without roles stay public. Enforcement is centralized in `Authorization.wrap` (registered via `config.router.handlerWrapper`) — never hand-roll auth checks inside handlers.
-- Session identity: `AuthFilter.handle` validates the `secure-token` cookie and stores its JSON payload as the `member` context attribute; the user's role comes from that payload's `role` claim (missing/unknown → `USER`). A future login endpoint must embed the role claim when minting tokens.
+- Session identity: `Authentication.handle` validates the `secure-token` cookie and stores its JSON payload as the `member` context attribute; the user's role comes from that payload's `role` claim (missing/unknown → `USER`). A future login endpoint must embed the role claim when minting tokens.
 - Lombok `accessors.chain = true`: setters return `this`.
 
 ## Change workflow (mandatory)
@@ -58,7 +58,7 @@ No code-only drift without docs, and no doc-only claims without a green `mvn tes
 - `Config.java` (Owner lib) merges the optional file `/rapit.config` with OS env vars; defaults live in its annotations.
 - DB connection comes from env vars `DB_HOST_NAME`, `DB_USER_NAME`, `DB_PASSWORD`, `DB_NAME` (defaults: localhost / postgres / postgres / rapit) via placeholders in `application.properties` (a Maven-filtered resource).
 - `environment=local` enables JTE dev mode (live reload from `src/main/resources/jte`); any other value uses precompiled template classes.
-- Global auth and XSRF filters are disabled by default (`xsrfProtectionEnabled=false`; `AuthFilter.handle` commented out in `API`), but route-level RBAC (`Authorization`) is always active for routes that declare roles.
+- Global auth filter does not exist; XSRF is disabled by default (`xsrfProtectionEnabled=false`), but route-level RBAC (`Authorization`) is always active for routes that declare roles.
 
 ## Gotchas
 

@@ -85,9 +85,6 @@ public class API {
 	}
 
     private static void commonRequestFilter(Context ctx) {
-        // TODO uncomment to enable authenticator
-        // AuthHandler.handle(ctx);
-
         // TODO set true to Config#xsrfProtectionEnabled to protect from XSRF
         if (cfg.xsrfProtectionEnabled()) {
             XSRFFilter.handle(ctx);

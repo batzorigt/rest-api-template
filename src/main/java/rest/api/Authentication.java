@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
 
-public interface AuthFilter {
+public interface Authentication {
 
     static final String secureToken = "secure-token";
 
