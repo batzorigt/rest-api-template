@@ -55,7 +55,7 @@ public class AuthorizationTest {
     @Test
     void invalidTokenIsUnauthorized() {
         HttpResponse<String> response = Unirest.get(BASE_URL + "/members/1")
-                .cookie(AuthFilter.secureToken, "not-a-valid-token").asString();
+                .cookie(Authentication.secureToken, "not-a-valid-token").asString();
 
         assertEquals(401, response.getStatus());
     }
@@ -68,7 +68,7 @@ public class AuthorizationTest {
         String expiredToken = timestampedPayload + "." + XSRFToken.sign(timestampedPayload);
 
         HttpResponse<String> response = Unirest.get(BASE_URL + "/members/1")
-                .cookie(AuthFilter.secureToken, expiredToken).asString();
+                .cookie(Authentication.secureToken, expiredToken).asString();
 
         assertEquals(401, response.getStatus());
     }
@@ -78,7 +78,7 @@ public class AuthorizationTest {
         int memberId = insertMember("Batzorigt");
 
         HttpResponse<JsonNode> response = Unirest.get(BASE_URL + "/members/" + memberId)
-                .cookie(AuthFilter.secureToken, tokenForRole(Role.USER.name())).asJson();
+                .cookie(Authentication.secureToken, tokenForRole(Role.USER.name())).asJson();
 
         assertEquals(200, response.getStatus());
         assertEquals("Batzorigt", response.getBody().getObject().getString("name"));
@@ -91,7 +91,7 @@ public class AuthorizationTest {
         String token = SecureToken.generate(claims);
 
         HttpResponse<JsonNode> readResponse = Unirest.get(BASE_URL + "/members/" + memberId)
-                .cookie(AuthFilter.secureToken, token).asJson();
+                .cookie(Authentication.secureToken, token).asJson();
         HttpResponse<String> writeResponse = addGenre(token);
 
         assertEquals(200, readResponse.getStatus());
@@ -111,7 +111,7 @@ public class AuthorizationTest {
     void managerCanCreateGenre() {
         HttpResponse<JsonNode> response = Unirest.post(BASE_URL + "/genres")
                 .header("Content-Type", "application/json").body("{\"name\":\"Action\",\"orderNumber\":7}")
-                .cookie(AuthFilter.secureToken, tokenForRole(Role.MANAGER.name())).asJson();
+                .cookie(Authentication.secureToken, tokenForRole(Role.MANAGER.name())).asJson();
 
         assertEquals(201, response.getStatus());
         assertEquals("Action", response.getBody().getObject().getString("name"));
@@ -152,12 +152,12 @@ public class AuthorizationTest {
 
     private static HttpResponse<String> addGenre(String token) {
         return Unirest.post(BASE_URL + "/genres").header("Content-Type", "application/json")
-                .body("{\"name\":\"Action\"}").cookie(AuthFilter.secureToken, token).asString();
+                .body("{\"name\":\"Action\"}").cookie(Authentication.secureToken, token).asString();
     }
 
     private static HttpResponse<String> deleteGenre(int genreId, String role) {
         return Unirest.delete(BASE_URL + "/genres/" + genreId)
-                .cookie(AuthFilter.secureToken, tokenForRole(role)).asString();
+                .cookie(Authentication.secureToken, tokenForRole(role)).asString();
     }
 
     private static org.json.JSONObject sessionWithRole(String role) {

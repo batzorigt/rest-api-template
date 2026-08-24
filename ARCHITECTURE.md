@@ -158,7 +158,7 @@ component "API\n(Entry point)" as api #d5e8d4
 component "Config\n(Owner interface)" as config #e1d5e7
 component "Authorization\n(Route RBAC wrapper)" as authz #f8cecc
 component "Role\n(USER < MANAGER < ADMIN)" as role #f8cecc
-component "AuthFilter\n(Cookie token auth)" as auth #f8cecc
+component "Authentication\n(Cookie token auth)" as auth #f8cecc
 component "XSRFFilter\n(CSRF protection)" as xsrf #f8cecc
 component "ExceptionHandlers\n(Global error handling)" as ex #f8cecc
 component "ContextHelpers\n(Request utilities)" as ctx #f5f5f5
@@ -174,7 +174,6 @@ component "TemplateEngines\n(JTE factory)" as tmpl #f5f5f5
 
 api --> config : "reads"
 api --> authz : "router.handlerWrapper"
-api --> auth : "registers (optional)"
 api --> xsrf : "registers (optional)"
 api --> ex : "registers"
 api --> micro : "registers"
@@ -262,7 +261,6 @@ title Request Flow — POST /v1/members
 
 actor "Client" as client
 participant "Javalin\nHTTP Server" as server
-participant "AuthFilter\n(optional)" as auth
 participant "XSRFFilter\n(optional)" as xsrf
 participant "MemberHandler" as handler
 participant "Validators" as validator
@@ -271,8 +269,6 @@ participant "Ebean ORM\n(DMember)" as orm
 database "PostgreSQL" as db
 
 client -> server : POST /v1/members\n{name, phones}
-server -> auth : before()
-auth --> server : 401 or continue
 server -> xsrf : before()
 xsrf --> server : 403 or continue
 server -> handler : addMember(ctx)
@@ -310,7 +306,7 @@ skinparam ArrowColor #444444
 
 title Security Architecture
 
-component "AuthFilter" as auth
+component "Authentication" as auth
 component "Authorization\n(Route RBAC)" as authz
 component "Role\n(USER < MANAGER < ADMIN)" as role
 component "XSRFFilter" as xsrf
@@ -450,7 +446,7 @@ src/
 │   │   ├── Domain.java               # Base entity (id, createdAt, updatedAt)
 │   │   ├── Authorization.java        # Route RBAC wrapper (handlerWrapper)
 │   │   ├── Role.java                 # Role enum: USER < MANAGER < ADMIN
-│   │   ├── AuthFilter.java           # Cookie-based auth filter
+│   │   ├── Authentication.java       # Cookie-based auth filter
 │   │   ├── XSRFFilter.java           # CSRF filter (cookie + header)
 │   │   ├── XSRFToken.java            # XSRF token generator/validator
 │   │   ├── SecureToken.java          # Encrypted secure token

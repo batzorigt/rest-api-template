@@ -26,7 +26,7 @@ public interface Authorization {
     }
 
     static void manage(Handler handler, Context ctx, Set<? extends RouteRole> required) throws Exception {
-        AuthFilter.handle(ctx);
+        Authentication.handle(ctx);
 
         JSONObject member = ctx.attribute(ContextAttributes.member);
         Role role = Role.parse(member.optString(Role.claim));
