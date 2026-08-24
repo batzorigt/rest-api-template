@@ -42,6 +42,8 @@ Fix generated-code problems by changing the source (entity/DTO/interface), never
 |---|---|---|
 | Bare `java -jar target/rest-api-template-1.0.0.jar` dies on Ebean entity load | entities are enhanced at runtime by javaagent | run via `run.*` scripts or pass `-javaagent:src/main/jib/ebean-agent-<pom ebean.version>.jar` |
 | Test throws `java.lang.Error: Unresolved compilation problem` at runtime | Eclipse/JDT (VS Code Java) compiles into the **same** `target/classes` + `target/test-classes` as Maven (see `.classpath`); stale ECJ error-stub classes get executed | `mvn clean` then rerun; never trust results without clean after an IDE build |
+| Tests fail with chained-setter compile errors or `NoSuchMethodError: ...setId(...)` | same ECJ contamination: stale void-setter classes mixed with javac output in `target/` | purge `target/classes` + `target/test-classes`, recompile; if a file refuses to delete, the VS Code Java language server holds it — reload/close it first |
+| Unexpected 401/403 in handler tests | route declares `Role.*` args; request lacks the `secure-token` cookie or its payload's `role` claim is below the minimum | mint a token in-test: `SecureToken.generate(new JSONObject().put("role", "..."))` and send as cookie (pattern: `AuthorizationTest`) |
 | Tests error connecting to `localhost:6433` or report missing docker | daemon down / port busy | start Docker; free 6433 |
 | JVM aborts with shared-archive/classpath mismatch at startup | stale `app-cds.jsa` after dependency change | delete `app-cds.jsa` or rerun `build.*` to regenerate |
 | Compile errors inside `Q*.java` / MapStruct impls | edited generated code | revert; change source entities/DTOs and rebuild |
@@ -49,6 +51,6 @@ Fix generated-code problems by changing the source (entity/DTO/interface), never
 
 ## Safety rails
 
-- Auth is intentionally off: `AuthFilter.handle` is commented out in `API.commonRequestFilter`; XSRF defaults to disabled (`xsrfProtectionEnabled=false`). Re-enable only deliberately, never casually.
+- Global auth filter is intentionally off: `AuthFilter.handle` stays commented out in `API.commonRequestFilter`; XSRF defaults to disabled (`xsrfProtectionEnabled=false`). Route-level RBAC is separate and **always active** for routes that declare roles: `config.router.handlerWrapper(Authorization::wrap)` validates the `secure-token` cookie and its `role` claim (`rest.api.Role`: `USER < MANAGER < ADMIN`). Routes without roles stay public. Re-enable the global filter/XSRF only deliberately, never casually.
 - Treat `src/main/resources/dbmigration/*.sql` as generator output: regenerate with `rest.api.GenerateDbMigration#main` after entity changes rather than hand-editing (class is excluded from the Maven build — launch from IDE).
 - Team hard rules (`.kiro/steering/architecture-standards.md`): Javalin/Ebean/MapStruct/JTE/Log4j2 only — no Spring, no XML config, no raw JDBC.

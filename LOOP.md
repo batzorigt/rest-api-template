@@ -27,8 +27,22 @@ Do not skip step 3 before declaring work finished; no CI currently enforces it.
 ## New-endpoint loop
 
 1. Follow feature layout (`AGENTS.md` → Conventions): request DTO `[Feature]ToAdd`, handler method with `@Transactional`, route registered in that handler's static `routes()`.
-2. Pattern the test on `GenreHandlerTest`: random port + Unirest + `new Q[Entity]().delete()` in `@BeforeEach`.
-3. Compile → targeted test → full gate.
+2. Decide access level while registering the route — add `Role.*` args if it must be protected (see authorization loop below); public routes stay arg-free.
+3. Pattern the test on `GenreHandlerTest` (public endpoint) or `AuthorizationTest` (protected endpoint): random port + Unirest + `new Q[Entity]().delete()` in `@BeforeEach`.
+4. Compile → targeted test → full gate.
+
+## Authorization / route-protection loop
+
+1. Declare allowed roles as extra args on the route (`app.post("genres", h, Role.MANAGER)`). `rest.api.Role` is `USER < MANAGER < ADMIN`; a user passes if their level ≥ the minimum declared; routes without roles are public.
+2. Enforcement is centralized: `Authorization.wrap` (registered via `config.router.handlerWrapper`) authenticates the `secure-token` cookie (401 when missing/invalid/expired) and checks the payload's `role` claim against the minimum (403 when insufficient). Never hand-roll these checks inside handlers.
+3. Matching tests, modeled on `RoleTest` + `AuthorizationTest`:
+   - no token / invalid token / expired token → 401;
+   - role below minimum → 403 **and** data unchanged;
+   - exactly-at-minimum and higher roles → success;
+   - missing `role` claim → treated as `USER`;
+   - previously-public behavior unchanged where applicable.
+4. Compile → targeted tests → full gate.
+5. Update `ARCHITECTURE.md` endpoint table (Roles column) and the security section whenever routes gain or lose roles.
 
 ## Template-change loop
 
@@ -44,6 +58,8 @@ Do not skip step 3 before declaring work finished; no CI currently enforces it.
 ## Definition of done
 
 - [ ] `mvn test` green with Docker actually up
+- [ ] Matching tests written or updated for the change (no behavior change ships untested)
+- [ ] Affected MD docs updated in the same task (`ARCHITECTURE.md`, `README.md`, steering standards) when behavior, endpoints, architecture, or tooling changed
 - [ ] `git status` shows no edited generated files (`Q*`, MapStruct impls, `jte-classes`)
 - [ ] Migration SQL regenerated if entities changed
 - [ ] App started (if relevant) via `run.*`, not bare `java -jar`

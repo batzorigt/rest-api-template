@@ -156,6 +156,8 @@ title C4 Level 3 — API Layer Components
 
 component "API\n(Entry point)" as api #d5e8d4
 component "Config\n(Owner interface)" as config #e1d5e7
+component "Authorization\n(Route RBAC wrapper)" as authz #f8cecc
+component "Role\n(USER < MANAGER < ADMIN)" as role #f8cecc
 component "AuthFilter\n(Cookie token auth)" as auth #f8cecc
 component "XSRFFilter\n(CSRF protection)" as xsrf #f8cecc
 component "ExceptionHandlers\n(Global error handling)" as ex #f8cecc
@@ -171,11 +173,14 @@ component "Mail\n(SMTP sender)" as mail #f5f5f5
 component "TemplateEngines\n(JTE factory)" as tmpl #f5f5f5
 
 api --> config : "reads"
+api --> authz : "router.handlerWrapper"
 api --> auth : "registers (optional)"
 api --> xsrf : "registers (optional)"
 api --> ex : "registers"
 api --> micro : "registers"
 
+authz --> role : "checks claim"
+authz --> auth : "authenticates"
 auth --> token : "uses"
 xsrf --> xtoken : "uses"
 token --> crypto : "uses"
@@ -202,7 +207,7 @@ skinparam ArrowColor #444444
 title C4 Level 3 — Domain Layer Components
 
 package "member package" {
-  component "MemberHandler\n(POST /members\nGET /members/{id})" as mh #d5e8d4
+  component "MemberHandler\n(POST /members — public\nGET /members/{id} — USER+)" as mh #d5e8d4
   component "MemberService\n(Business logic)" as ms #dce8ff
   component "MemberToAdd\n(Request DTO)" as mta #f5f5f5
   component "Member\n(Response DTO)" as mdto #f5f5f5
@@ -212,8 +217,9 @@ package "member package" {
 }
 
 package "genre package" {
-  component "GenreHandler\n(GET /genres)" as gh #d5e8d4
+  component "GenreHandler\n(GET /genres — public\nPOST /genres — MANAGER+\nDELETE /genres/{id} — ADMIN)" as gh #d5e8d4
   component "GenreService\n(Business logic)" as gs #dce8ff
+  component "GenreToAdd\n(Request DTO)" as gta #f5f5f5
   component "Genre\n(Response DTO)" as gdto #f5f5f5
   component "DGenre\n(@Entity genres)" as dg #ffe6cc
 }
@@ -284,6 +290,11 @@ server --> client : HTTP 201 JSON
 @enduml
 ```
 
+Role-protected routes (`Role.*` args) pass through `Authorization` before the
+handler runs: it authenticates the `secure-token` cookie (401 on
+missing/invalid/expired) and compares the payload's `role` claim with the route
+minimum (403 when insufficient). Public routes skip this step entirely.
+
 ---
 
 ## Security Architecture
@@ -300,6 +311,8 @@ skinparam ArrowColor #444444
 title Security Architecture
 
 component "AuthFilter" as auth
+component "Authorization\n(Route RBAC)" as authz
+component "Role\n(USER < MANAGER < ADMIN)" as role
 component "XSRFFilter" as xsrf
 component "SecureToken" as st
 component "XSRFToken" as xt
@@ -311,10 +324,19 @@ note right of crypto
   Keys derived via SHA-256
 end note
 
+authz --> st : parse token\n(30 min timeout)
+authz --> role : resolve claim,\ncompare with route minimum
 auth --> st : parse token\n(30 min timeout)
 xsrf --> xt : validate token\n(30 min timeout)
 st --> crypto : encrypt / decrypt\nverify signature
 xt --> crypto : sign / verify
+
+note bottom of authz
+  Wraps every endpoint (config.router.handlerWrapper)
+  Route without Role args -> public, no checks
+  Missing/invalid/expired token -> 401
+  role claim below route minimum -> 403
+end note
 
 note bottom of auth
   Cookie: "secure-token"
@@ -342,6 +364,26 @@ end note
 | `X-XSS-Protection` | `1; mode=block` |
 | `Referrer-Policy` | `no-referrer` |
 | `Cross-Origin-Resource-Policy` | `same-origin` |
+
+### Authorization (RBAC)
+
+`rest.api.Authorization` нь `config.router.handlerWrapper(Authorization::wrap)`
+-ээр бүх endpoint-ийг боож (wrap), route дээр зарласан role байвал шалгалт хийнэ.
+
+- **Role шатлал:** `USER(0) < MANAGER(10) < ADMIN(20)` — хэрэглэгчийн түвшин route-ийн хамгийн доод шаардлагаас өндөр бол тэнцэнэ.
+- **Үүрэгний эх сурвалж:** `secure-token` cookie-ийн JSON payload дахь `role` claim (`rest.api.Role.claim`). Хоосон/танигдахгүй бол `USER` гэж үзнэ.
+- **Нээлттэй маршрут:** role args-гүй route бүр public — ямар ч шалгалтгүй.
+- **Хариу:** token байхгүй/буруу/хугацаа дууссан → `401`; үүрэг хүрэлцэхгүй → `403`.
+
+Одоогийн маршрутны матриц:
+
+| Route | Хамгийн доод үүрэг |
+|-------|--------------------|
+| `POST /v1/members` | public (бүртгэл) |
+| `GET /v1/members/{id}` | `USER` (нэвтэрсэн хэн ч) |
+| `GET /v1/genres` | public |
+| `POST /v1/genres` | `MANAGER` |
+| `DELETE /v1/genres/{id}` | `ADMIN` |
 
 ---
 
@@ -406,6 +448,8 @@ src/
 │   │   ├── API.java                  # Entry point, Javalin config
 │   │   ├── Config.java               # Configuration interface (Owner)
 │   │   ├── Domain.java               # Base entity (id, createdAt, updatedAt)
+│   │   ├── Authorization.java        # Route RBAC wrapper (handlerWrapper)
+│   │   ├── Role.java                 # Role enum: USER < MANAGER < ADMIN
 │   │   ├── AuthFilter.java           # Cookie-based auth filter
 │   │   ├── XSRFFilter.java           # CSRF filter (cookie + header)
 │   │   ├── XSRFToken.java            # XSRF token generator/validator
@@ -438,6 +482,7 @@ src/
 │   │   └── genre/                    # Genre feature
 │   │       ├── DGenre.java           # @Entity → genres table
 │   │       ├── Genre.java            # Response DTO + MapStruct Convertor
+│   │       ├── GenreToAdd.java       # Request DTO (POST /genres)
 │   │       ├── GenreHandler.java     # Route handler
 │   │       └── GenreService.java     # Business logic
 │   │
@@ -456,8 +501,10 @@ src/
 │
 └── test/
     ├── java/rest/api/
-    │   ├── genre/                    # Genre tests
-    │   ├── member/                   # Member tests
+    │   ├── AuthorizationTest.java   # RBAC 401/403/allow matrix (HTTP)
+    │   ├── RoleTest.java            # Role hierarchy + parse unit tests
+    │   ├── genre/                   # Genre tests
+    │   ├── member/                  # Member tests
     │   ├── CryptoTest.java
     │   ├── I18NTest.java
     │   ├── PagedSearchTest.java
@@ -503,12 +550,16 @@ src/
 
 ## API Endpoints
 
-| Method | Path | Description | Transaction |
-|--------|------|-------------|-------------|
-| `GET` | `/v1/genres` | Genre жагсаалт (pagination) | `readOnly` |
-| `GET` | `/v1/members/{id}` | Member ID-р хайх | `readOnly` |
-| `POST` | `/v1/members` | Member үүсгэх | `readWrite` |
-| `GET` | `/v1/metrics` | Prometheus metrics | — |
+| Method | Path | Description | Transaction | Roles |
+|--------|------|-------------|-------------|-------|
+| `GET` | `/v1/genres` | Genre жагсаалт (pagination) | `readOnly` | public |
+| `POST` | `/v1/genres` | Genre нэмэх | `readWrite` | `MANAGER+` |
+| `DELETE` | `/v1/genres/{id}` | Genre устгах | `readWrite` | `ADMIN` |
+| `GET` | `/v1/members/{id}` | Member ID-р хайх | `readOnly` | `USER+` (нэвтэрсэн) |
+| `POST` | `/v1/members` | Member үүсгэх (бүртгэл) | `readWrite` | public |
+| `GET` | `/v1/metrics` | Prometheus metrics | — | Basic auth (monitoring) |
+
+Roles багана: `Authorization` wrapper шалгадаг хамгийн доод үүрэг. `USER < MANAGER < ADMIN` — өндөр түвшин доод шаардлагыг хангана. Token байхгүй/буруу бол role шаардсан бүх маршрут `401` буцаана.
 
 ### Pagination Query Params
 
@@ -522,8 +573,8 @@ src/
 | Status | Тайлбар |
 |--------|---------|
 | `400` | Validation алдаа — field-level JSON errors |
-| `401` | Auth token байхгүй/хугацаа дууссан |
-| `403` | XSRF token буруу |
+| `401` | `secure-token` байхгүй/буруу/хугацаа дууссан (role шаардсан route дээр) |
+| `403` | XSRF token буруу **эсвэл** үүрэг хүрэлцэхгүй (RBAC) |
 | `404` | Өгөгдөл олдсонгүй |
 | `500` | Системийн алдаа |
 
@@ -602,10 +653,10 @@ docker run -p 8080:8080 \
 
 | Давхарга | Хэрэгсэл | Тайлбар |
 |---------|---------|---------|
-| Unit tests | JUnit 5 + Mockito | Service, utility class тест |
+| Unit tests | JUnit 5 + Mockito | Service, utility class тест (`RoleTest` г.м.) |
 | Integration tests | JUnit 5 + Ebean Test | DB-тэй хамт тест |
 | Container tests | Testcontainers | Docker PostgreSQL дээр |
-| HTTP tests | Unirest | API endpoint тест |
+| HTTP tests | Unirest | API endpoint тест (`AuthorizationTest` — RBAC 401/403/allow матриц) |
 | Mocking | Mockito / JMockit | External dependency isolation |
 
 Test DB тохиргоо (`src/test/resources/application.properties`):

@@ -114,7 +114,13 @@ testing: JUnit5, Testcontainers for Java, mockito, jmockit
 # Architecture
 
 ```
-http requests --> filters --> handlers --> services --> orms --> rdb
+http requests --> access control --> handlers --> services --> orms --> rdb
+
+Access control:
+Route-level RBAC via Authorization (Javalin handlerWrapper). Routes declare the
+minimum role with Role args: USER < MANAGER < ADMIN. The secure-token cookie's
+payload carries the role claim; missing/invalid token -> 401, insufficient
+role -> 403. Routes without roles are public.
 
 Filters:
 AuthHandler, XSRFHandler, before handlers and after handlers, security header adders. 
