@@ -18,23 +18,25 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
 public class Micrometer {
 
-	@NonNull
+    private static final Micrometer INSTANCE = new Micrometer();
+
     private final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(new PrometheusConfig() {
 
+        @Override
+        public String get(@NonNull String key) {
+            return null;
+        }
+
 		@Override
-	    public String get(@NonNull String key) {
-	        return null;
-	    }
+		@SuppressWarnings("null")
+        public String prefix() {
+            return "rapit";
+        }
 
-	    @Override
-	    public @NonNull String prefix() {
-	        return "rapit";
-	    }
+    });
 
-	});
-    		
-    @SuppressWarnings("resource")
-    public Micrometer(JavalinConfig config) {
+    @SuppressWarnings({ "resource", "null" })
+	private Micrometer() {
         registry.config().commonTags("application", "rapit");
 
         new JvmGcMetrics().bindTo(registry);
@@ -46,15 +48,15 @@ public class Micrometer {
         new UptimeMetrics().bindTo(registry);
         new FileDescriptorMetrics().bindTo(registry);
         new ProcessorMetrics().bindTo(registry);
-        // new DiskSpaceMetrics(new
-        // File(System.getProperty("user.dir"))).bindTo(registry);
-
-        MicrometerPlugin micrometerPlugin = new MicrometerPlugin(cfg -> cfg.registry = registry);
-        config.registerPlugin(micrometerPlugin);
+        // new DiskSpaceMetrics(new File(System.getProperty("user.dir"))).bindTo(registry);
     }
 
-    public String scrape() {
-        return registry.scrape();
+    public static void register(JavalinConfig config) {
+        config.registerPlugin(new MicrometerPlugin(cfg -> cfg.registry = INSTANCE.registry));
+    }
+
+    public static String scrape() {
+        return INSTANCE.registry.scrape();
     }
 
 }

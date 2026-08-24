@@ -45,6 +45,8 @@ public class API {
             });
         }
 
+        Micrometer.register(config);
+
         config.routes.before(API::commonRequestFilter);
         config.routes.after(API::commonResponseFilter);
         config.routes.exception(Exception.class, ExceptionHandlers::exceptionHandler);
@@ -57,7 +59,7 @@ public class API {
             } else {
                 if (API.cfg.monitoringUsername().equals(credentials.getUsername()) && API.cfg.monitoringPassword()
                         .equals(credentials.getPassword())) {
-                    ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(new Micrometer(config).scrape());
+                    ctx.contentType("text/plain; version=0.0.4; charset=utf-8").result(Micrometer.scrape());
                 } else {
                     ctx.status(401);
                 }
