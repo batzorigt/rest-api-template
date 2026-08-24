@@ -38,6 +38,16 @@ New features require:
 2. Updated ARCHITECTURE.md with C4 diagrams
 3. Updated package structure documentation
 4. API endpoint documentation (if applicable)
+5. Matching tests shipped in the same task (see Testing Requirements) and the verification loop from `LOOP.md` run to green
+
+## Testing Requirements
+
+Every behavior change must ship with corresponding tests, verified before finishing:
+
+1. Unit tests for new logic (utilities, parsing, hierarchy rules — pattern: `RoleTest`)
+2. Handler-level HTTP tests for endpoint or authorization changes — pattern: `AuthorizationTest`
+3. Authorization rules require an allow/deny matrix: 401 (no/invalid/expired token), 403 (insufficient role, data unchanged), success at and above the minimum role
+4. Run `LOOP.md`'s loop (compile → targeted → full gate); a green `mvn test` is part of done
 
 ## Technology Standards
 
@@ -75,10 +85,11 @@ src/main/java/rest/api/
 
 All endpoints must follow:
 
-1. XSRF protection (if enabled in config)
-2. Input validation on all POST/PUT/DELETE
-3. HTTPS enforcement in production
-4. Security headers (automatically added)
+1. Role-based access control: mutating endpoints declare the minimum role via Javalin route args (`rest.api.Role`: `USER < MANAGER < ADMIN`, higher satisfies lower); enforcement is centralized in the `Authorization` handler wrapper — never hand-roll auth checks inside handlers
+2. XSRF protection (if enabled in config)
+3. Input validation on all POST/PUT/DELETE
+4. HTTPS enforcement in production
+5. Security headers (automatically added)
 
 ## Monitoring Standards
 

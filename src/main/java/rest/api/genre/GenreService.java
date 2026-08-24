@@ -20,4 +20,20 @@ public class GenreService {
 
         return PagedSearch.search(pageNumber, pageSize, pagedDataFinder, allDataFinder, Convertor.singleton::genre);
     }
+
+    static Genre addGenre(GenreToAdd input) {
+        DGenre genre = new DGenre();
+        genre.setName(input.getName());
+        genre.setKey(input.getKey());
+        genre.setImagePath(input.getImagePath());
+        genre.setImageKey(input.getImageKey());
+        genre.setOrderNumber(input.getOrderNumber());
+        genre.save();
+
+        return Convertor.singleton.genre(genre);
+    }
+
+    static boolean deleteGenre(Integer id) {
+        return new QDGenre().id.equalTo(id).delete() > 0;
+    }
 }

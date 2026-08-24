@@ -47,6 +47,8 @@ public class API {
 
         Micrometer.register(config);
 
+        config.router.handlerWrapper(Authorization::wrap);
+
         config.routes.before(API::commonRequestFilter);
         config.routes.after(API::commonResponseFilter);
         config.routes.exception(Exception.class, ExceptionHandlers::exceptionHandler);

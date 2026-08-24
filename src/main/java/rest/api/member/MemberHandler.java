@@ -4,6 +4,7 @@ import io.ebean.annotation.Transactional;
 import io.javalin.http.Context;
 import io.javalin.router.JavalinDefaultRoutingApi;
 import rest.api.ContextHelpers;
+import rest.api.Role;
 import rest.api.Validators;
 
 public class MemberHandler {
@@ -24,6 +25,6 @@ public class MemberHandler {
     public static void routes(JavalinDefaultRoutingApi app) {
         // Direct route registration
         app.post("members", MemberHandler::addMember);
-        app.get("members/{id}", MemberHandler::getMember);
+        app.get("members/{id}", MemberHandler::getMember, Role.USER);
     }
 }
