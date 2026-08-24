@@ -64,7 +64,8 @@ java -javaagent:src/main/jib/ebean-agent-<ebean-version>.jar \
 ### Docker
 ```bash
 # Using Dockerfile (Recommended)
-docker build --format docker -t rest-api-template .
+docker build -t rest-api-template .
+# (--format docker is a *podman* flag: podman build --format docker ...)
 # DB_HOST_NAME = host.containers.internal for windows podman
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal -e DB_PASSWORD=password rest-api-template
 
@@ -108,7 +109,7 @@ monitoring: micrometer plugin for prometheus
 
 logging: log4j2
 
-testing: JUnit5, Testcontainers for Java, mockito, jmockit
+testing: JUnit (Jupiter), Testcontainers for Java, mockito, jmockit
 ```
 
 # Architecture
@@ -123,7 +124,8 @@ payload carries the role claim; missing/invalid token -> 401, insufficient
 role -> 403. Routes without roles are public.
 
 Filters:
-AuthHandler, XSRFHandler, before handlers and after handlers, security header adders. 
+Authentication + XSRFFilter (optional before handlers), Authorization RBAC
+wrapper around protected endpoints, and after handlers that add security headers.
 
 Handlers:
 Receive http requests and validate request parameters or body. Call services. Manage database transactions.
