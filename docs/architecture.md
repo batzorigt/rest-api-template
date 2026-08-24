@@ -45,6 +45,8 @@
 ```plantuml
 @startuml C4_Context
 !theme plain
+title C4 Level 1 — System Context
+
 skinparam rectangle {
   BorderColor #666666
   BackgroundColor #f5f5f5
@@ -54,8 +56,6 @@ skinparam actor {
   BackgroundColor #dce8ff
 }
 skinparam ArrowColor #444444
-
-title C4 Level 1 — System Context
 
 actor "API Client\n(Browser / Mobile)" as user #dce8ff
 actor "Monitoring System\n(Prometheus)" as prometheus #fff0cc
@@ -83,6 +83,8 @@ system --> smtp : "SMTP\nEmail notifications"
 ```plantuml
 @startuml C4_Container
 !theme plain
+title C4 Level 2 — Container Diagram
+
 skinparam rectangle {
   BorderColor #666666
   BackgroundColor #f9f9f9
@@ -96,8 +98,6 @@ skinparam database {
   BackgroundColor #fff0cc
 }
 skinparam ArrowColor #444444
-
-title C4 Level 2 — Container Diagram
 
 actor "API Client" as client #dce8ff
 
@@ -146,13 +146,13 @@ monitoring ..> http : "instrument"
 ```plantuml
 @startuml C4_Component_API
 !theme plain
+title C4 Level 3 — API Layer Components
+
 skinparam component {
   BorderColor #0050ef
   BackgroundColor #dce8ff
 }
 skinparam ArrowColor #444444
-
-title C4 Level 3 — API Layer Components
 
 component "API\n(Entry point)" as api #d5e8d4
 component "Config\n(Owner interface)" as config #e1d5e7
@@ -197,13 +197,13 @@ xtoken --> crypto : "uses"
 ```plantuml
 @startuml C4_Component_Domain
 !theme plain
+title C4 Level 3 — Domain Layer Components
+
 skinparam component {
   BorderColor #0050ef
   BackgroundColor #dce8ff
 }
 skinparam ArrowColor #444444
-
-title C4 Level 3 — Domain Layer Components
 
 package "member package" {
   component "MemberHandler\n(POST /members — public\nGET /members/{id} — USER+)" as mh #d5e8d4
@@ -249,6 +249,8 @@ HTTP хүсэлтийн дамжих замыг харуулна.
 ```plantuml
 @startuml RequestFlow
 !theme plain
+title Request Flow — POST /v1/members
+
 skinparam sequence {
   ArrowColor #444444
   ActorBorderColor #0050ef
@@ -256,8 +258,6 @@ skinparam sequence {
   ParticipantBackgroundColor #f5f5f5
   ParticipantBorderColor #666666
 }
-
-title Request Flow — POST /v1/members
 
 actor "Client" as client
 participant "Javalin\nHTTP Server" as server
@@ -298,13 +298,13 @@ minimum (403 when insufficient). Public routes skip this step entirely.
 ```plantuml
 @startuml Security
 !theme plain
+title Security Architecture
+
 skinparam component {
   BorderColor #cc0000
   BackgroundColor #f8cecc
 }
 skinparam ArrowColor #444444
-
-title Security Architecture
 
 component "Authentication" as auth
 component "Authorization\n(Route RBAC)" as authz
@@ -389,14 +389,14 @@ end note
 ```plantuml
 @startuml Database
 !theme plain
+title Database Schema
+
 skinparam class {
   BorderColor #d6a520
   BackgroundColor #fff0cc
   HeaderBackgroundColor #ffe6a0
 }
 skinparam ArrowColor #444444
-
-title Database Schema
 
 entity "members" as members {
   * id : INTEGER <<PK, AUTOINCREMENT>>
@@ -594,13 +594,13 @@ Roles багана: `Authorization` wrapper шалгадаг хамгийн до
 ```plantuml
 @startuml Build
 !theme plain
+title Build & Deployment Pipeline
+
 skinparam rectangle {
   BorderColor #666666
   BackgroundColor #f5f5f5
 }
 skinparam ArrowColor #444444
-
-title Build & Deployment Pipeline
 
 rectangle "Source Code" as src #dce8ff
 

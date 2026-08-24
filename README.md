@@ -1,9 +1,15 @@
-# if you have installed podman instead of docker
+# rest-api-template
 
-## create a file symbolic link to podman on Linux / macOS
-`ln -s $(which podman) /usr/local/bin/docker`
+Javalin + Ebean + PostgreSQL REST API template on Java 25. See `docs/architecture.md` for the full design documentation and `AGENTS.md` for agent tooling contracts.
 
-## create a file symbolic link to podman on windows powershell
+## Podman instead of Docker?
+
+If you have installed podman instead of docker:
+
+- create a file symbolic link to podman on Linux / macOS:
+  `ln -s $(which podman) /usr/local/bin/docker`
+- create a file symbolic link to podman on Windows PowerShell:
+
 ```
 $podmanDir = "C:\Users\your-name\AppData\Local\Programs\Podman"
 New-Item -ItemType SymbolicLink `
@@ -11,7 +17,7 @@ New-Item -ItemType SymbolicLink `
   -Target "$podmanDir\podman.exe"
 ```
 
-# Build and Optimization
+## Build and Optimization
 
 To build the application and generate AppCDS optimization locally:
 
@@ -28,7 +34,7 @@ Alternatively, you can build manually:
 mvn package
 ```
 
-# Run
+## Run
 
 ### Using Scripts (Recommended)
 This will use the optimal JVM settings and AppCDS if available.
@@ -75,7 +81,7 @@ docker load -i target/jib-image.tar
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal rest-api-template
 ```
 
-# IntelliJ IDEA
+## IntelliJ IDEA
 
 ```
 https://projectlombok.org/setup/intellij
@@ -83,14 +89,14 @@ https://ebean.io/docs/getting-started/intellij-idea
 https://mapstruct.org/documentation/ide-support/
 ```
 
-# Eclipse
+## Eclipse
 ```
 https://projectlombok.org/setup/eclipse
 https://ebean.io/docs/getting-started/eclipse-ide
 https://mapstruct.org/documentation/ide-support/
 ```
 
-# Used Libraries
+## Used Libraries
 
 ```
 web framework: https://javalin.io/
@@ -112,7 +118,7 @@ logging: log4j2
 testing: JUnit (Jupiter), Testcontainers for Java, mockito, jmockit
 ```
 
-# Architecture
+## Architecture
 
 ```
 http requests --> access control --> handlers --> services --> orms --> rdb
