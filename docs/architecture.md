@@ -126,7 +126,7 @@ rectangle "Rest API Template" as boundary {
 database "PostgreSQL" as db #fff0cc
 
 client --> http : "HTTP/JSON"
-http --> security : "before filter"
+http --> security : "handlerWrapper +\nbefore filter"
 http --> handlers : "route"
 handlers --> services : "call"
 services --> orm : "query"
@@ -341,7 +341,7 @@ end note
 
 note bottom of xsrf
   GET: generate + set cookie "xsrf-token"
-  POST/PUT/DELETE: validate
+  POST/PUT/DELETE/PATCH: validate
   header "x-xsrf-token" == cookie
 end note
 
@@ -355,11 +355,12 @@ end note
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
 | `X-Frame-Options` | `DENY` |
 | `X-Content-Type-Options` | `nosniff` |
-| `Content-Security-Policy` | `frame-ancestors 'none'; default-src 'self'` |
+| `Content-Security-Policy` | `frame-ancestors 'none'; default-src 'self' style-src 'self' 'unsafe-inline';` |
 | `Cache-Control` | `no-store` |
 | `X-XSS-Protection` | `1; mode=block` |
 | `Referrer-Policy` | `no-referrer` |
 | `Cross-Origin-Resource-Policy` | `same-origin` |
+| `Feature-Policy` | `none` |
 
 ### Authorization (RBAC)
 
@@ -459,7 +460,7 @@ src/
 │   │   ├── PagedData.java            # Pagination response wrapper
 │   │   ├── PagedSearch.java          # Pagination query logic
 │   │   ├── NumberHelpers.java        # Numeric utilities
-│   │   ├── I18N.java                 # Internationalization (ja / en)
+│   │   ├── I18N.java                 # Internationalization (Japanese-only bundle)
 │   │   ├── IO.java                   # File/classpath read utilities
 │   │   ├── Mail.java                 # Jakarta Mail SMTP sender
 │   │   ├── TemplateEngines.java      # JTE engine factory
@@ -473,22 +474,24 @@ src/
 │   │   │   ├── Phone.java            # Response DTO
 │   │   │   ├── MemberToAdd.java      # Request DTO
 │   │   │   ├── MemberHandler.java    # Route handler
-│   │   │   └── MemberService.java    # Business logic
+│   │   │   ├── MemberService.java    # Business logic
+│   │   │   └── query/                # Generated QueryBeans (QDMember)
 │   │   │
 │   │   └── genre/                    # Genre feature
 │   │       ├── DGenre.java           # @Entity → genres table
 │   │       ├── Genre.java            # Response DTO + MapStruct Convertor
 │   │       ├── GenreToAdd.java       # Request DTO (POST /genres)
 │   │       ├── GenreHandler.java     # Route handler
-│   │       └── GenreService.java     # Business logic
+│   │       ├── GenreService.java     # Business logic
+│   │       └── query/                # Generated QueryBeans (QDGenre)
+│   │
 │   │
 │   ├── resources/
-│   │   ├── application.properties    # Datasource config
-│   │   ├── i18n.properties           # English messages
-│   │   ├── i18n_ja.properties        # Japanese messages
+│   │   ├── application.properties    # Maven-filtered datasource config (DB_* env placeholders)
+│   │   ├── i18n_ja.properties        # Messages — Japanese is the ONLY shipped bundle
 │   │   ├── log4j2.xml                # Logging config
-│   │   ├── jte/                      # JTE templates
-│   │   └── dbmigration/              # Generated SQL migrations
+│   │   ├── jte/                      # JTE templates (hello.jte)
+│   │   └── dbmigration/              # Generated SQL migrations (created on demand by GenerateDbMigration)
 │   │
 │   └── jib/
 │       ├── ebean-agent-17.6.0.jar    # Ebean bytecode agent
@@ -499,15 +502,23 @@ src/
     ├── java/rest/api/
     │   ├── AuthorizationTest.java   # RBAC 401/403/allow matrix (HTTP)
     │   ├── RoleTest.java            # Role hierarchy + parse unit tests
-    │   ├── genre/                   # Genre tests
-    │   ├── member/                  # Member tests
-    │   ├── CryptoTest.java
-    │   ├── I18NTest.java
-    │   ├── PagedSearchTest.java
-    │   └── ...
+    │   ├── SecureTokenTest.java     # Token gen/parse/expiry
+    │   ├── XSRFTokenTest.java       # XSRF token sign/validate
+    │   ├── CryptoTest.java          # AES-GCM encrypt/decrypt/sign
+    │   ├── AppConfigTest.java       # Owner config loading
+    │   ├── ContextHelpersTest.java  # Response helpers + query params
+    │   ├── PagedDataTest.java       # Pagination wrapper
+    │   ├── PagedSearchTest.java     # Paged vs all-data finder logic
+    │   ├── I18NTest.java            # i18n message resolution
+    │   ├── I18NJapaneseOnlyTest.java# Guards Japanese-only bundle contract
+    │   ├── IOTest.java              # Classpath/file read helpers
+    │   ├── TemplateEnginesTest.java # JTE dev/precompiled modes
+    │   ├── MailTest.java            # SMTP message building
+    │   ├── genre/                   # GenreHandlerTest, GenreServiceTest, DGenreTest
+    │   └── member/                  # MemberHandlerTest, MemberServiceTest
     └── resources/
-        ├── application.properties    # Test DB config (Testcontainers)
-        └── ...
+        ├── application.properties   # Test DB config (Postgres Testcontainer :6433)
+        └── ...                      # i18n bundles for tests, log4j2.xml
 ```
 
 ---
@@ -521,21 +532,23 @@ src/
 | ORM | Ebean | 17.6.0 | Database access, QueryBean |
 | DB Driver | PostgreSQL JDBC | 42.7.11 | PostgreSQL connectivity |
 | DB Migration | Ebean Migration | 14.3.0 | Schema versioning |
-| Validation | Hibernate Validator | 9.1.0 | Bean validation (JSR-380) |
+| Validation | Hibernate Validator | 9.1.0.Final | Bean validation (JSR-380) |
 | DTO Mapping | MapStruct | 1.6.3 | Entity ↔ DTO conversion |
 | Configuration | Owner | 1.0.12 | Externalized config |
 | Templates | JTE | 3.2.4 | Server-side HTML |
+| Logging Facade | SLF4J | 2.0.17 | API used by Javalin/Ebean |
 | Logging | Log4j2 | 2.26.0 | Async structured logging |
 | Async Logging | LMAX Disruptor | 4.0.0 | Lock-free async log queue |
 | Monitoring | Micrometer | 1.16.5 | Prometheus metrics |
-| Mail | Jakarta Mail | 2.1.5 | SMTP email |
+| Mail API | Jakarta Mail | 2.1.5 | SMTP email API |
+| Mail Provider | Angus Mail | 2.0.5 | Jakarta Mail implementation |
 | JSON | Jackson | 2.21.3 | JSON serialization |
 | JSON | org.json | 20251224 | JSON object building |
 | Mobile Detect | mobiledetect | 1.1.1 | User-agent parsing |
 | Utils | Commons Lang3 | 3.20.0 | String utilities |
 | Utils | Commons Collections4 | 4.5.0 | Collection utilities |
 | Code Gen | Lombok | 1.18.46 | Getters/Setters/Builders |
-| Testing | JUnit 5 | 6.0.3 | Unit testing |
+| Testing | JUnit Jupiter | 6.0.3 | Unit testing |
 | Testing | Mockito | 5.23.0 | Mocking |
 | Testing | JMockit | 1.50 | Alternative mocking |
 | Testing | Ebean Test | 17.6.0 | DB testing support |
@@ -570,7 +583,7 @@ Roles багана: `Authorization` wrapper шалгадаг хамгийн до
 |--------|---------|
 | `400` | Validation алдаа — field-level JSON errors |
 | `401` | `secure-token` байхгүй/буруу/хугацаа дууссан (role шаардсан route дээр) |
-| `403` | XSRF token буруу **эсвэл** үүрэг хүрэлцэхгүй (RBAC) |
+| `403` | XSRF token буруу **эсвэл** эрх хүрэлцэхгүй (RBAC) |
 | `404` | Өгөгдөл олдсонгүй |
 | `500` | Системийн алдаа |
 
@@ -601,23 +614,29 @@ rectangle "Maven Build" as maven #d5e8d4 {
 rectangle "Artifacts" as artifacts #fff0cc {
   rectangle "target/rest-api-template-1.0.0.jar" as jar
   rectangle "target/lib/*.jar" as libs
-  rectangle "src/main/jib/ebean-agent.jar" as agent
+  rectangle "ebean-agent.jar\n(downloaded in-image)" as agent
 }
 
-rectangle "Deployment" as deploy #f8cecc {
-  rectangle "Docker Image\n(bellsoft/liberica-openjre-alpine)" as docker
-  rectangle "app-cds.jsa\n(AppCDS optimization)" as cds
+rectangle "Optimized Runtime" as deploy #f8cecc {
+  rectangle "jlink custom JRE\n(jdeps-computed modules)" as jre
+  rectangle "app-cds.jsa\n(AppCDS dump stage)" as cds
+  rectangle "Final image\n(bellsoft/alpaquita-linux-base:musl)\nnon-root user + healthcheck" as docker
 }
 
 src --> maven
 maven --> artifacts
-artifacts --> deploy
+artifacts --> jre : "jdeps + jlink"
+artifacts --> cds : "-Xshare:dump"
+jre --> docker
+cds --> docker
 
-note right of deploy
+note right of docker
+  Multi-stage Dockerfile:
+  build → jdk-download → jlink JRE
+  → AppCDS dump → runtime
   JVM flags:
   -javaagent:ebean-agent.jar
-  -XX:+UseZGC
-  -Xshare:on (AppCDS)
+  -XX:+UseZGC -Xshare:on
   -Dlog4j2.contextSelector=AsyncLogger
 end note
 
@@ -636,7 +655,8 @@ run.bat                # Windows (optimal JVM flags)
 run.sh                 # Linux/macOS
 
 # Docker
-docker build --format docker -t rest-api-template .
+docker build -t rest-api-template .          # docker
+podman build --format docker -t rest-api-template .   # podman (--format is a podman flag)
 docker run -p 8080:8080 \
   -e DB_HOST_NAME=host.docker.internal \
   -e DB_PASSWORD=password \
@@ -673,7 +693,7 @@ ebean.test.useDocker  = true
 |----------|---------|---------|
 | `portNo` | `8080` | Server port |
 | `contextPath` | `/v1/` | API root path |
-| `allowedOrigins` | `localhost:8080,4200,4201` | CORS |
+| `allowedOrigins` | `http://localhost:8080, http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200` | CORS allow-host list |
 | `encryptionKey` | `1234567890123456` | AES key (≥16 chars) |
 | `xsrfProtectionEnabled` | `false` | XSRF filter идэвхжүүлэх |
 | `isSecure` | `false` | HTTPS cookie flag |
@@ -682,5 +702,10 @@ ebean.test.useDocker  = true
 | `monitoringUsername` | `micro` | Metrics basic auth |
 | `monitoringPassword` | `meter` | Metrics basic auth |
 | `environment` | `local` | `local` = JTE dev mode |
+| `jteClassesDir` | `jte-classes` | Precompiled JTE class dir |
 | `smtpHost` | `smtp.gmail.com` | Mail server |
 | `smtpPort` | `587` | Mail port |
+| `smtpUsername` | `any@email.address` | SMTP auth user |
+| `smtpPassword` | `anypassword` | SMTP auth password |
+| `smtpAuth` | `true` | SMTP auth on/off |
+| `smtpStartTls` | `true` | STARTTLS on/off |

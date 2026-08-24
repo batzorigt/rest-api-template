@@ -17,7 +17,7 @@ All diagrams must follow these conventions:
 
 ```plantuml
 @startuml
-!theme cloud-blue
+!theme plain
 title [Diagram Type] - [Feature Name]
 
 ' Your diagram here
@@ -25,7 +25,7 @@ title [Diagram Type] - [Feature Name]
 @enduml
 ```
 
-- Use `cloud-blue` theme for professional appearance
+- Use one consistent theme across all diagrams (`plain` is the current choice — keep it unless re-theming every diagram at once; do not invent theme names)
 - Always include a title
 - Keep diagrams focused on specific aspects
 - Use rectangles for containers, circles for components

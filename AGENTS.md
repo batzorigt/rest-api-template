@@ -62,5 +62,5 @@ No code-only drift without docs, and no doc-only claims without a green `mvn tes
 
 ## Gotchas
 
-- Default locale is Japan: `API.start()` loads `Locale.JAPAN`, and some test assertions compare against Japanese messages from `i18n_ja.properties` (English fallback in `i18n.properties`).
+- Default locale is Japan: `API.start()` loads `Locale.JAPAN`, and some test assertions compare against Japanese messages from `i18n_ja.properties`. Main resources ship **Japanese only** — there is no English `i18n.properties` bundle (`I18NJapaneseOnlyTest` guards this).
 - `docs/architecture-standards.md` holds additional team standards: C4/PlantUML docs required for new features, and hard rules (must use Javalin/Ebean/MapStruct/JTE/Log4j2; no Spring, no XML config, no raw JDBC).
