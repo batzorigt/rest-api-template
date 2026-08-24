@@ -42,7 +42,7 @@ Do not skip step 3 before declaring work finished; no CI currently enforces it.
    - missing `role` claim → treated as `USER`;
    - previously-public behavior unchanged where applicable.
 4. Compile → targeted tests → full gate.
-5. Update `ARCHITECTURE.md` endpoint table (Roles column) and the security section whenever routes gain or lose roles.
+5. Update `docs/architecture.md` endpoint table (Roles column) and the security section whenever routes gain or lose roles.
 
 ## Template-change loop
 
@@ -59,7 +59,7 @@ Do not skip step 3 before declaring work finished; no CI currently enforces it.
 
 - [ ] `mvn test` green with Docker actually up
 - [ ] Matching tests written or updated for the change (no behavior change ships untested)
-- [ ] Affected MD docs updated in the same task (`ARCHITECTURE.md`, `README.md`, steering standards) when behavior, endpoints, architecture, or tooling changed
+- [ ] Affected MD docs updated in the same task (`docs/architecture.md`, `README.md`, `docs/architecture-standards.md`) when behavior, endpoints, architecture, or tooling changed
 - [ ] `git status` shows no edited generated files (`Q*`, MapStruct impls, `jte-classes`)
 - [ ] Migration SQL regenerated if entities changed
 - [ ] App started (if relevant) via `run.*`, not bare `java -jar`

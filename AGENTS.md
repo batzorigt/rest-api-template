@@ -49,7 +49,7 @@ After changing entities, run `rest.api.GenerateDbMigration#main` to emit SQL int
 Every change ships, in the same task, with:
 
 1. **Matching tests** — unit tests for new logic, handler-level HTTP tests for endpoints/auth changes (patterns per `LOOP.md`). Run compile → targeted → full gate before declaring done.
-2. **Doc updates** — anything touching behavior, endpoints, architecture, or tooling updates the relevant MD files in the same task: `ARCHITECTURE.md` (C4 diagrams, package tree, endpoint table), `README.md`, plus `HARNESS.md` / `LOOP.md` / `.kiro/steering/*.md` when contracts or standards change.
+2. **Doc updates** — anything touching behavior, endpoints, architecture, or tooling updates the relevant MD files in the same task: `docs/architecture.md` (C4 diagrams, package tree, endpoint table), `README.md`, plus `HARNESS.md` / `LOOP.md` / `docs/architecture-standards.md` when contracts or standards change.
 
 No code-only drift without docs, and no doc-only claims without a green `mvn test`.
 
@@ -63,4 +63,4 @@ No code-only drift without docs, and no doc-only claims without a green `mvn tes
 ## Gotchas
 
 - Default locale is Japan: `API.start()` loads `Locale.JAPAN`, and some test assertions compare against Japanese messages from `i18n_ja.properties` (English fallback in `i18n.properties`).
-- `.kiro/steering/architecture-standards.md` holds additional team standards: C4/PlantUML docs required for new features, and hard rules (must use Javalin/Ebean/MapStruct/JTE/Log4j2; no Spring, no XML config, no raw JDBC).
+- `docs/architecture-standards.md` holds additional team standards: C4/PlantUML docs required for new features, and hard rules (must use Javalin/Ebean/MapStruct/JTE/Log4j2; no Spring, no XML config, no raw JDBC).
