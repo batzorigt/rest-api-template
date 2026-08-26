@@ -1,4 +1,4 @@
-﻿# Rest API Template Architecture Documentation
+# Rest API Template Architecture Documentation
 
 > **Preview diagrams:** `Ctrl+Shift+V` (Markdown Preview Enhanced) Â· PlantUML: `Alt+D` inside `.puml` files
 
