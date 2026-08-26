@@ -3,6 +3,9 @@
 /.classpath
 /.factorypath
 /.project
+/.settings/
+/.vscode/
+/.idea/
 /dependency-reduced-pom.xml
 /jte-classes/
 app-cds.jsa

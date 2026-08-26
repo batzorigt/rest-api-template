@@ -19,7 +19,7 @@ Context is expensive — these rules are mandatory in every session:
 - Grep before Read, always. Big files are section-anchored: `docs/architecture.md` (~580 lines) has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
 - Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`mvn -q compile`).
 - Iterate with targeted tests (`mvn test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
-- Prefer a harness shortcut over re-deriving the loop: opencode ships `/verify`; elsewhere run LOOP.md's three steps verbatim.
+- Prefer a harness shortcut over re-deriving the loop (e.g., opencode ships `/verify`); elsewhere run LOOP.md's three steps verbatim.
 
 ## Commands
 
@@ -58,17 +58,17 @@ After changing entities, run `rest.api.GenerateDbMigration#main` to emit SQL int
 
 Every change ships, in the same task, with:
 
-1. **Matching tests** — unit tests for new logic, handler-level HTTP tests for endpoints/auth changes (patterns per `LOOP.md`). Run compile → targeted → full gate before declaring done.
-2. **Doc updates** — anything touching behavior, endpoints, architecture, or tooling updates the relevant MD files in the same task: `docs/architecture.md` (C4 diagrams, package tree, endpoint table), `README.md`, plus `HARNESS.md` / `LOOP.md` / `docs/architecture-standards.md` when contracts or standards change.
+1. **Matching tests** — unit tests for new logic, handler-level HTTP tests for endpoints/auth changes (patterns per `LOOP.md`). Run compile → targeted → full gate before declaring done. Reuse before adding: grep for an existing helper/service first; feature-local logic stays in its feature, genuinely shared logic moves to `rest.api` root helpers.
+2. **Doc updates** — anything touching behavior, endpoints, architecture, or tooling updates the relevant MD files in the same task: `docs/architecture.md` (C4 diagrams, package tree, endpoint table), `README.md`, plus `HARNESS.md` / `LOOP.md` / `docs/architecture-standards.md` when contracts or standards change. Place each new fact in its canonical home once (`HARNESS.md` → *Canonical-home map*); everywhere else points, never restates.
+3. **Neutrality pass** — docs *and* code stay model-, agent-, and IDE-neutral. Docs: canonical files name no LLM/coding-agent/IDE except as marked examples or rows in `HARNESS.md`'s wiring table; harness-specific automation lives only in adapter files (`opencode.json`, `.opencode/`), which may automate but never define contracts. Code: no AI/agent attribution comments or markers anywhere in tracked sources, no tool-/IDE-specific files or paths in the diff (IDE metadata like `.settings/`, `.vscode/`, `.idea/` stays untracked), generated code produced only by its generators, build reproducible without any IDE. Full rules: `HARNESS.md` → *Neutrality mechanism*.
 
 No code-only drift without docs, and no doc-only claims without a green `mvn test`.
 
 ## Configuration
 
-- `Config.java` (Owner lib) merges the optional file `/rapit.config` with OS env vars; defaults live in its annotations.
-- DB connection comes from env vars `DB_HOST_NAME`, `DB_USER_NAME`, `DB_PASSWORD`, `DB_NAME` (defaults: localhost / postgres / postgres / rapit) via placeholders in `application.properties` (a Maven-filtered resource).
-- `environment=local` enables JTE dev mode (live reload from `src/main/resources/jte`); any other value uses precompiled template classes.
-- Global auth filter does not exist; XSRF is disabled by default (`xsrfProtectionEnabled=false`), but route-level RBAC (`Authorization`) is always active for routes that declare roles.
+- Resolution order, defaults, and DB env vars: `HARNESS.md` → Runtime config resolution.
+- `environment=local` enables JTE dev mode (hot reload from `src/main/resources/jte`); any other value uses precompiled classes — behavioral details: `LOOP.md` → Template-change loop.
+- Auth surface summary: no global auth filter; route-level RBAC only — see Conventions above and `HARNESS.md` → Safety rails.
 
 ## Gotchas
 
