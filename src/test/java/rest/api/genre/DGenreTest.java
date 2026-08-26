@@ -42,6 +42,7 @@ public class DGenreTest {
         Date updatedAtBeforeUpdate = beforeUpdate.getUpdatedAt();
 
         fillFieldsExceptId(beforeUpdate, "key3", "name3", "imageKey3", "imagePath3", 3);
+        Thread.sleep(10);
         beforeUpdate.update();
 
         DGenre afterUpdate = new QDGenre().id.eq(id).findOne();

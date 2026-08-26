@@ -3,12 +3,16 @@ package rest.api;
 import io.javalin.http.Context;
 import io.javalin.http.HttpResponseException;
 import io.javalin.http.HttpStatus;
-import io.javalin.util.JavalinLogger;
+import lombok.extern.slf4j.Slf4j;
 
-public interface ExceptionHandlers {
+@Slf4j
+public final class ExceptionHandlers {
+
+    private ExceptionHandlers() {
+    }
 
     static void exceptionHandler(Exception error, Context context) {
-        JavalinLogger.error(error.getMessage(), error);
+        log.error(error.getMessage(), error);
         context.status(HttpStatus.INTERNAL_SERVER_ERROR);
         context.result("System Internal Error!");
     }

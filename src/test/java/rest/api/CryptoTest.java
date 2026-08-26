@@ -54,6 +54,39 @@ public class CryptoTest {
     }
 
     @Test
+    void rejectsInvalidSecrets() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.encrypt(null, "payload"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.encrypt("", "payload"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.encrypt("short-key", "payload"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.sign("data", "short-key"));
+    }
+
+    @Test
+    void rejectsInvalidInputs() {
+        String key = API.cfg.encryptionKey();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.encrypt(key, null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.decrypt(key, " "));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.sign(null, key));
+    }
+
+    @Test
+    void decryptFailsWithWrongKey() {
+        String encrypted = Crypto.encrypt(API.cfg.encryptionKey(), "secret payload");
+        String otherKey = "another-secret-key-16";
+
+        Assertions.assertThrows(IllegalStateException.class, () -> Crypto.decrypt(otherKey, encrypted));
+    }
+
+    @Test
+    void constantTimeEqualsNullSafety() {
+        Assertions.assertFalse(Crypto.constantTimeEquals(null, "value"));
+        Assertions.assertFalse(Crypto.constantTimeEquals("value", null));
+        Assertions.assertFalse(Crypto.constantTimeEquals("value-a", "value-b"));
+        Assertions.assertTrue(Crypto.constantTimeEquals("value", "value"));
+    }
+
+    @Test
     void threadSafeOnVirtualThreads() throws Exception {
         String secretKey = API.cfg.encryptionKey();
         int requestCount = 2000;

@@ -13,6 +13,7 @@ public class GenreToAdd {
 
     private String key;
 
+    @Size(max = 255)
     private String imagePath;
 
     private String imageKey;

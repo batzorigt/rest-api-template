@@ -317,7 +317,7 @@ component "Crypto" as crypto
 note right of crypto
   AES-256-GCM encryption
   HmacSHA256 signing
-  Keys derived via SHA-256
+  Keys derived via HKDF-SHA256 (purpose-separated enc/sig)
 end note
 
 authz --> st : parse token\n(30 min timeout)
@@ -699,9 +699,11 @@ ebean.test.useDocker  = true
 | `isSecure` | `false` | HTTPS cookie flag |
 | `httpMaxRequestSize` | `1024` | Max request bytes |
 | `httpAsyncTimeout` | `5000` | Async timeout ms |
+| `requestLoggingEnabled` | `false` | HTTP request log via Javalin's native request logger (method/path/status/duration; no headers or bodies). Silence per environment with log4j2: `<Logger name="rest.api.RequestLogger" level="warn"/>` |
+| `requestLoggingVerbose` | `false` | Adds safe headers, `REDACTED(len=N)` for Cookie/Authorization, and body size to the HTTP log — token and body contents are never logged |
 | `monitoringUsername` | `micro` | Metrics basic auth |
 | `monitoringPassword` | `meter` | Metrics basic auth |
-| `environment` | `local` | `local` = JTE dev mode |
+| `environment` | `local` | `local` = JTE dev mode + dev logging; non-local refuses the default encryptionKey at startup |
 | `jteClassesDir` | `jte-classes` | Precompiled JTE class dir |
 | `smtpHost` | `smtp.gmail.com` | Mail server |
 | `smtpPort` | `587` | Mail port |

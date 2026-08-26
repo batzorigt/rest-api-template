@@ -29,8 +29,12 @@ public class API {
         config.concurrency.useVirtualThreads = true;
         config.startup.showJavalinBanner = false;
         config.router.contextPath = API.cfg.contextPath();
-        config.bundledPlugins.enableDevLogging();
+
+        if (Config.LOCAL_ENVIRONMENT.equalsIgnoreCase(cfg.environment())) {
+            config.bundledPlugins.enableDevLogging();
+        }
         
+        RequestLogger.register(config);
         String[] hosts = API.cfg.allowedOrigins();
 
         if (hosts.length > 0) {
@@ -109,6 +113,7 @@ public class API {
     }
 
     public void start(int portNo) {
+        StartupGuard.requireSafeProductionConfig(cfg.environment(), cfg.encryptionKey());
         I18N.load(Locale.JAPAN);
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         api.start(portNo);

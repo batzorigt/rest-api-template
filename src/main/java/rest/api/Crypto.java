@@ -16,29 +16,31 @@ import org.apache.commons.lang3.StringUtils;
 
 public final class Crypto {
 
-    public static final String signAlgorithm = "HmacSHA256";
-    public static final String transformation = "AES/GCM/NoPadding";
-    public static final String encryptionAlgorithm = "AES";
-    public static final int gcmInitVectorSize = 12;
-    public static final int gcmTagLengthBits = 128;
-    public static final int minimumSecretLength = 16;
-    private static final SecureRandom secureRandom = new SecureRandom();
-    private static final AtomicReference<KeyCache> keyCache = new AtomicReference<>();
+    public static final String HMAC_SHA256 = "HmacSHA256";
+    public static final String AES_GCM_TRANSFORMATION = "AES/GCM/NoPadding";
+    public static final String AES = "AES";
+    public static final int GCM_IV_BYTES = 12;
+    public static final int GCM_TAG_BITS = 128;
+    public static final int MIN_SECRET_LENGTH = 16;
+    private static final byte[] HKDF_SALT = "rest.api/Crypto/v1".getBytes(StandardCharsets.UTF_8);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final AtomicReference<KeyCache> KEY_CACHE = new AtomicReference<>();
 
     private Crypto() {
     }
 
     public static String encrypt(String secretKey, String plaintext) {
+        validateSecret(secretKey);
         if (plaintext == null) {
             throw new IllegalArgumentException("Invalid plaintext!");
         }
 
         try {
-            Cipher cipher = Cipher.getInstance(transformation);
-            byte[] initVector = new byte[gcmInitVectorSize];
-            secureRandom.nextBytes(initVector);
+            Cipher cipher = Cipher.getInstance(AES_GCM_TRANSFORMATION);
+            byte[] initVector = new byte[GCM_IV_BYTES];
+            SECURE_RANDOM.nextBytes(initVector);
             cipher.init(Cipher.ENCRYPT_MODE, keysFor(secretKey).encryptionKey(),
-                    new GCMParameterSpec(gcmTagLengthBits, initVector));
+                    new GCMParameterSpec(GCM_TAG_BITS, initVector));
 
             byte[] encoded = plaintext.getBytes(StandardCharsets.UTF_8);
             byte[] encrypted = cipher.doFinal(encoded);
@@ -52,6 +54,7 @@ public final class Crypto {
     }
 
     public static String decrypt(String secretKey, String data) {
+        validateSecret(secretKey);
         if (StringUtils.isBlank(data)) {
             throw new IllegalArgumentException("Invalid encrypted payload!");
         }
@@ -59,16 +62,16 @@ public final class Crypto {
         try {
             byte[] cipherText = Base64.decode(data.getBytes(StandardCharsets.UTF_8));
 
-            if (cipherText.length <= gcmInitVectorSize) {
+            if (cipherText.length <= GCM_IV_BYTES) {
                 throw new IllegalArgumentException("Invalid encrypted payload!");
             }
 
-            byte[] initVector = Arrays.copyOfRange(cipherText, 0, gcmInitVectorSize);
-            byte[] encrypted = Arrays.copyOfRange(cipherText, gcmInitVectorSize, cipherText.length);
+            byte[] initVector = Arrays.copyOfRange(cipherText, 0, GCM_IV_BYTES);
+            byte[] encrypted = Arrays.copyOfRange(cipherText, GCM_IV_BYTES, cipherText.length);
 
-            Cipher cipher = Cipher.getInstance(transformation);
+            Cipher cipher = Cipher.getInstance(AES_GCM_TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, keysFor(secretKey).encryptionKey(),
-                    new GCMParameterSpec(gcmTagLengthBits, initVector));
+                    new GCMParameterSpec(GCM_TAG_BITS, initVector));
 
             byte[] plaintext = cipher.doFinal(encrypted);
             return new String(plaintext, StandardCharsets.UTF_8);
@@ -78,12 +81,13 @@ public final class Crypto {
     }
 
     public static String sign(String data, String secret) {
+        validateSecret(secret);
         if (data == null) {
             throw new IllegalArgumentException("Invalid data!");
         }
 
         try {
-            Mac mac = Mac.getInstance(signAlgorithm);
+            Mac mac = Mac.getInstance(HMAC_SHA256);
             mac.init(keysFor(secret).signingKey());
             return Base64.encode(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
         } catch (GeneralSecurityException e) {
@@ -102,29 +106,32 @@ public final class Crypto {
     private static KeyCache keysFor(String secret) throws GeneralSecurityException {
         validateSecret(secret);
 
-        KeyCache cached = keyCache.get();
+        KeyCache cached = KEY_CACHE.get();
         if (cached != null && cached.secret().equals(secret)) {
             return cached;
         }
 
         KeyCache derived = deriveKeys(secret);
-        keyCache.set(derived);
+        KEY_CACHE.set(derived);
         return derived;
     }
 
     private static KeyCache deriveKeys(String secret) throws GeneralSecurityException {
-        SecretKeySpec encryptionKey = deriveKey(secret, "enc", encryptionAlgorithm);
-        SecretKeySpec signingKey = deriveKey(secret, "sig", signAlgorithm);
+        SecretKeySpec encryptionKey = deriveKey(secret, "enc", AES);
+        SecretKeySpec signingKey = deriveKey(secret, "sig", HMAC_SHA256);
         return new KeyCache(secret, encryptionKey, signingKey);
     }
 
     private static SecretKeySpec deriveKey(String secret, String purpose, String algorithm)
             throws GeneralSecurityException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.update(secret.getBytes(StandardCharsets.UTF_8));
-        digest.update((byte) ':');
-        digest.update(purpose.getBytes(StandardCharsets.UTF_8));
-        return new SecretKeySpec(digest.digest(), algorithm);
+        Mac mac = Mac.getInstance(HMAC_SHA256);
+        mac.init(new SecretKeySpec(HKDF_SALT, HMAC_SHA256));
+        byte[] prk = mac.doFinal(secret.getBytes(StandardCharsets.UTF_8));
+
+        mac.init(new SecretKeySpec(prk, HMAC_SHA256));
+        mac.update(purpose.getBytes(StandardCharsets.UTF_8));
+        mac.update((byte) 0x01);
+        return new SecretKeySpec(mac.doFinal(), algorithm);
     }
 
     private static void validateSecret(String secret) {
@@ -132,7 +139,7 @@ public final class Crypto {
             throw new IllegalArgumentException("Invalid key!");
         }
 
-        if (secret.length() < minimumSecretLength) {
+        if (secret.length() < MIN_SECRET_LENGTH) {
             throw new IllegalArgumentException("Invalid key size!");
         }
     }
