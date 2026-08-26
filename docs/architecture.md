@@ -577,6 +577,10 @@ Roles багана: `Authorization` wrapper шалгадаг хамгийн до
 | `pageNumber` | `Integer` | Хуудасны дугаар (1-based); буруу/сөрөг утга → `400` |
 | `recordsPerPage` | `Integer` | Нэг хуудасны мөрийн тоо — дээд хязгаар `10`; буруу/сөрөг утга → `400`. Параметр огт байхгүй үед л бүх дата буцна |
 
+> ⚠️ **Анхааруулга:** Параметргүй `GET` нь AllDataFinder-г дуудна. AllDataFinder-г бичихдээ бүх бичлэгийг татаж авчирвал санах ой хүрэлцэх үү? Latency/DoS эрсдэлтэй гэдгийг бодолцоорой. Ийм fetch бүр runtime дээр `WARN` логлоно (`PagedSearch`). Production клиентүүд заавал page параметр ашиглахыг зөвлөсөн.
+>
+> Full fetch хиймээргүй бол `PagedSearch.search(...)` руу дамжуулах `allDataFinder`-т `null` утга онооно уу! Тэр үед параметргүй дуудлага `403 Forbidden` («Find all is not allowed!») болно.
+
 ### Error Responses
 
 | Status | Тайлбар |
