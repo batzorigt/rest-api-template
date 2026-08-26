@@ -11,6 +11,8 @@ There is no lint or typecheck step in this repo. The compiler + annotation proce
 
 Do not skip step 3 before declaring work finished; no CI currently enforces it.
 
+Shortcut: this repo ships `/verify` (`.opencode/command/verify.md`) which runs exactly these three steps in order — prefer it over re-deriving them each session. Other harnesses should wrap these same steps in their native command/skill format; this file stays the canonical source.
+
 ## Entity-change loop
 
 1. Edit `D[Entity].java` / `D*.java`.

@@ -9,7 +9,17 @@ Vendor-neutral playbooks referenced by this file:
 - `HARNESS.md` — environment contract (JDK 25, Docker on port 6433), artifact map, failure triage, safety rails.
 - `LOOP.md` — verification loop orders: compile check → targeted test → full gate; per-change-type loops; definition of done.
 
-Read both before making changes; follow `LOOP.md`'s default loop for every edit.
+Both must be read before making changes in any harness; follow `LOOP.md`'s default loop for every edit. `AGENTS.md` is the single entrypoint — wire your harness to these three files (per-tool recipes: `HARNESS.md` → *Harness wiring*).
+
+## Token discipline
+
+Context is expensive — these rules are mandatory in every session:
+
+- Never open generated/artifact paths: `jte-classes/`, `src/main/jib/`, `target/`, `app-cds.jsa`. There is nothing to learn inside.
+- Grep before Read, always. Big files are section-anchored: `docs/architecture.md` (~580 lines) has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
+- Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`mvn -q compile`).
+- Iterate with targeted tests (`mvn test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
+- Prefer a harness shortcut over re-deriving the loop: opencode ships `/verify`; elsewhere run LOOP.md's three steps verbatim.
 
 ## Commands
 
