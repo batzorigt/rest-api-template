@@ -2,11 +2,15 @@
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "automatic",
 
-    // Markdown Preview Enhanced - PlantUML online server (Java шаардалгүй)
+    // Shields CLI Maven builds from ECJ contamination (HARNESS.md -> Known failure modes)
+    // Turn off only while a Maven gate runs; flip back to true afterwards
+    "java.autobuild.enabled": false,
+
+    // Markdown Preview Enhanced - PlantUML online server (no Java needed)
     "markdown-preview-enhanced.plantumlServer": "https://www.plantuml.com/plantuml",
     "markdown-preview-enhanced.usePandocParser": false,
 
-    // PlantUML extension - online server ашиглах
+    // PlantUML extension - online server
     "plantuml.server": "https://www.plantuml.com/plantuml",
     "plantuml.render": "PlantUMLServer"
 }
