@@ -89,4 +89,19 @@ public class GenreHandlerTest {
         assertEquals(10, result.get("numberOfRecords"));
     }
 
+    @Test
+    void invalidPaginationParamsAreRejected() {
+        assertEquals(HttpStatus.BAD_REQUEST_400,
+                Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO))
+                        .queryString("pageNumber", "abc").asString().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST_400,
+                Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO))
+                        .queryString(PagedData.PAGE_NUMBER, "-1").queryString(PagedData.RECORDS_PER_PAGE, 3)
+                        .asString().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST_400,
+                Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO))
+                        .queryString(PagedData.PAGE_NUMBER, 1).queryString(PagedData.RECORDS_PER_PAGE, "0")
+                        .asString().getStatus());
+    }
+
 }

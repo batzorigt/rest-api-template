@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.HttpStatus;
 
 import au.com.flyingkite.mobiledetect.UAgentInfo;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 
 public interface ContextHelpers {
@@ -102,7 +103,12 @@ public interface ContextHelpers {
 
     static Integer positiveInteger(Context ctx, String paramName) {
         Integer value = ctx.queryParamAsClass(paramName, int.class).get();
-        return value.intValue() > 0 ? value : null;
+
+        if (value.intValue() <= 0) {
+            throw new BadRequestResponse(paramName + " must be a positive number!");
+        }
+
+        return value;
     }
 
     static Integer pageNumber(Context ctx) {
