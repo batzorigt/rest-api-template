@@ -7,6 +7,21 @@ Everything an agent must set up or avoid before editing this repo. Verification 
 - **JDK 25** — `pom.xml` pins `source/target=25`; older JDKs fail the build.
 - **Docker daemon running** — every DB-backed test boots a PostgreSQL Testcontainer mapped to fixed host port **6433** (`ebean.test.useDocker=true` in `src/test/resources/application.properties`). Free port 6433 if occupied; tests cannot run without Docker.
 - **No local Maven needed** — use the wrapper (`./mvnw`, `mvnw.cmd`). Repo scripts call plain `mvn`, which works if installed.
+- **Quiet output by default** — `.mvn/maven.config` pins `--no-transfer-progress` for every wrapper/plain invocation; leave it in place (agents and humans both pay for noisy logs).
+
+## Harness wiring (agent-neutral setup)
+
+All agent behavior lives in three plain Markdown files — `AGENTS.md` (entrypoint), `HARNESS.md` (this file), `LOOP.md`. Nothing depends on a specific coding agent; harness-specific files are optional sugar that only automate what the Markdown already mandates.
+
+| Harness | Wire-up |
+|---|---|
+| opencode | done: `opencode.json` lists all three in `instructions`; `.opencode/command/verify.md` wraps LOOP's default loop |
+| Claude Code | create `CLAUDE.md` with imports: `@AGENTS.md`, `@HARNESS.md`, `@LOOP.md` (or rely on hierarchical CLAUDE.md pointing here) |
+| Gemini CLI | set `context.fileName: AGENTS.md`, or add a one-line `GEMINI.md` referencing the three files |
+| Cursor | repo rule under `.cursor/rules/` that includes/references `AGENTS.md` |
+| Aider | launch with `/read AGENTS.md` + `/read LOOP.md`, or pass `--read` flags |
+
+Adopting another harness = adding a row here, never duplicating contracts. Generated/artifact dirs are off-limits per the "never open" list in root `AGENTS.md` — the single source for that rule.
 
 ## Command surface
 
