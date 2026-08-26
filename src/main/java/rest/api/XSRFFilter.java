@@ -3,8 +3,9 @@ package rest.api;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.ForbiddenResponse;
-import io.javalin.util.JavalinLogger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public enum XSRFFilter {
     ;
 
@@ -27,7 +28,7 @@ public enum XSRFFilter {
         if (nagHttps) {
             String uri = ctx.req().getRequestURI();
             if (uri != null && !uri.startsWith("https:")) {
-                JavalinLogger.warn(
+                log.warn(
                         "Using session cookies without https could make you susceptible to session hijacking: " + uri);
             }
         }

@@ -2,7 +2,6 @@ package rest.api;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -24,8 +23,7 @@ public interface PagedSearch {
             return null;
         }
 
-        Predicate<? super T> isNotNull = value -> value != null;
-        List<R> result = data.parallelStream().filter(isNotNull).map(convertor).collect(Collectors.toList());
+        List<R> result = data.parallelStream().filter(value ->value != null).map(convertor).collect(Collectors.toList());
 
         return new PagedData<R>(pageNumber, recordsPerPage, totalRowCount[0], result);
     }

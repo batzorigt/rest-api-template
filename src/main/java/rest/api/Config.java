@@ -10,6 +10,9 @@ import org.aeonbits.owner.Config.Sources;
 @LoadPolicy(LoadType.MERGE)
 @Sources({ "file:/rapit.config", "system:env" })
 public interface Config extends Accessible {
+	
+	String INSECURE_DEFAULT_KEY = "1234567890123456";
+    String LOCAL_ENVIRONMENT = "local";
 
     @DefaultValue("8080")
     int portNo();
@@ -17,7 +20,7 @@ public interface Config extends Accessible {
     @DefaultValue("http://localhost:8080, http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200")
     String[] allowedOrigins();
 
-    @DefaultValue("1234567890123456")
+    @DefaultValue(INSECURE_DEFAULT_KEY)
     String encryptionKey();
 
     @DefaultValue("false")
@@ -32,6 +35,12 @@ public interface Config extends Accessible {
     @DefaultValue("5000")
     long httpAsyncTimeout();
 
+    @DefaultValue("false")
+    boolean requestLoggingEnabled();
+
+    @DefaultValue("false")
+    boolean requestLoggingVerbose();
+
     @DefaultValue("micro")
     String monitoringUsername();
 
@@ -41,7 +50,7 @@ public interface Config extends Accessible {
     @DefaultValue("/v1/")
     String contextPath();
 
-    @DefaultValue("local")
+    @DefaultValue(LOCAL_ENVIRONMENT)
     String environment();
 
     @DefaultValue("jte-classes")
