@@ -56,6 +56,7 @@ Every fact lives in full in exactly one file; every other mention is a pointer o
 | Loop orders, failure handling, definition of done | `LOOP.md` | harness command adapters |
 | Formal team standards (C4, security, tech) | `docs/architecture-standards.md` | — |
 | Endpoints, schema, package tree, request flow | `docs/architecture.md` | — |
+| OpenAPI specification | `openapi.yaml` (repo root) | endpoint table in `docs/architecture.md` stays summary-level; spec is authoritative for shapes |
 | Distilled playbook summaries | `.agents/skills/repo-harness`, `.agents/skills/repo-loops` | must point back to `HARNESS.md` / `LOOP.md`; may summarize, never extend rules |
 | Repo index for web-capable agents | `llms.txt` | pointers and one-line facts only |
 | Lifecycle metadata (`type`, `status`, `stale_after`) | YAML frontmatter of each playbook/skill | `llms.txt` / `docs/index.md` bullets describe, never restate dates |

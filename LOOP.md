@@ -47,9 +47,10 @@ This makes every loop self-healing: errors are corrected together with their doc
 ## New-endpoint loop
 
 1. Follow feature layout (`AGENTS.md` → Conventions): request DTO `[Feature]ToAdd`, handler method with `@Transactional`, route registered in that handler's static `routes()`.
-2. Decide access level while registering the route — add `Role.*` args if it must be protected (see authorization loop below); public routes stay arg-free.
-3. Pattern the test on `GenreHandlerTest` (public endpoint) or `AuthorizationTest` (protected endpoint): random port + Unirest + `new Q[Entity]().delete()` in `@BeforeEach`.
-4. Compile → targeted test → full gate.
+2. Update `openapi.yaml` in the same pass — path, params, schemas, security scheme.
+3. Decide access level while registering the route — add `Role.*` args if it must be protected (see authorization loop below); public routes stay arg-free.
+4. Pattern the test on `GenreHandlerTest` (public endpoint) or `AuthorizationTest` (protected endpoint): random port + Unirest + `new Q[Entity]().delete()` in `@BeforeEach`.
+5. Compile → targeted test → full gate.
 
 ## Authorization / route-protection loop
 
@@ -83,6 +84,7 @@ This makes every loop self-healing: errors are corrected together with their doc
 - [ ] Doc edits pass the neutrality check: no LLM/agent/IDE assumptions in canonical docs (tool names only as marked examples or `HARNESS.md` wiring-table rows); harness specifics confined to adapter files
 - [ ] Code diff passes the same neutrality check: no AI/agent attribution comments or markers, no tool-/IDE-specific files or paths staged (`.settings/`, `.vscode/`, `.idea/` stay local), generated code touched only via its generators
 - [ ] No new duplication: doc facts placed once in their canonical home (`HARNESS.md` → Canonical-home map) with pointers elsewhere; code reuses existing helpers/services instead of copying logic
+- [ ] `openapi.yaml` updated when the API surface changed (endpoints, payloads, params, auth)
 - [ ] `git status` shows no edited generated files (`Q*`, MapStruct impls, `jte-classes`)
 - [ ] Migration SQL regenerated if entities changed
 - [ ] App started (if relevant) via `run.*`, not bare `java -jar`

@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  title: rest-api-template
+  version: 1.0.0
+  description: >
+    Layered REST API (Javalin + Ebean + PostgreSQL). Update this spec in the same
+    task as any API-surface change - see AGENTS.md -> Change workflow.
+servers:
+  - url: http://localhost:8080/v1/
+tags:
+  - name: genres
+  - name: members
+  - name: monitoring
+paths:
+  /genres:
+    get:
+      tags: [genres]
+      summary: List genres
+      description: |
+        With both pagination params -> `PagedGenres`. Without them -> raw array of all rows
+        (memory risk on large tables; triggers a runtime WARN).
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/RecordsPerPage'
+      responses:
+        '200':
+          description: Paged envelope or full array
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PagedGenres'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/Genre'
+        '404':
+          $ref: '#/components/responses/MessageNotFound'
+      security: []
+    post:
+      tags: [genres]
+      summary: Add genre
+      security: [{ secureTokenCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenreCreate'
+      responses:
+        '201':
+          description: Created genre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+        '400': { $ref: '#/components/responses/MessageBadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /genres/{id}:
+    delete:
+      tags: [genres]
+      summary: Delete genre
+      security: [{ secureTokenCookie: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, format: int32 }
+      responses:
+        '204': { description: Deleted }
+        '400': { $ref: '#/components/responses/MessageBadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /members:
+    post:
+      tags: [members]
+      summary: Create member (registration)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberCreate'
+      responses:
+        '201':
+          description: Created member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '400':
+          description: Validation errors keyed by field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrors'
+  /members/{id}:
+    get:
+      tags: [members]
+      summary: Find member by ID
+      security: [{ secureTokenCookie: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, format: int32 }
+      responses:
+        '200':
+          description: Member with phones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/MessageNotFound' }
+  /metrics:
+    get:
+      tags: [monitoring]
+      summary: Prometheus metrics
+      security: [{ monitoringBasic: [] }]
+      responses:
+        '200':
+          description: Metrics in Prometheus text format
+          content:
+            text/plain:
+              schema: { type: string }
+        '401': { description: Missing or wrong credentials }
+components:
+  parameters:
+    PageNumber:
+      name: pageNumber
+      in: query
+      schema: { type: integer, format: int32, minimum: 1 }
+    RecordsPerPage:
+      name: recordsPerPage
+      in: query
+      schema: { type: integer, format: int32, minimum: 1, maximum: 10 }
+  responses:
+    MessageNotFound:
+      description: Data not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+    MessageBadRequest:
+      description: Could not perform operation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+    Unauthorized:
+      description: Missing/invalid/expired token
+      content:
+        text/plain:
+          schema: { type: string }
+    Forbidden:
+      description: Insufficient role (or XSRF failure)
+      content:
+        text/plain:
+          schema: { type: string }
+  schemas:
+    AuditFields:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        createdAt: { type: integer, format: int64, description: Epoch millis }
+        updatedAt: { type: integer, format: int64, description: Epoch millis }
+    Genre:
+      allOf:
+        - $ref: '#/components/schemas/AuditFields'
+        - type: object
+          properties:
+            name: { type: string }
+            key: { type: string, nullable: true }
+            imagePath: { type: string, nullable: true }
+            imageKey: { type: string, nullable: true }
+            orderNumber: { type: integer, format: int32 }
+    GenreCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 10 }
+        key: { type: string }
+        imagePath: { type: string, maxLength: 255 }
+        imageKey: { type: string }
+        orderNumber: { type: integer, format: int32 }
+    PagedGenres:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Genre' }
+        pageNumber: { type: integer, format: int32 }
+        numberOfPages: { type: integer, format: int32 }
+        recordsPerPage: { type: integer, format: int32 }
+        numberOfRecords: { type: integer, format: int64 }
+    PhoneNumber:
+      type: object
+      properties:
+        phoneNo: { type: string }
+        isHomePhoneNo: { type: boolean }
+    Member:
+      allOf:
+        - $ref: '#/components/schemas/AuditFields'
+        - type: object
+          properties:
+            name: { type: string }
+            phones:
+              type: array
+              items: { $ref: '#/components/schemas/PhoneNumber' }
+    MemberCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 10 }
+    Message:
+      type: object
+      properties:
+        msg: { type: string }
+    ValidationErrors:
+      type: object
+      additionalProperties:
+        type: array
+        items: { type: string }
+  securitySchemes:
+    secureTokenCookie:
+      type: apiKey
+      in: cookie
+      name: secure-token
+    monitoringBasic:
+      type: http
+      scheme: basic
