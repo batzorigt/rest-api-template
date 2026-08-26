@@ -50,11 +50,19 @@ public class ContextHelpersTest {
     @Test
     void setFailedResult() {
         String msg = I18N.message("could.not.save", Locale.JAPAN);
-        String response = String.format("{\"status\": %d, \"msg\": \"%s\"}", HttpStatus.BAD_REQUEST_400, msg);
+        String response = String.format("{\"status\": %d, \"msg\": %s}", HttpStatus.BAD_REQUEST_400, msg);
         JSONObject jsonObject = new JSONObject(response);
 
         Assertions.assertEquals(400, jsonObject.get("status"));
         Assertions.assertEquals("保存できませんでした！", jsonObject.get("msg"));
     }
 
+    @Test
+    void recordsPerPageCappedAtMaximum() {
+        Assertions.assertEquals(3, ContextHelpers.capped(3));
+        Assertions.assertEquals(10, ContextHelpers.capped(10));
+        Assertions.assertEquals(10, ContextHelpers.capped(50));
+        Assertions.assertEquals(10, ContextHelpers.capped(1_000_000));
+        Assertions.assertNull(ContextHelpers.capped(null));
+    }
 }

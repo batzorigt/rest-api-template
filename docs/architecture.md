@@ -575,7 +575,7 @@ Roles багана: `Authorization` wrapper шалгадаг хамгийн до
 | Param | Type | Description |
 |-------|------|-------------|
 | `pageNumber` | `Integer` | Хуудасны дугаар (1-based) |
-| `recordsPerPage` | `Integer` | Нэг хуудасны мөрийн тоо |
+| `recordsPerPage` | `Integer` | Нэг хуудасны мөрийн тоо — дээд хязгаар `10` (илүү утга автоматаар 10 болон тасдагдана) |
 
 ### Error Responses
 

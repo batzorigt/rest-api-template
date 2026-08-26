@@ -12,6 +12,8 @@ import io.javalin.http.Context;
 
 public interface ContextHelpers {
 
+    int MAX_RECORDS_PER_PAGE = 10;
+
     static void result(Context ctx, int status, Object result, String msgKey, Object... args) {
         String msg = I18N.message(msgKey, ctx, args);
         String json = ctx.jsonMapper().toJsonString(result, result.getClass());
@@ -87,7 +89,15 @@ public interface ContextHelpers {
             return null;
         }
 
-        return positiveInteger(ctx, PagedData.RECORDS_PER_PAGE);
+        return capped(positiveInteger(ctx, PagedData.RECORDS_PER_PAGE));
+    }
+
+    static Integer capped(Integer recordsPerPage) {
+        if (recordsPerPage == null) {
+            return null;
+        }
+
+        return Math.min(recordsPerPage, MAX_RECORDS_PER_PAGE);
     }
 
     static Integer positiveInteger(Context ctx, String paramName) {
