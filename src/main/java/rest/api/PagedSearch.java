@@ -8,14 +8,19 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import io.ebean.PagedList;
 import io.javalin.http.ForbiddenResponse;
+import lombok.extern.slf4j.Slf4j;
 
-public interface PagedSearch {
+@Slf4j
+public final class PagedSearch {
 
-    static <T, R> PagedData<R> search(Integer pageNumber,
-                                      Integer recordsPerPage,
-                                      PagedDataFinder<T> pagedDataFinder,
-                                      AllDataFinder<T> allDataFinder,
-                                      Function<T, R> convertor) {
+    private PagedSearch() {
+    }
+
+    public static <T, R> PagedData<R> search(Integer pageNumber,
+                                             Integer recordsPerPage,
+                                             PagedDataFinder<T> pagedDataFinder,
+                                             AllDataFinder<T> allDataFinder,
+                                             Function<T, R> convertor) {
         Integer[] totalRowCount = {0};
         List<T> data = findData(pageNumber, recordsPerPage, pagedDataFinder, allDataFinder, totalRowCount);
 
@@ -23,15 +28,15 @@ public interface PagedSearch {
             return null;
         }
 
-        List<R> result = data.parallelStream().filter(value ->value != null).map(convertor).collect(Collectors.toList());
+        List<R> result = data.parallelStream().filter(value -> value != null).map(convertor).collect(Collectors.toList());
 
         return new PagedData<R>(pageNumber, recordsPerPage, totalRowCount[0], result);
     }
 
-    static <T> PagedData<T> search(Integer pageNumber,
-                                   Integer recordsPerPage,
-                                   PagedDataFinder<T> pagedDataFinder,
-                                   AllDataFinder<T> allDataFinder) {
+    public static <T> PagedData<T> search(Integer pageNumber,
+                                          Integer recordsPerPage,
+                                          PagedDataFinder<T> pagedDataFinder,
+                                          AllDataFinder<T> allDataFinder) {
         Integer[] totalRowCount = {0};
         List<T> data = findData(pageNumber, recordsPerPage, pagedDataFinder, allDataFinder, totalRowCount);
 
@@ -62,11 +67,12 @@ public interface PagedSearch {
 
         List<T> data = allDataFinder.find();
         totalRowCount[0] = data.size();
+        log.warn("Unpaginated fetch returned {} rows - large tables can exhaust memory; clients should pass pageNumber & recordsPerPage", data.size());
 
         return data;
     }
 
-    static int offset(Integer pageNumber, Integer recordsPerPage) {
+    public static int offset(Integer pageNumber, Integer recordsPerPage) {
         return (pageNumber - 1) * recordsPerPage;
     }
 
