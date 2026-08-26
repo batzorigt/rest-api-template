@@ -39,6 +39,8 @@ New features require:
 3. Updated package structure documentation
 4. API endpoint documentation (if applicable)
 5. Matching tests shipped in the same task (see Testing Requirements) and the verification loop from `LOOP.md` run to green
+6. Documentation neutrality preserved — apply `HARNESS.md` → *Neutrality mechanism* to every canonical-doc edit
+7. Source neutrality preserved — code diffs are author-agnostic: no AI/agent attribution markers, no IDE metadata in git, generated code only via its generators (`HARNESS.md` → *Neutrality mechanism*)
 
 ## Testing Requirements
 
