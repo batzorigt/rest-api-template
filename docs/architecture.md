@@ -1,6 +1,6 @@
 # Rest API Template Architecture Documentation
 
-> **Preview diagrams:** `Ctrl+Shift+V` (Markdown Preview Enhanced) Â· PlantUML: `Alt+D` inside `.puml` files
+> **Preview diagrams:** `Ctrl+Shift+V` (Markdown Preview Enhanced) · PlantUML: `Alt+D` inside `.puml` files
 
 ---
 
@@ -23,14 +23,14 @@ Layered REST API template built on **Javalin + Ebean + PostgreSQL**.
 
 ---
 
-## C4 Level 1 â€” System Context
+## C4 Level 1 — System Context
 
 Highest-level system view.
 
 ```plantuml
 @startuml C4_Context
 !theme plain
-title C4 Level 1 â€” System Context
+title C4 Level 1 — System Context
 
 
 database "PostgreSQL" as db #fff0cc
@@ -49,18 +49,18 @@ monitoring ..> http : "instrument"
 
 ---
 
-## C4 Level 3 â€” Component (API Layer)
+## C4 Level 3 — Component (API Layer)
 
 Components of the `rest.api` package.
 
 ```plantuml
 @startuml C4_Component_API
 !theme plain
-title C4 Level 3 â€” API Layer Components
+title C4 Level 3 — API Layer Components
 
 
 package "genre package" {
-  component "GenreHandler\n(GET /genres â€” public\nPOST /genres â€” MANAGER+\nDELETE /genres/{id} â€” ADMIN)" as gh #d5e8d4
+  component "GenreHandler\n(GET /genres — public\nPOST /genres — MANAGER+\nDELETE /genres/{id} — ADMIN)" as gh #d5e8d4
   component "GenreService\n(Business logic)" as gs #dce8ff
   component "GenreToAdd\n(Request DTO)" as gta #f5f5f5
   component "Genre\n(Response DTO)" as gdto #f5f5f5
@@ -93,7 +93,7 @@ Path of an HTTP request through the system.
 ```plantuml
 @startuml RequestFlow
 !theme plain
-title Request Flow â€” POST /v1/members
+title Request Flow — POST /v1/members
 
 
 actor "Client" as client
@@ -171,85 +171,85 @@ members ||--o{ phones : "has many"
 
 ```
 src/
-â”œâ”€â”€ main/
-â”‚   â”œâ”€â”€ java/rest/api/
-â”‚   â”‚   â”œâ”€â”€ API.java                  # Entry point, Javalin config
-â”‚   â”‚   â”œâ”€â”€ Config.java               # Configuration interface (Owner)
-â”‚   â”‚   â”œâ”€â”€ Domain.java               # Base entity (id, createdAt, updatedAt)
-â”‚   â”‚   â”œâ”€â”€ Authorization.java        # Route RBAC wrapper (handlerWrapper)
-â”‚   â”‚   â”œâ”€â”€ Role.java                 # Role enum: USER < MANAGER < ADMIN
-â”‚   â”‚   â”œâ”€â”€ Authentication.java       # Cookie-based auth filter
-â”‚   â”‚   â”œâ”€â”€ XSRFFilter.java           # CSRF filter (cookie + header)
-â”‚   â”‚   â”œâ”€â”€ XSRFToken.java            # XSRF token generator/validator
-â”‚   â”‚   â”œâ”€â”€ SecureToken.java          # Encrypted secure token
-â”‚   â”‚   â”œâ”€â”€ Crypto.java               # AES-GCM + HmacSHA256
-â”‚   â”‚   â”œâ”€â”€ Base64.java               # URL-safe Base64
-â”‚   â”‚   â”œâ”€â”€ ContextAttributes.java    # Context attribute key constants
-â”‚   â”‚   â”œâ”€â”€ ContextHelpers.java       # HTTP request/response utilities
-â”‚   â”‚   â”œâ”€â”€ Validators.java           # Jakarta Bean Validation
-â”‚   â”‚   â”œâ”€â”€ ExceptionHandlers.java    # Global exception handlers
-â”‚   â”‚   â”œâ”€â”€ PagedData.java            # Pagination response wrapper
-â”‚   â”‚   â”œâ”€â”€ PagedSearch.java          # Pagination query logic
-â”‚   â”‚   â”œâ”€â”€ NumberHelpers.java        # Numeric utilities
-â”‚   â”‚   â”œâ”€â”€ I18N.java                 # Internationalization (Japanese-only bundle)
-â”‚   â”‚   â”œâ”€â”€ IO.java                   # File/classpath read utilities
-â”‚   â”‚   â”œâ”€â”€ Mail.java                 # Jakarta Mail SMTP sender
-â”‚   â”‚   â”œâ”€â”€ TemplateEngines.java      # JTE engine factory
-â”‚   â”‚   â”œâ”€â”€ Micrometer.java           # Prometheus metrics setup
-â”‚   â”‚   â”œâ”€â”€ GenerateDbMigration.java  # DDL migration generator (dev only)
-â”‚   â”‚   â”‚
-â”‚   â”‚   â”œâ”€â”€ member/                   # Member feature
-â”‚   â”‚   â”‚   â”œâ”€â”€ DMember.java          # @Entity â†’ members table
-â”‚   â”‚   â”‚   â”œâ”€â”€ DPhone.java           # @Entity â†’ phone_numbers table
-â”‚   â”‚   â”‚   â”œâ”€â”€ Member.java           # Response DTO + MapStruct Convertor
-â”‚   â”‚   â”‚   â”œâ”€â”€ Phone.java            # Response DTO
-â”‚   â”‚   â”‚   â”œâ”€â”€ MemberToAdd.java      # Request DTO
-â”‚   â”‚   â”‚   â”œâ”€â”€ MemberHandler.java    # Route handler
-â”‚   â”‚   â”‚   â”œâ”€â”€ MemberService.java    # Business logic
-â”‚   â”‚   â”‚   â””â”€â”€ query/                # Generated QueryBeans (QDMember)
-â”‚   â”‚   â”‚
-â”‚   â”‚   â””â”€â”€ genre/                    # Genre feature
-â”‚   â”‚       â”œâ”€â”€ DGenre.java           # @Entity â†’ genres table
-â”‚   â”‚       â”œâ”€â”€ Genre.java            # Response DTO + MapStruct Convertor
-â”‚   â”‚       â”œâ”€â”€ GenreToAdd.java       # Request DTO (POST /genres)
-â”‚   â”‚       â”œâ”€â”€ GenreHandler.java     # Route handler
-â”‚   â”‚       â”œâ”€â”€ GenreService.java     # Business logic
-â”‚   â”‚       â””â”€â”€ query/                # Generated QueryBeans (QDGenre)
-â”‚   â”‚
-â”‚   â”‚
-â”‚   â”œâ”€â”€ resources/
-â”‚   â”‚   â”œâ”€â”€ application.properties    # Maven-filtered datasource config (DB_* env placeholders)
-â”‚   â”‚   â”œâ”€â”€ i18n_ja.properties        # Messages â€” Japanese is the ONLY shipped bundle
-â”‚   â”‚   â”œâ”€â”€ log4j2.xml                # Logging config
-â”‚   â”‚   â”œâ”€â”€ jte/                      # JTE templates (hello.jte)
-â”‚   â”‚   â””â”€â”€ dbmigration/              # Generated SQL migrations (created on demand by GenerateDbMigration)
-â”‚   â”‚
-â”‚   â””â”€â”€ jib/
-â”‚       â”œâ”€â”€ ebean-agent-17.6.0.jar    # Ebean bytecode agent
-â”‚       â”œâ”€â”€ log4j2.xml                # Docker logging config
-â”‚       â””â”€â”€ jte-classes/              # Precompiled JTE templates
-â”‚
-â””â”€â”€ test/
-    â”œâ”€â”€ java/rest/api/
-    â”‚   â”œâ”€â”€ AuthorizationTest.java   # RBAC 401/403/allow matrix (HTTP)
-    â”‚   â”œâ”€â”€ RoleTest.java            # Role hierarchy + parse unit tests
-    â”‚   â”œâ”€â”€ SecureTokenTest.java     # Token gen/parse/expiry
-    â”‚   â”œâ”€â”€ XSRFTokenTest.java       # XSRF token sign/validate
-    â”‚   â”œâ”€â”€ CryptoTest.java          # AES-GCM encrypt/decrypt/sign
-    â”‚   â”œâ”€â”€ AppConfigTest.java       # Owner config loading
-    â”‚   â”œâ”€â”€ ContextHelpersTest.java  # Response helpers + query params
-    â”‚   â”œâ”€â”€ PagedDataTest.java       # Pagination wrapper
-    â”‚   â”œâ”€â”€ PagedSearchTest.java     # Paged vs all-data finder logic
-    â”‚   â”œâ”€â”€ I18NTest.java            # i18n message resolution
-    â”‚   â”œâ”€â”€ I18NJapaneseOnlyTest.java# Guards Japanese-only bundle contract
-    â”‚   â”œâ”€â”€ IOTest.java              # Classpath/file read helpers
-    â”‚   â”œâ”€â”€ TemplateEnginesTest.java # JTE dev/precompiled modes
-    â”‚   â”œâ”€â”€ MailTest.java            # SMTP message building
-    â”‚   â”œâ”€â”€ genre/                   # GenreHandlerTest, GenreServiceTest, DGenreTest
-    â”‚   â””â”€â”€ member/                  # MemberHandlerTest, MemberServiceTest
-    â””â”€â”€ resources/
-        â”œâ”€â”€ application.properties   # Test DB config (Postgres Testcontainer :6433)
-        â””â”€â”€ ...                      # i18n bundles for tests, log4j2.xml
+├── main/
+│   ├── java/rest/api/
+│   │   ├── API.java                  # Entry point, Javalin config
+│   │   ├── Config.java               # Configuration interface (Owner)
+│   │   ├── Domain.java               # Base entity (id, createdAt, updatedAt)
+│   │   ├── Authorization.java        # Route RBAC wrapper (handlerWrapper)
+│   │   ├── Role.java                 # Role enum: USER < MANAGER < ADMIN
+│   │   ├── Authentication.java       # Cookie-based auth filter
+│   │   ├── XSRFFilter.java           # CSRF filter (cookie + header)
+│   │   ├── XSRFToken.java            # XSRF token generator/validator
+│   │   ├── SecureToken.java          # Encrypted secure token
+│   │   ├── Crypto.java               # AES-GCM + HmacSHA256
+│   │   ├── Base64.java               # URL-safe Base64
+│   │   ├── ContextAttributes.java    # Context attribute key constants
+│   │   ├── ContextHelpers.java       # HTTP request/response utilities
+│   │   ├── Validators.java           # Jakarta Bean Validation
+│   │   ├── ExceptionHandlers.java    # Global exception handlers
+│   │   ├── PagedData.java            # Pagination response wrapper
+│   │   ├── PagedSearch.java          # Pagination query logic
+│   │   ├── NumberHelpers.java        # Numeric utilities
+│   │   ├── I18N.java                 # Internationalization (Japanese-only bundle)
+│   │   ├── IO.java                   # File/classpath read utilities
+│   │   ├── Mail.java                 # Jakarta Mail SMTP sender
+│   │   ├── TemplateEngines.java      # JTE engine factory
+│   │   ├── Micrometer.java           # Prometheus metrics setup
+│   │   ├── GenerateDbMigration.java  # DDL migration generator (dev only)
+│   │   │
+│   │   ├── member/                   # Member feature
+│   │   │   ├── DMember.java          # @Entity → members table
+│   │   │   ├── DPhone.java           # @Entity → phone_numbers table
+│   │   │   ├── Member.java           # Response DTO + MapStruct Convertor
+│   │   │   ├── Phone.java            # Response DTO
+│   │   │   ├── MemberToAdd.java      # Request DTO
+│   │   │   ├── MemberHandler.java    # Route handler
+│   │   │   ├── MemberService.java    # Business logic
+│   │   │   └── query/                # Generated QueryBeans (QDMember)
+│   │   │
+│   │   └── genre/                    # Genre feature
+│   │       ├── DGenre.java           # @Entity → genres table
+│   │       ├── Genre.java            # Response DTO + MapStruct Convertor
+│   │       ├── GenreToAdd.java       # Request DTO (POST /genres)
+│   │       ├── GenreHandler.java     # Route handler
+│   │       ├── GenreService.java     # Business logic
+│   │       └── query/                # Generated QueryBeans (QDGenre)
+│   │
+│   │
+│   ├── resources/
+│   │   ├── application.properties    # Maven-filtered datasource config (DB_* env placeholders)
+│   │   ├── i18n_ja.properties        # Messages — Japanese is the ONLY shipped bundle
+│   │   ├── log4j2.xml                # Logging config
+│   │   ├── jte/                      # JTE templates (hello.jte)
+│   │   └── dbmigration/              # Generated SQL migrations (created on demand by GenerateDbMigration)
+│   │
+│   └── jib/
+│       ├── ebean-agent-17.6.0.jar    # Ebean bytecode agent
+│       ├── log4j2.xml                # Docker logging config
+│       └── jte-classes/              # Precompiled JTE templates
+│
+└── test/
+    ├── java/rest/api/
+    │   ├── AuthorizationTest.java   # RBAC 401/403/allow matrix (HTTP)
+    │   ├── RoleTest.java            # Role hierarchy + parse unit tests
+    │   ├── SecureTokenTest.java     # Token gen/parse/expiry
+    │   ├── XSRFTokenTest.java       # XSRF token sign/validate
+    │   ├── CryptoTest.java          # AES-GCM encrypt/decrypt/sign
+    │   ├── AppConfigTest.java       # Owner config loading
+    │   ├── ContextHelpersTest.java  # Response helpers + query params
+    │   ├── PagedDataTest.java       # Pagination wrapper
+    │   ├── PagedSearchTest.java     # Paged vs all-data finder logic
+    │   ├── I18NTest.java            # i18n message resolution
+    │   ├── I18NJapaneseOnlyTest.java# Guards Japanese-only bundle contract
+    │   ├── IOTest.java              # Classpath/file read helpers
+    │   ├── TemplateEnginesTest.java # JTE dev/precompiled modes
+    │   ├── MailTest.java            # SMTP message building
+    │   ├── genre/                   # GenreHandlerTest, GenreServiceTest, DGenreTest
+    │   └── member/                  # MemberHandlerTest, MemberServiceTest
+    └── resources/
+        ├── application.properties   # Test DB config (Postgres Testcontainer :6433)
+        └── ...                      # i18n bundles for tests, log4j2.xml
 ```
 
 ---
@@ -264,7 +264,7 @@ src/
 | DB Driver | PostgreSQL JDBC | 42.7.11 | PostgreSQL connectivity |
 | DB Migration | Ebean Migration | 14.3.0 | Schema versioning |
 | Validation | Hibernate Validator | 9.1.0.Final | Bean validation (JSR-380) |
-| DTO Mapping | MapStruct | 1.6.3 | Entity â†” DTO conversion |
+| DTO Mapping | MapStruct | 1.6.3 | Entity ↔ DTO conversion |
 | Configuration | Owner | 1.0.12 | Externalized config |
 | Templates | JTE | 3.2.4 | Server-side HTML |
 | Logging Facade | SLF4J | 2.0.17 | API used by Javalin/Ebean |
@@ -297,26 +297,26 @@ src/
 | `DELETE` | `/v1/genres/{id}` | Delete genre | `readWrite` | `ADMIN` |
 | `GET` | `/v1/members/{id}` | Find member by ID | `readOnly` | `USER+` (authenticated) |
 | `POST` | `/v1/members` | Create member (registration) | `readWrite` | public |
-| `GET` | `/v1/metrics` | Prometheus metrics | â€” | Basic auth (monitoring) |
+| `GET` | `/v1/metrics` | Prometheus metrics | — | Basic auth (monitoring) |
 
-Roles column = minimum role enforced by the `Authorization` wrapper (`USER < MANAGER < ADMIN`, higher satisfies lower). Missing/invalid token â†’ `401` on role-guarded routes.
+Roles column = minimum role enforced by the `Authorization` wrapper (`USER < MANAGER < ADMIN`, higher satisfies lower). Missing/invalid token → `401` on role-guarded routes.
 
 ### Pagination Query Params
 
 | Param | Type | Description |
 |-------|------|-------------|
-| `pageNumber` | `Integer` | Page number (1-based); invalid/non-positive â†’ `400` |
-| `recordsPerPage` | `Integer` | Rows per page, capped at `10`; invalid/non-positive â†’ `400`. Only when both params are absent does the endpoint return all rows |
+| `pageNumber` | `Integer` | Page number (1-based); invalid/non-positive → `400` |
+| `recordsPerPage` | `Integer` | Rows per page, capped at `10`; invalid/non-positive → `400`. Only when both params are absent does the endpoint return all rows |
 
-> âš ï¸ **Warning:** a param-less `GET` calls AllDataFinder. When writing an AllDataFinder, consider whether pulling every row fits memory; latency/DoS risk. Each such fetch logs a runtime `WARN` (`PagedSearch`). Production clients should always pass pagination params.
+> ⚠️ **Warning:** a param-less `GET` calls AllDataFinder. When writing an AllDataFinder, consider whether pulling every row fits memory; latency/DoS risk. Each such fetch logs a runtime `WARN` (`PagedSearch`). Production clients should always pass pagination params.
 >
-> To forbid full fetch, pass `null` as the `allDataFinder` argument of `PagedSearch.search(...)` â€” unpaginated calls then get `403 Forbidden` (Â«Find all is not allowed!Â»).
+> To forbid full fetch, pass `null` as the `allDataFinder` argument of `PagedSearch.search(...)` — unpaginated calls then get `403 Forbidden` («Find all is not allowed!»).
 
 ### Error Responses
 
 | Status | Description |
 |--------|-------------|
-| `400` | Validation error â€” field-level JSON errors |
+| `400` | Validation error — field-level JSON errors |
 | `401` | Missing/invalid/expired `secure-token` (role-guarded routes) |
 | `403` | Invalid XSRF token **or** insufficient role (RBAC) |
 | `404` | Data not found |
@@ -353,8 +353,8 @@ cds --> docker
 
 note right of docker
   Multi-stage Dockerfile:
-  build â†’ jdk-download â†’ jlink JRE
-  â†’ AppCDS dump â†’ runtime
+  build → jdk-download → jlink JRE
+  → AppCDS dump → runtime
   JVM flags:
   -javaagent:ebean-agent.jar
   -XX:+UseZGC -Xshare:on
@@ -376,7 +376,7 @@ Build/run/docker commands: see README.md (canonical quickstart).
 | Unit tests | JUnit 5 + Mockito | Service/utility tests (`RoleTest`, etc.) |
 | Integration tests | JUnit 5 + Ebean Test | Tests against a real DB |
 | Container tests | Testcontainers | Dockerized PostgreSQL |
-| HTTP tests | Unirest | API endpoint tests (`AuthorizationTest` â€” RBAC 401/403/allow matrix) |
+| HTTP tests | Unirest | API endpoint tests (`AuthorizationTest` — RBAC 401/403/allow matrix) |
 | Mocking | Mockito / JMockit | External dependency isolation |
 
 Test DB config (`src/test/resources/application.properties`):
@@ -398,13 +398,13 @@ ebean.test.useDocker  = true
 | `portNo` | `8080` | Server port |
 | `contextPath` | `/v1/` | API root path |
 | `allowedOrigins` | `http://localhost:8080, http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200` | CORS allow-host list |
-| `encryptionKey` | `1234567890123456` | AES key (â‰¥16 chars) |
+| `encryptionKey` | `1234567890123456` | AES key (≥16 chars) |
 | `xsrfProtectionEnabled` | `false` | Enable the XSRF filter |
 | `isSecure` | `false` | HTTPS cookie flag |
 | `httpMaxRequestSize` | `1024` | Max request bytes |
 | `httpAsyncTimeout` | `5000` | Async timeout ms |
 | `requestLoggingEnabled` | `false` | HTTP request log via Javalin's native request logger (method/path/status/duration; no headers or bodies). Silence per environment with log4j2: `<Logger name="rest.api.RequestLogger" level="warn"/>` |
-| `requestLoggingVerbose` | `false` | Adds safe headers, `REDACTED(len=N)` for Cookie/Authorization, and body size to the HTTP log â€” token and body contents are never logged |
+| `requestLoggingVerbose` | `false` | Adds safe headers, `REDACTED(len=N)` for Cookie/Authorization, and body size to the HTTP log — token and body contents are never logged |
 | `monitoringUsername` | `micro` | Metrics basic auth |
 | `monitoringPassword` | `meter` | Metrics basic auth |
 | `environment` | `local` | `local` = JTE dev mode + dev logging; non-local refuses the default encryptionKey at startup |
