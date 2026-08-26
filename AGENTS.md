@@ -9,7 +9,7 @@ Vendor-neutral playbooks referenced by this file:
 - `HARNESS.md` — environment contract (JDK 25, Docker on port 6433), artifact map, failure triage, safety rails.
 - `LOOP.md` — verification loop orders: compile check → targeted test → full gate; per-change-type loops; definition of done.
 
-Both must be read before making changes in any harness; follow `LOOP.md`'s default loop for every edit. `AGENTS.md` is the single entrypoint — wire your harness to these three files (per-tool recipes: `HARNESS.md` → *Harness wiring*).
+Both are on-demand playbooks: load them via the repo skills `repo-harness` / `repo-loops` (`.agents/skills/`, auto-discovered by opencode and other skill-capable harnesses) or read them directly; follow `LOOP.md`'s default loop for every edit. `AGENTS.md` is the only always-loaded file — wire your harness to it (per-tool recipes: `HARNESS.md` → *Harness wiring*).
 
 ## Token discipline
 
@@ -17,6 +17,9 @@ Context is expensive — these rules are mandatory in every session:
 
 - Never open generated/artifact paths: `jte-classes/`, `src/main/jib/`, `target/`, `app-cds.jsa`. There is nothing to learn inside.
 - Grep before Read, always. Big files are section-anchored: `docs/architecture.md` (~580 lines) has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
+- Delegate wide, multi-file searches to your harness's explore/general subagent; pull back summaries, not raw file dumps.
+- Playbooks are on-demand: invoke the repo skills `repo-harness` (before env/tooling/triage work) and `repo-loops` (before verifying); without a skill mechanism, read `HARNESS.md`/`LOOP.md` directly at those same moments.
+- Frontmatter `stale_after` dates are a trust signal: when today is past the date, re-verify the doc's facts against their source (pom.xml versions, code) before relying on them, and refresh the date after confirming.
 - Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`mvn -q compile`).
 - Iterate with targeted tests (`mvn test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
 - Prefer a harness shortcut over re-deriving the loop (e.g., opencode ships `/verify`); elsewhere run LOOP.md's three steps verbatim.

@@ -1,3 +1,11 @@
+---
+type: Environment Contract
+title: Agent Harness — Environment & Tooling Contract
+tags: [harness, environment, triage]
+status: stable
+stale_after: 2027-02-26T00:00:00Z
+---
+
 # Agent Harness — Environment & Tooling Contract
 
 Everything an agent must set up or avoid before editing this repo. Verification loop orders live in `LOOP.md`; quick project facts live in `AGENTS.md`.
@@ -15,8 +23,9 @@ All agent behavior lives in three plain Markdown files — `AGENTS.md` (entrypoi
 
 | Harness | Wire-up |
 |---|---|
-| opencode | done: `opencode.json` lists all three in `instructions`; `.opencode/command/verify.md` wraps LOOP's default loop |
-| Claude Code | create `CLAUDE.md` with imports: `@AGENTS.md`, `@HARNESS.md`, `@LOOP.md` (or rely on hierarchical CLAUDE.md pointing here) |
+| opencode | done: `opencode.json` auto-loads only `AGENTS.md`; skills `repo-harness`/`repo-loops` deliver HARNESS/LOOP context on demand; `/verify` command wraps LOOP's default loop; compaction prune enabled |
+| Any skill-capable harness | scan `.agents/skills/*/SKILL.md` — the layout is shared by opencode, Claude-compatible, and agent-compatible consumers |
+| Claude Code | skills above work as-is via `.agents/skills/`; optionally import `@AGENTS.md` into `CLAUDE.md` |
 | Gemini CLI | set `context.fileName: AGENTS.md`, or add a one-line `GEMINI.md` referencing the three files |
 | Cursor | repo rule under `.cursor/rules/` that includes/references `AGENTS.md` |
 | Aider | launch with `/read AGENTS.md` + `/read LOOP.md`, or pass `--read` flags |
@@ -47,8 +56,12 @@ Every fact lives in full in exactly one file; every other mention is a pointer o
 | Loop orders, failure handling, definition of done | `LOOP.md` | harness command adapters |
 | Formal team standards (C4, security, tech) | `docs/architecture-standards.md` | — |
 | Endpoints, schema, package tree, request flow | `docs/architecture.md` | — |
+| Distilled playbook summaries | `.agents/skills/repo-harness`, `.agents/skills/repo-loops` | must point back to `HARNESS.md` / `LOOP.md`; may summarize, never extend rules |
+| Repo index for web-capable agents | `llms.txt` | pointers and one-line facts only |
+| Lifecycle metadata (`type`, `status`, `stale_after`) | YAML frontmatter of each playbook/skill | `llms.txt` / `docs/index.md` bullets describe, never restate dates |
+| Section map of the big architecture doc | `docs/index.md` | heading anchors only — grep targets, not content copies |
 
-Rules: (1) new knowledge goes to its canonical home **once** — all other files link; (2) sanctioned homes summarize for their audience but never extend or contradict; (3) on conflict, the canonical home wins and the stale copy is fixed immediately (LOOP.md → Failure handling step 2).
+Rules: (1) new knowledge goes to its canonical home **once** — all other files link; (2) sanctioned homes summarize for their audience but never extend or contradict; (3) on conflict, the canonical home wins and the stale copy is fixed immediately (LOOP.md → Failure handling step 2); (4) retiring a doc: prefer deletion (git keeps history) — keep a file only as `status: deprecated` frontmatter plus a pointer to its replacement when past content must stay reproducible.
 
 ## Command surface
 

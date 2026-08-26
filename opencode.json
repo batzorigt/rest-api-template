@@ -1,9 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "share": "disabled",
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
   "instructions": [
-    "AGENTS.md",
-    "HARNESS.md",
-    "LOOP.md"
+    "AGENTS.md"
   ]
 }
