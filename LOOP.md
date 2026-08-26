@@ -1,3 +1,11 @@
+---
+type: Verification Playbooks
+title: Agent Loops — Verification Playbooks
+tags: [loops, verification]
+status: stable
+stale_after: 2027-02-26T00:00:00Z
+---
+
 # Agent Loops — Verification Playbooks
 
 There is no lint or typecheck step in this repo. The compiler + annotation processors + tests are the entire gate, run via Maven.

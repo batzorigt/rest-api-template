@@ -1,0 +1,26 @@
+# rest-api-template
+
+> Javalin 7 + Ebean 17 REST API on Java 25 and PostgreSQL. Single Maven module; entry point `rest.api.API#main` (port 8080, context path `/v1/`). Request flow: filters → handlers → services → Ebean entities → PostgreSQL.
+
+## Agent entrypoints
+
+- [AGENTS.md](AGENTS.md): session rules — commands, conventions, change workflow, token discipline
+- [HARNESS.md](HARNESS.md): environment contract — prerequisites, artifacts, failure triage, neutrality layers, canonical-home map
+- [LOOP.md](LOOP.md): verification playbooks — default loop, per-change-type loops, failure handling, definition of done
+
+## References
+
+- [README.md](README.md): user-facing build, run, and deployment guide
+- [docs/index.md](docs/index.md): progressive-disclosure map of docs/ — grep anchors for architecture.md sections
+- [docs/architecture.md](docs/architecture.md): C4 diagrams, security architecture, database schema, package tree, endpoints (section-anchored: grep headings, read slices)
+- [docs/architecture-standards.md](docs/architecture-standards.md): team standards and hard technology rules
+
+## On-demand skills (`.agents/skills/`)
+
+- repo-harness: distilled environment contract; loads the HARNESS.md context when tooling or triage work starts
+- repo-loops: distilled verification playbooks; loads the LOOP.md context when checks or done-claims start
+
+## Quick facts
+
+- Tests require Docker: a PostgreSQL Testcontainer binds host port 6433 (`ddlMode=dropCreate`)
+- App runs at `http://localhost:8080/v1/` via `run.bat`/`run.sh` only (Ebean javaagent required)
