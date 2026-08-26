@@ -1,7 +1,6 @@
 # Rest API Template — Architecture Documentation
 
-> **Диаграм харах:** `Ctrl+Shift+V` → Markdown Preview Enhanced  
-> **PlantUML тусдаа харах:** `.puml` файл дотор `Alt+D`
+> **Preview diagrams:** `Ctrl+Shift+V` (Markdown Preview Enhanced) · PlantUML: `Alt+D` inside `.puml` files
 
 ---
 
@@ -25,10 +24,9 @@
 
 ## Overview
 
-`rest-api-template` нь **Javalin + Ebean + PostgreSQL** дээр суурилсан layered REST API template.
+Layered REST API template built on **Javalin + Ebean + PostgreSQL**.
 
-| Зүйл | Утга |
-|------|------|
+| Item | Value |
 | Group ID | `batzorigt.rentsen` |
 | Artifact ID | `rest-api-template` |
 | Version | `1.0.0` |
@@ -40,7 +38,7 @@
 
 ## C4 Level 1 — System Context
 
-Системийн хамгийн дээд түвшний дүр зураг.
+Highest-level system view.
 
 ```plantuml
 @startuml C4_Context
@@ -78,7 +76,7 @@ system --> smtp : "SMTP\nEmail notifications"
 
 ## C4 Level 2 — Container
 
-Системийн дотоод container-уудыг харуулна.
+Internal containers of the system.
 
 ```plantuml
 @startuml C4_Container
@@ -141,7 +139,7 @@ monitoring ..> http : "instrument"
 
 ## C4 Level 3 — Component (API Layer)
 
-`rest.api` package-ийн бүрэлдэхүүн хэсгүүд.
+Components of the `rest.api` package.
 
 ```plantuml
 @startuml C4_Component_API
@@ -192,7 +190,7 @@ xtoken --> crypto : "uses"
 
 ## C4 Level 3 — Component (Domain Layer)
 
-`member` болон `genre` package-ийн бүрэлдэхүүн хэсгүүд.
+Components of the `member` and `genre` packages.
 
 ```plantuml
 @startuml C4_Component_Domain
@@ -244,7 +242,7 @@ dg --|> domain
 
 ## Request Flow
 
-HTTP хүсэлтийн дамжих замыг харуулна.
+Path of an HTTP request through the system.
 
 ```plantuml
 @startuml RequestFlow
@@ -364,20 +362,19 @@ end note
 
 ### Authorization (RBAC)
 
-`rest.api.Authorization` нь `config.router.handlerWrapper(Authorization::wrap)`
--ээр бүх endpoint-ийг боож (wrap), route дээр зарласан role байвал шалгалт хийнэ.
+`rest.api.Authorization` wraps every endpoint via `config.router.handlerWrapper(Authorization::wrap)` and enforces the roles declared on the route.
 
-- **Role шатлал:** `USER(0) < MANAGER(10) < ADMIN(20)` — хэрэглэгчийн түвшин route-ийн хамгийн доод шаардлагаас өндөр бол тэнцэнэ.
-- **Үүрэгний эх сурвалж:** `secure-token` cookie-ийн JSON payload дахь `role` claim (`rest.api.Role.claim`). Хоосон/танигдахгүй бол `USER` гэж үзнэ.
-- **Нээлттэй маршрут:** role args-гүй route бүр public — ямар ч шалгалтгүй.
-- **Хариу:** token байхгүй/буруу/хугацаа дууссан → `401`; үүрэг хүрэлцэхгүй → `403`.
+- **Role hierarchy:** `USER(0) < MANAGER(10) < ADMIN(20)` — user level must be ≥ the route minimum.
+- **Role source:** `role` claim in the `secure-token` cookie's JSON payload (`rest.api.Role.claim`); missing/unknown → `USER`.
+- **Public routes:** no role args = public, no checks.
+- **Responses:** missing/invalid/expired token → `401`; insufficient role → `403`.
 
-Одоогийн маршрутны матриц:
+Current route matrix:
 
-| Route | Хамгийн доод үүрэг |
-|-------|--------------------|
-| `POST /v1/members` | public (бүртгэл) |
-| `GET /v1/members/{id}` | `USER` (нэвтэрсэн хэн ч) |
+| Route | Minimum role |
+|-------|--------------|
+| `POST /v1/members` | public (registration) |
+| `GET /v1/members/{id}` | `USER` (any authenticated) |
 | `GET /v1/genres` | public |
 | `POST /v1/genres` | `MANAGER` |
 | `DELETE /v1/genres/{id}` | `ADMIN` |
@@ -561,35 +558,35 @@ src/
 
 | Method | Path | Description | Transaction | Roles |
 |--------|------|-------------|-------------|-------|
-| `GET` | `/v1/genres` | Genre жагсаалт (pagination) | `readOnly` | public |
-| `POST` | `/v1/genres` | Genre нэмэх | `readWrite` | `MANAGER+` |
-| `DELETE` | `/v1/genres/{id}` | Genre устгах | `readWrite` | `ADMIN` |
-| `GET` | `/v1/members/{id}` | Member ID-р хайх | `readOnly` | `USER+` (нэвтэрсэн) |
-| `POST` | `/v1/members` | Member үүсгэх (бүртгэл) | `readWrite` | public |
+| `GET` | `/v1/genres` | List genres (paginated) | `readOnly` | public |
+| `POST` | `/v1/genres` | Add genre | `readWrite` | `MANAGER+` |
+| `DELETE` | `/v1/genres/{id}` | Delete genre | `readWrite` | `ADMIN` |
+| `GET` | `/v1/members/{id}` | Find member by ID | `readOnly` | `USER+` (authenticated) |
+| `POST` | `/v1/members` | Create member (registration) | `readWrite` | public |
 | `GET` | `/v1/metrics` | Prometheus metrics | — | Basic auth (monitoring) |
 
-Roles багана: `Authorization` wrapper шалгадаг хамгийн доод үүрэг. `USER < MANAGER < ADMIN` — өндөр түвшин доод шаардлагыг хангана. Token байхгүй/буруу бол role шаардсан бүх маршрут `401` буцаана.
+Roles column = minimum role enforced by the `Authorization` wrapper (`USER < MANAGER < ADMIN`, higher satisfies lower). Missing/invalid token → `401` on role-guarded routes.
 
 ### Pagination Query Params
 
 | Param | Type | Description |
 |-------|------|-------------|
-| `pageNumber` | `Integer` | Хуудасны дугаар (1-based); буруу/сөрөг утга → `400` |
-| `recordsPerPage` | `Integer` | Нэг хуудасны мөрийн тоо — дээд хязгаар `10`; буруу/сөрөг утга → `400`. Параметр огт байхгүй үед л бүх дата буцна |
+| `pageNumber` | `Integer` | Page number (1-based); invalid/non-positive → `400` |
+| `recordsPerPage` | `Integer` | Rows per page, capped at `10`; invalid/non-positive → `400`. Only when both params are absent does the endpoint return all rows |
 
-> ⚠️ **Анхааруулга:** Параметргүй `GET` нь AllDataFinder-г дуудна. AllDataFinder-г бичихдээ бүх бичлэгийг татаж авчирвал санах ой хүрэлцэх үү? Latency/DoS эрсдэлтэй гэдгийг бодолцоорой. Ийм fetch бүр runtime дээр `WARN` логлоно (`PagedSearch`). Production клиентүүд заавал page параметр ашиглахыг зөвлөсөн.
+> ⚠️ **Warning:** a param-less `GET` calls AllDataFinder. When writing an AllDataFinder, consider whether pulling every row fits memory; latency/DoS risk. Each such fetch logs a runtime `WARN` (`PagedSearch`). Production clients should always pass pagination params.
 >
-> Full fetch хиймээргүй бол `PagedSearch.search(...)` руу дамжуулах `allDataFinder`-т `null` утга онооно уу! Тэр үед параметргүй дуудлага `403 Forbidden` («Find all is not allowed!») болно.
+> To forbid full fetch, pass `null` as the `allDataFinder` argument of `PagedSearch.search(...)` — unpaginated calls then get `403 Forbidden` («Find all is not allowed!»).
 
 ### Error Responses
 
-| Status | Тайлбар |
-|--------|---------|
-| `400` | Validation алдаа — field-level JSON errors |
-| `401` | `secure-token` байхгүй/буруу/хугацаа дууссан (role шаардсан route дээр) |
-| `403` | XSRF token буруу **эсвэл** эрх хүрэлцэхгүй (RBAC) |
-| `404` | Өгөгдөл олдсонгүй |
-| `500` | Системийн алдаа |
+| Status | Description |
+|--------|-------------|
+| `400` | Validation error — field-level JSON errors |
+| `401` | Missing/invalid/expired `secure-token` (role-guarded routes) |
+| `403` | Invalid XSRF token **or** insufficient role (RBAC) |
+| `404` | Data not found |
+| `500` | Internal system error |
 
 ---
 
@@ -651,8 +648,8 @@ end note
 
 ```bash
 # Build
-mvn package            # или
-build.bat              # Windows (AppCDS хамт)
+mvn package            # or
+build.bat              # Windows (includes AppCDS)
 
 # Run
 run.bat                # Windows (optimal JVM flags)
@@ -671,15 +668,15 @@ docker run -p 8080:8080 \
 
 ## Testing Strategy
 
-| Давхарга | Хэрэгсэл | Тайлбар |
+| Layer | Tooling | Notes |
 |---------|---------|---------|
-| Unit tests | JUnit 5 + Mockito | Service, utility class тест (`RoleTest` г.м.) |
-| Integration tests | JUnit 5 + Ebean Test | DB-тэй хамт тест |
-| Container tests | Testcontainers | Docker PostgreSQL дээр |
-| HTTP tests | Unirest | API endpoint тест (`AuthorizationTest` — RBAC 401/403/allow матриц) |
+| Unit tests | JUnit 5 + Mockito | Service/utility tests (`RoleTest`, etc.) |
+| Integration tests | JUnit 5 + Ebean Test | Tests against a real DB |
+| Container tests | Testcontainers | Dockerized PostgreSQL |
+| HTTP tests | Unirest | API endpoint tests (`AuthorizationTest` — RBAC 401/403/allow matrix) |
 | Mocking | Mockito / JMockit | External dependency isolation |
 
-Test DB тохиргоо (`src/test/resources/application.properties`):
+Test DB config (`src/test/resources/application.properties`):
 
 ```properties
 ebean.test.platform   = postgres
@@ -693,13 +690,13 @@ ebean.test.useDocker  = true
 
 ## Configuration Reference
 
-| Property | Default | Тайлбар |
-|----------|---------|---------|
+| Property | Default | Description |
+|----------|---------|-------------|
 | `portNo` | `8080` | Server port |
 | `contextPath` | `/v1/` | API root path |
 | `allowedOrigins` | `http://localhost:8080, http://localhost:4200, http://localhost:4201, http://batzorigt.com:4200` | CORS allow-host list |
 | `encryptionKey` | `1234567890123456` | AES key (≥16 chars) |
-| `xsrfProtectionEnabled` | `false` | XSRF filter идэвхжүүлэх |
+| `xsrfProtectionEnabled` | `false` | Enable the XSRF filter |
 | `isSecure` | `false` | HTTPS cookie flag |
 | `httpMaxRequestSize` | `1024` | Max request bytes |
 | `httpAsyncTimeout` | `5000` | Async timeout ms |
