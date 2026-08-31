@@ -102,7 +102,6 @@ Fix generated-code problems in the generating source, never in outputs.
 | JVM aborts with shared-archive mismatch | stale `app-cds.jsa` after dependency change | delete it or rerun `build.*` |
 | Compile errors in `Q*.java` / MapStruct impls | edited generated code | revert; change the source and rebuild |
 | Message assertions fail | default locale Japan; expectations in `i18n_ja.properties` | assert Japanese text or pass explicit `Locale` |
-| MD file starts with garbage like `ï»¿` | PowerShell 5.1 `Set-Content -Encoding UTF8` writes a BOM | strip it: `[IO.File]::WriteAllText($p,$text,(New-Object Text.UTF8Encoding($false)))`; prefer file-write tools over shell redirects |
 
 ## Safety rails
 
