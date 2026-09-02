@@ -26,13 +26,14 @@
 
 Layered REST API template built on **Javalin + Ebean + PostgreSQL**.
 
-| Item | Value |
-| Group ID | `batzorigt.rentsen` |
-| Artifact ID | `rest-api-template` |
-| Version | `1.0.0` |
-| Java | 25 |
-| Context path | `/v1/` |
-| Default port | `8080` |
+| Item         | Value               |
+|--------------|---------------------|
+| Group ID     | `batzorigt.rentsen` |
+| Artifact ID  | `rest-api-template` |
+| Version      | `1.0.0`             |
+| Java         | `25`                |
+| Context path | `/v1/`              |
+| Default port | `8080`              |
 
 ---
 
