@@ -29,6 +29,7 @@ title [Diagram Type] - [Feature Name]
 - Always include a title
 - Keep diagrams focused on specific aspects
 - Use rectangles for containers, circles for components
+- **PlantUML must render without errors** — validate diagrams after every edit (e.g., `plantuml -checkonly` or IDE preview)
 
 ## Documentation Requirements
 
@@ -41,8 +42,9 @@ New features require:
 5. Matching tests shipped in the same task (see Testing Requirements) and the verification loop from `LOOP.md` run to green
 6. Documentation neutrality preserved — apply `HARNESS.md` → *Neutrality mechanism* to every canonical-doc edit
 7. Source neutrality preserved — code diffs are author-agnostic: no AI/agent attribution markers, no IDE metadata in git, generated code only via its generators (`HARNESS.md` → *Neutrality mechanism*)
-8. Language: all documentation is written and maintained in English only
+8. Language: all documentation is written and maintained in English only; be concise — omit unnecessary words
 9. OpenAPI contract: `openapi.yaml` is created/updated in the same task as any API-surface change (see `AGENTS.md` → Change workflow)
+10. Documentation sync: every code change must create or update related docs (architecture, endpoints, config, standards) in the same task
 
 ## Testing Requirements
 

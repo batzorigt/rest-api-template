@@ -78,3 +78,5 @@ On any failing step:
 - [ ] No edited generated files in `git status`
 - [ ] Migration SQL regenerated if entities changed
 - [ ] App started via `run.*` where relevant
+- [ ] PlantUML diagrams render without errors
+- [ ] Dependencies verified; no duplicate code/docs introduced

@@ -1,4 +1,4 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 ## Project
 
@@ -16,6 +16,7 @@ Both are on-demand playbooks: load them via the repo skills `repo-harness` / `re
 Context is expensive — these rules are mandatory in every session:
 
 - Never open generated/artifact paths: `jte-classes/`, `src/main/jib/`, `target/`, `app-cds.jsa`. There is nothing to learn inside.
+- Never open IDE/tool metadata: `.github/`, `.mvn/`, `.opencode/`, `.settings/`, `.vscode/`. These are not source code.
 - Grep before Read, always. Big files are section-anchored: `docs/architecture.md` (~580 lines) has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
 - Delegate wide, multi-file searches to your harness's explore/general subagent; pull back summaries, not raw file dumps.
 - Playbooks are on-demand: invoke the repo skills `repo-harness` (before env/tooling/triage work) and `repo-loops` (before verifying); without a skill mechanism, read `HARNESS.md`/`LOOP.md` directly at those same moments.
@@ -23,6 +24,14 @@ Context is expensive — these rules are mandatory in every session:
 - Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`mvn -q compile`).
 - Iterate with targeted tests (`mvn test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
 - Prefer a harness shortcut over re-deriving the loop (e.g., opencode ships `/verify`); elsewhere run LOOP.md's three steps verbatim.
+- Configure your harness to auto-ignore the above paths (opencode: `ignore` in `opencode.json`) — synced from `.token-ignore` via `scripts/sync-token-ignore.ps1`.
+
+## Pre-work (mandatory before any change)
+
+- Read related docs and code first — understand current architecture, conventions, and patterns
+- Research frameworks/libraries in use (Javalin, Ebean, MapStruct, JTE, Log4j2, etc.) — know their capabilities and limits
+- Reuse existing solutions — grep for helpers/services before adding new ones; feature-local logic stays in its feature, genuinely shared logic moves to `rest.api` root helpers
+- Check for duplication — if a change creates overlap with existing code/docs, consolidate instead of adding
 
 ## Commands
 
@@ -64,6 +73,7 @@ Every change ships, in the same task, with:
 1. **Matching tests** — unit tests for new logic, handler-level HTTP tests for endpoints/auth changes (patterns per `LOOP.md`). Run compile → targeted → full gate before declaring done. Reuse before adding: grep for an existing helper/service first; feature-local logic stays in its feature, genuinely shared logic moves to `rest.api` root helpers.
 2. **Doc updates** — anything touching behavior, endpoints, architecture, or tooling updates the relevant MD files in the same task: `docs/architecture.md` (C4 diagrams, package tree, endpoint table), `README.md`, plus `HARNESS.md` / `LOOP.md` / `docs/architecture-standards.md` when contracts or standards change, and `openapi.yaml` whenever endpoints, request/response payloads, parameters, or auth surface change (create it if missing). Place each new fact in its canonical home once (`HARNESS.md` → *Canonical-home map*); everywhere else points, never restates.
 3. **Neutrality pass** — docs *and* code stay model-, agent-, and IDE-neutral. Docs: canonical files name no LLM/coding-agent/IDE except as marked examples or rows in `HARNESS.md`'s wiring table; harness-specific automation lives only in adapter files (`opencode.json`, `.opencode/`), which may automate but never define contracts. Code: no AI/agent attribution comments or markers anywhere in tracked sources, no tool-/IDE-specific files or paths in the diff (IDE metadata like `.settings/`, `.vscode/`, `.idea/` stays untracked), generated code produced only by its generators, build reproducible without any IDE. Full rules: `HARNESS.md` → *Neutrality mechanism*.
+4. **Dependency & duplication check** — on every code or doc change, verify related dependencies; if duplication exists, consolidate instead of adding.
 
 No code-only drift without docs, and no doc-only claims without a green `mvn test`.
 

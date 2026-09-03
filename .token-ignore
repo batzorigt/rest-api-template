@@ -1,0 +1,22 @@
+# Token ignore patterns - single source of truth
+# Edit this file, then run scripts/sync-token-ignore.ps1 (Windows) or scripts/sync-token-ignore.sh (Linux/macOS)
+
+# IDE / tool metadata
+.github
+.mvn
+.opencode
+.settings
+.vscode
+.idea
+
+# Build artifacts
+target
+jte-classes
+src/main/jib
+app-cds.jsa
+
+# Node dependencies (huge token waste)
+node_modules
+
+# Generated code
+**/query/Q*.java

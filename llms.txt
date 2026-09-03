@@ -1,6 +1,6 @@
 # rest-api-template
 
-> Javalin 7 + Ebean 17 REST API on Java 25 and PostgreSQL. Single Maven module; entry point `rest.api.API#main` (port 8080, context path `/v1/`). Request flow: filters → handlers → services → Ebean entities → PostgreSQL.
+> Javalin 7 + Ebean 17 REST API on Java 25 and PostgreSQL. Single Maven module; entry point `rest.api.API#main` (port 8080, context path `/v1/`). Request flow: filters -> handlers -> services -> Ebean entities -> PostgreSQL.
 
 ## Agent entrypoints
 
