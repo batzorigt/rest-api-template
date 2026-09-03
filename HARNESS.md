@@ -64,24 +64,11 @@ Rules: new knowledge goes to its canonical home **once**; sanctioned homes summa
 
 ## Commands
 
-| Task | Linux/macOS | Windows |
-|---|---|---|
-| Build jar + JTE + ebean agent (no tests) | `./build.sh` | `build.bat` |
-| Same without AppCDS | `mvn package` | same |
-| Run app (needs prior package) | `./run.sh` | `run.bat` |
-| Tests / single test | `mvn test [-Dtest=Class[#method]]` | same |
+See `AGENTS.md` -> Commands.
 
 ## Artifacts (never commit, never hand-edit)
 
-| Path | Origin |
-|---|---|
-| `target/` | Maven output |
-| `app-cds.jsa` | `build.*` AppCDS dump |
-| `jte-classes/` (root), `src/main/jib/jte-classes/` | JTE precompile goal |
-| `src/main/jib/ebean-agent-<ver>.jar` | copied by `mvn package`; version tracks `<ebean.version>` |
-| `[feature]/query/Q*.java`, MapStruct `*Impl` | annotation processors at compile time |
-
-Fix generated-code problems in the generating source, never in outputs.
+See `AGENTS.md` → Generated code.
 
 ## Runtime config resolution
 
@@ -105,6 +92,6 @@ Fix generated-code problems in the generating source, never in outputs.
 
 ## Safety rails
 
-- No global auth filter; XSRF defaults off (`xsrfProtectionEnabled=false`). Route RBAC is separate and always active where roles are declared — semantics: `AGENTS.md` → Conventions.
+- No global auth filter; XSRF defaults off (`xsrfProtectionEnabled=false`). Route RBAC semantics: `AGENTS.md` → Conventions.
 - `dbmigration/*.sql` is generator output; regeneration contract: `AGENTS.md` → Database migrations.
-- Hard rules (`docs/architecture-standards.md`): Javalin/Ebean/MapStruct/JTE/Log4j2 only; no Spring, XML config, raw JDBC.
+- Hard rules: `docs/architecture-standards.md` → Technology Standards.
