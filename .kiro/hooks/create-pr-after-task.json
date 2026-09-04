@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Create PR After Task",
+      "trigger": "PostTaskExec",
+      "description": "Create new branch and PR if DoD is met",
+      "action": {
+        "type": "command",
+        "command": "powershell scripts/create-pr.ps1"
+      }
+    }
+  ]
+}

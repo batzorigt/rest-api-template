@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check Main First",
+      "trigger": "PreTaskExec",
+      "description": "Block task execution if main-first workflow is not followed",
+      "action": {
+        "type": "command",
+        "command": "powershell scripts/check-main-first.ps1"
+      }
+    }
+  ]
+}

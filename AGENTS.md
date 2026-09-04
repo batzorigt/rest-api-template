@@ -75,6 +75,23 @@ Every change ships, in the same task, with:
 3. **Neutrality pass** — docs *and* code stay model-, agent-, and IDE-neutral. Docs: canonical files name no LLM/coding-agent/IDE except as marked examples or rows in `HARNESS.md`'s wiring table; harness-specific automation lives only in adapter files (`opencode.json`, `.opencode/`), which may automate but never define contracts. Code: no AI/agent attribution comments or markers anywhere in tracked sources, no tool-/IDE-specific files or paths in the diff (IDE metadata like `.settings/`, `.vscode/`, `.idea/` stays untracked), generated code produced only by its generators, build reproducible without any IDE. Full rules: `HARNESS.md` → *Neutrality mechanism*.
 4. **Dependency & duplication check** — on every code or doc change, verify related dependencies; if duplication exists, consolidate instead of adding.
 
+### Main-first workflow
+
+- **Pre-work gate**: Before starting any change, run `git status --porcelain`. If any unmerged changes exist (files prefixed with `M`), merge them to `main` first. This hook blocks task execution via `PreTaskExec` if unmerged files are present.
+- **Cross-platform**: The hook runs `powershell scripts/check-main-first.ps1`. PowerShell Core (pwsh) is available on macOS/Linux/Windows.
+- **After change is complete**: If DoD (`LOOP.md` → Definition of done) is met, create a new branch and open a PR. Never push directly to `main`.
+- **Branch naming**: Use feature/prefix format (e.g., `feature/add-user`, `fix/genre-validation`). PR title under 70 characters.
+
+### Post-change PR flow
+
+- **Auto-PR creation**: Once DoD is met (green `mvn test`, tests shipped, docs updated, neutrality pass, no duplication), a new branch is auto-created and pushed.
+- **Hook trigger**: `PostTaskExec` runs `scripts/create-pr.ps1` which:
+  1. Checks DoD compliance (green tests, all files committed)
+  2. Creates a new `feature/<description>-<timestamp>` branch from main
+  3. Commits and pushes the branch
+  4. Creates a PR via GitHub CLI (`gh pr create`)
+- **Requirements**: GitHub CLI (`gh`) must be installed and authenticated. PR is created against `main` branch.
+
 No code-only drift without docs, and no doc-only claims without a green `mvn test`.
 
 ## Configuration
