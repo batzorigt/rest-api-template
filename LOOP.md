@@ -16,6 +16,8 @@ No lint/typecheck: compiler + annotation processors + tests are the entire gate 
 2. Targeted tests — `mvn test -Dtest=Class[#method]` (Docker required).
 3. Full gate — `mvn test`. Never skip before declaring done; no CI enforces it.
 
+Refer to `AGENTS.md` → Main-first workflow for branch/PR rules before and after changes.
+
 Shortcut example: opencode `/verify` wraps these steps. Other harnesses wrap the same steps natively; this file stays canonical.
 
 ## Failure handling (fix & resync)
@@ -80,3 +82,13 @@ On any failing step:
 - [ ] App started via `run.*` where relevant
 - [ ] PlantUML diagrams render without errors
 - [ ] Dependencies verified; no duplicate code/docs introduced
+
+## Pre-change gate
+
+- Refer to `AGENTS.md` → Main-first workflow for branch/PR rules before and after changes.
+- The hook runs `powershell scripts/check-main-first.ps1`. PowerShell Core (pwsh) is available on macOS/Linux/Windows.
+
+## Post-change PR flow
+
+- Refer to `AGENTS.md` → Post-change PR flow for auto-PR creation after DoD is met.
+- Requires GitHub CLI (`gh`) installed and authenticated.
