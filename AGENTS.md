@@ -84,7 +84,7 @@ Every change ships, in the same task, with:
 
 ### Post-change PR flow
 
-- **Auto-PR creation**: Once DoD is met (green `mvn test`, tests shipped, docs updated, neutrality pass, no duplication), a new branch is auto-created and pushed.
+- **Auto-PR creation**: If DoD (`LOOP.md` → Definition of done) is met, a new branch is auto-created and pushed.
 - **Hook trigger**: `PostTaskExec` runs `scripts/create-pr.ps1` which:
   1. Checks for uncommitted changes (`git status --porcelain`)
   2. Creates a new `feature/<timestamp>` branch from main

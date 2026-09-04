@@ -16,8 +16,6 @@ No lint/typecheck: compiler + annotation processors + tests are the entire gate 
 2. Targeted tests — `mvn test -Dtest=Class[#method]` (Docker required).
 3. Full gate — `mvn test`. Never skip before declaring done; no CI enforces it.
 
-Refer to `AGENTS.md` → Main-first workflow for branch/PR rules before and after changes.
-
 Shortcut example: opencode `/verify` wraps these steps. Other harnesses wrap the same steps natively; this file stays canonical.
 
 ## Failure handling (fix & resync)
