@@ -22,3 +22,10 @@ Progressive-disclosure map for this directory. Grep these stable headings inside
 ## standards
 
 - [architecture-standards.md](architecture-standards.md) — team hard rules: C4/PlantUML requirements, must-use/must-not-use technologies, security and database standards
+
+## ai-loop
+
+- `.ai-loop/schema/` — JSON schemas for state and verification tracking
+- `.ai-loop/templates/` — templates for task planning, state, and verification
+- `.ai-loop/tasks/` — per-task state and verification tracking
+- `scripts/validate-ai-loop.*` — validation scripts for AI workflow integrity

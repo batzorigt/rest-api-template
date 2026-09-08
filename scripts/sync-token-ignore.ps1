@@ -55,6 +55,8 @@ foreach ($p in $patterns) {
         $ignoreList += "**/$p"
     }
 }
+$ignoreList += "**/.ai-loop/**"
+$ignoreList += "**/.ai-loop"
 $opencodeJson.ignore = $ignoreList | Sort-Object -Unique
 
 $opencodeJson | ConvertTo-Json -Depth 10 | Set-Content -Path $opencodeFile -Encoding UTF8
