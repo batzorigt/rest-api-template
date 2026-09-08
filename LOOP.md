@@ -80,3 +80,5 @@ On any failing step:
 - [ ] App started via `run.*` where relevant
 - [ ] PlantUML diagrams render without errors
 - [ ] Dependencies verified; no duplicate code/docs introduced
+- [ ] AI loop validation passed (`./scripts/validate-ai-loop.*`)
+- [ ] AI task state tracked in `.ai-loop/tasks/<task-id>/`

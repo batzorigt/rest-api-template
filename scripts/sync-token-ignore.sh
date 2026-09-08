@@ -74,6 +74,10 @@ done
 # Unique and sort
 IFS=$'\n' IGNORE_ARRAY=($(sort -u <<<"${IGNORE_ARRAY[*]}"))
 
+# Add AI Loop patterns
+IGNORE_ARRAY+=("\"**/.ai-loop/**\"")
+IGNORE_ARRAY+=("\"**/.ai-loop\"")
+
 # Create JSON array string
 IGNORE_JSON=$(printf '    %s,\n' "${IGNORE_ARRAY[@]}" | sed '$s/,$//')
 
