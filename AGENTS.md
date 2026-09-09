@@ -26,6 +26,19 @@ Context is expensive — these rules are mandatory in every session:
 - Prefer a harness shortcut over re-deriving the loop (e.g., some harnesses ship `/verify`); elsewhere run LOOP.md's three steps verbatim.
 - Configure your harness to auto-ignore the above paths — synced from `.token-ignore` via `scripts/sync-token-ignore.ps1`.
 
+## Editing approach
+
+Prefer minimal, targeted edits.
+
+Do not rewrite or regenerate an entire existing file when the requested
+change can be safely applied as a localized patch.
+
+A full-file rewrite is allowed only when:
+- the file is generated,
+- most of the file must change,
+- the file is structurally corrupted, or
+- a minimal patch would be less reliable or more complex.
+
 ## Pre-work (mandatory before any change)
 
 - Read related docs and code first — understand current architecture, conventions, and patterns
