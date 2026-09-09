@@ -39,6 +39,18 @@ A full-file rewrite is allowed only when:
 - the file is structurally corrupted, or
 - a minimal patch would be less reliable or more complex.
 
+## Planning considerations
+
+When developing a plan, take the following factors into account:
+- functionality
+- security
+- reliability
+- availability
+- scalability
+- performance
+- operability
+- testability
+
 ## Pre-work (mandatory before any change)
 
 - Read related docs and code first — understand current architecture, conventions, and patterns
