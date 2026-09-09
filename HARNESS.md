@@ -89,6 +89,7 @@ See `AGENTS.md` → Generated code.
 | JVM aborts with shared-archive mismatch | stale `app-cds.jsa` after dependency change | delete it or rerun `build.*` |
 | Compile errors in `Q*.java` / MapStruct impls | edited generated code | revert; change the source and rebuild |
 | Message assertions fail | default locale Japan; expectations in `i18n_ja.properties` | assert Japanese text or pass explicit `Locale` |
+| Retry limit exceeded for operation type | transient, corrective, or flaky test retry limit reached | assess failure type per `LOOP.md` → Failure Classifications; if transient, document evidence and escalate; if corrective, create new plan with human approval |
 
 ## Safety rails
 
