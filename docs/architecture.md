@@ -505,6 +505,7 @@ src/
     │   ├── CryptoTest.java          # AES-GCM encrypt/decrypt/sign
     │   ├── AppConfigTest.java       # Owner config loading
     │   ├── ContextHelpersTest.java  # Response helpers + query params
+    │   ├── HandlerTransactionTestSupport.java # Shared transaction assertions
     │   ├── PagedDataTest.java       # Pagination wrapper
     │   ├── PagedSearchTest.java     # Paged vs all-data finder logic
     │   ├── I18NTest.java            # i18n message resolution
@@ -512,8 +513,8 @@ src/
     │   ├── IOTest.java              # Classpath/file read helpers
     │   ├── TemplateEnginesTest.java # JTE dev/precompiled modes
     │   ├── MailTest.java            # SMTP message building
-    │   ├── genre/                   # GenreHandlerTest, GenreServiceTest, DGenreTest
-    │   └── member/                  # MemberHandlerTest, MemberServiceTest
+    │   ├── genre/                   # GenreHandlerTest, GenreHandlerTransactionTest, GenreServiceTest, DGenreTest
+    │   └── member/                  # MemberHandlerTest, MemberHandlerTransactionTest, MemberServiceTest
     └── resources/
         ├── application.properties   # Test DB config (Postgres Testcontainer :6433)
         └── ...                      # i18n bundles for tests, log4j2.xml
@@ -671,11 +672,26 @@ docker run -p 8080:8080 \
 
 | Layer | Tooling | Notes |
 |---------|---------|---------|
-| Unit tests | JUnit 5 + Mockito | Service/utility tests (`RoleTest`, etc.) |
-| Integration tests | JUnit 5 + Ebean Test | Tests against a real DB |
+| Unit tests | JUnit 6 + Mockito | Service/utility tests (`RoleTest`, etc.) |
+| Integration tests | JUnit 6 + Ebean Test | Tests against a real DB |
 | Container tests | Testcontainers | Dockerized PostgreSQL |
 | HTTP tests | Unirest | API endpoint tests (`AuthorizationTest` — RBAC 401/403/allow matrix) |
 | Mocking | Mockito / JMockit | External dependency isolation |
+
+`GenreHandlerTransactionTest` and `MemberHandlerTransactionTest` call all five
+transactional handler methods with real services and PostgreSQL, mocking only the
+Javalin context. They check declared read-only metadata and active transaction
+lifecycle for reads, writable transaction flags and committed writes,
+rollback after response preparation fails, and transaction cleanup after success,
+validation failures, and missing records. Member creation checks both the member
+and its cascaded phone rows. Each rollback case observes the write inside the
+handler before throwing, then checks persisted state after the handler exits.
+The tests have no enclosing test transaction, so they exercise the handlers'
+Ebean enhancement. Existing HTTP tests cover routing and authorization.
+
+Run these suites with `./mvnw test -Dtest=GenreHandlerTransactionTest,MemberHandlerTransactionTest`
+(PowerShell: `.\mvnw.cmd test '-Dtest=GenreHandlerTransactionTest,MemberHandlerTransactionTest'`).
+Environment prerequisites and the full verification loop are in `HARNESS.md` and `LOOP.md`.
 
 Test DB config (`src/test/resources/application.properties`):
 
