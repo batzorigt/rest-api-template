@@ -23,7 +23,7 @@ Before running any verification checks or declaring work done.
 
 1. `mvn -q compile` — fix every error before continuing.
 2. Targeted tests: `mvn test -Dtest=Class[#method]`; pick classes covering the files changed this session.
-3. Full gate: `mvn test`. Never declare done without step 3 green.
+3. Full gate: run `bash ./scripts/validate-doc-index.sh` or `.\scripts\validate-doc-index.ps1`, then `mvn test`. Never declare done without both checks green.
 
 On any failure: fix the smallest root cause; if behavior or contracts changed, resync matching tests + canonical docs in the same pass; re-run the failed step first (LOOP.md → Failure handling).
 

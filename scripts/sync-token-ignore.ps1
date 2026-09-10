@@ -14,52 +14,92 @@ if (-not (Test-Path $tokenIgnoreFile)) {
     exit 1
 }
 
-# Read patterns from .token-ignore (skip comments/empty lines)
-$patterns = Get-Content $tokenIgnoreFile | Where-Object { $_ -and $_ -notmatch '^\s*#' } | ForEach-Object { $_.Trim() }
+# Read categorized patterns from .token-ignore.
+$automaticPatterns = @()
+$neverReadPatterns = @()
+$section = $null
+
+foreach ($rawLine in Get-Content -LiteralPath $tokenIgnoreFile -Encoding UTF8) {
+    $line = $rawLine.Trim()
+    if ($line -eq '# [automatic-index-exclude]') {
+        $section = 'automatic'
+        continue
+    }
+    if ($line -eq '# [never-read]') {
+        $section = 'never'
+        continue
+    }
+    if (-not $line -or $line.StartsWith('#')) {
+        continue
+    }
+
+    switch ($section) {
+        'automatic' { $automaticPatterns += $line }
+        'never' { $neverReadPatterns += $line }
+        default {
+            Write-Error "Pattern '$line' is outside a recognized category"
+            exit 1
+        }
+    }
+}
+
+if ($automaticPatterns.Count -eq 0 -or $neverReadPatterns.Count -eq 0) {
+    Write-Error '.token-ignore must contain non-empty [automatic-index-exclude] and [never-read] categories'
+    exit 1
+}
+
+$patterns = @($automaticPatterns + $neverReadPatterns) | Sort-Object -Unique
 
 # --- Update AGENTS.md ---
-$agentsContent = Get-Content $agentsFile -Raw
+$agentsContent = Get-Content -LiteralPath $agentsFile -Raw -Encoding UTF8
 
-# Build the IDE/tool metadata line
-$idePatterns = $patterns | Where-Object { $_ -match '^\.' } | Sort-Object
-$ideLine = "- Never open IDE/tool metadata: " + (($idePatterns | ForEach-Object { "`"$_`"" }) -join ', ') + ". These are not source code."
+# Build the categorized AGENTS.md lines.
+$formatPatterns = {
+    param([string[]]$items)
+    return (($items | Sort-Object | ForEach-Object { ([char]96) + $_ + ([char]96) }) -join ', ')
+}
 
-# Build the generated/artifact paths line (directory patterns only, no wildcards)
-$artifactPatterns = $patterns | Where-Object { $_ -notmatch '^\.' -and $_ -notmatch 'node_modules' -and $_ -notmatch '^\*\*' -and $_ -notmatch '\*' } | Sort-Object
-$artifactLine = "- Never open generated/artifact paths: " + (($artifactPatterns | ForEach-Object { "`"$_`"" }) -join ', ') + ". There is nothing to learn inside."
+$automaticLine = '- Automatic broad indexing excludes ' + (& $formatPatterns $automaticPatterns) + '; targeted reads remain allowed when relevant, and `.ai-loop/` must be read when explicit task tracking is active.'
+$neverReadLine = '- Never open generated/artifact/dependency paths: ' + (& $formatPatterns $neverReadPatterns) + '. There is nothing to learn inside.'
 
-# Build the node_modules line
-$nodeModulesLine = '- Never open `node_modules/` — massive token waste (10k–50k files). Not source code.'
+$newAgentsContent = $agentsContent -replace '(?m)^- Automatic broad indexing excludes .*$', $automaticLine
+$newAgentsContent = $newAgentsContent -replace '(?m)^- Never open generated/artifact/dependency paths: .*$', $neverReadLine
 
-# Replace the first two bullet points in Token discipline section
-$pattern = '(?s)(## Token discipline\n\nContext is expensive \x2014 these rules are mandatory in every session:\n\n)(- Never open generated/artifact paths:.*?\n)(- Never open IDE/tool metadata:.*?\n)'
-$replacement = '$1' + $artifactLine + "`n" + $ideLine + "`n" + $nodeModulesLine + "`n"
-$newAgentsContent = $agentsContent -replace $pattern, $replacement
-
-# Also update the "Configure your harness" line
-$newAgentsContent = $newAgentsContent -replace 'Configure your harness to auto-ignore the above paths \(opencode: `ignore` in `opencode\.json`\)\.', 'Configure your harness to auto-ignore the above paths (opencode: `ignore` in `opencode.json`) \x2014 synced from `.token-ignore` via `scripts/sync-token-ignore.ps1`.'
-
-Set-Content -Path $agentsFile -Value $newAgentsContent -Encoding UTF8
+$newAgentsContent = ($newAgentsContent -replace "`r`n", "`n").TrimEnd("`r", "`n") + "`n"
+[System.IO.File]::WriteAllText($agentsFile, $newAgentsContent, [System.Text.UTF8Encoding]::new($true))
 Write-Host "Updated AGENTS.md"
 
 # --- Update opencode.json ---
-$opencodeJson = Get-Content $opencodeFile -Raw | ConvertFrom-Json
+$opencodeContent = Get-Content -LiteralPath $opencodeFile -Raw -Encoding UTF8
+$null = $opencodeContent | ConvertFrom-Json
 $ignoreList = @()
 foreach ($p in $patterns) {
     if ($p -match '^\*\*' -or $p -match '\*') {
         # File glob pattern - add as-is
         $ignoreList += $p
     } else {
-        # Directory pattern - add both directory and recursive
-        $ignoreList += "**/$p/**"
-        $ignoreList += "**/$p"
+        $normalizedPattern = $p.TrimEnd('/')
+        if ($normalizedPattern -match '\.[^/]+$' -and -not $normalizedPattern.StartsWith('.')) {
+            # Exact file pattern
+            $ignoreList += "**/$normalizedPattern"
+        } else {
+            # Directory pattern - add both directory and recursive
+            $ignoreList += "**/$normalizedPattern/**"
+            $ignoreList += "**/$normalizedPattern"
+        }
     }
 }
-$ignoreList += "**/.ai-loop/**"
-$ignoreList += "**/.ai-loop"
-$opencodeJson.ignore = $ignoreList | Sort-Object -Unique
-
-$opencodeJson | ConvertTo-Json -Depth 10 | Set-Content -Path $opencodeFile -Encoding UTF8
+$ignoreList = $ignoreList | Sort-Object -Unique
+$ignoreEntries = ($ignoreList | ForEach-Object { '    "' + $_ + '"' }) -join ",`n"
+$ignoreBlock = "  `"ignore`": [`n$ignoreEntries`n  ]"
+$ignorePattern = '(?ms)^\s*"ignore"\s*:\s*\[.*?^\s*\]'
+if ([regex]::Matches($opencodeContent, $ignorePattern).Count -ne 1) {
+    Write-Error 'Expected exactly one ignore array in opencode.json'
+    exit 1
+}
+$newOpencodeContent = [regex]::Replace($opencodeContent, $ignorePattern, $ignoreBlock, 1)
+$newOpencodeContent = ($newOpencodeContent -replace "`r`n", "`n").TrimEnd("`r", "`n") + "`n"
+[System.IO.File]::WriteAllText($opencodeFile, $newOpencodeContent, [System.Text.UTF8Encoding]::new($true))
 Write-Host "Updated opencode.json"
 
 Write-Host "Sync complete. Patterns synced: $($patterns.Count)"

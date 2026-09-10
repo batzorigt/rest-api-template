@@ -1,33 +1,37 @@
 ﻿{
-    "$schema":  "https://opencode.ai/config.json",
-    "share":  "disabled",
-    "compaction":  {
-                       "auto":  true,
-                       "prune":  true
-                   },
-    "instructions":  [
-                         "AGENTS.md"
-                     ],
-    "ignore":  [
-                   "**/.github",
-                   "**/.github/**",
-                   "**/.mvn",
-                   "**/.mvn/**",
-                   "**/.opencode",
-                   "**/.opencode/**",
-                   "**/.settings",
-                   "**/.settings/**",
-                   "**/.vscode",
-                   "**/.vscode/**",
-                   "**/app-cds.jsa",
-                   "**/jte-classes",
-                   "**/jte-classes/**",
-                   "**/node_modules",
-                   "**/node_modules/**",
-                   "**/query/Q*.java",
-                   "**/src/main/jib",
-                   "**/src/main/jib/**",
-                   "**/target",
-                   "**/target/**"
-               ]
+  "$schema": "https://opencode.ai/config.json",
+  "share": "disabled",
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "instructions": [
+    "AGENTS.md"
+  ],
+  "ignore": [
+    "**/.ai-loop",
+    "**/.ai-loop/**",
+    "**/.github",
+    "**/.github/**",
+    "**/.idea",
+    "**/.idea/**",
+    "**/.mvn",
+    "**/.mvn/**",
+    "**/.opencode",
+    "**/.opencode/**",
+    "**/.settings",
+    "**/.settings/**",
+    "**/.vscode",
+    "**/.vscode/**",
+    "**/app-cds.jsa",
+    "**/jte-classes",
+    "**/jte-classes/**",
+    "**/node_modules",
+    "**/node_modules/**",
+    "**/query/Q*.java",
+    "**/src/main/jib",
+    "**/src/main/jib/**",
+    "**/target",
+    "**/target/**"
+  ]
 }

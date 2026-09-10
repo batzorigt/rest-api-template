@@ -59,6 +59,7 @@ Each fact lives fully once; elsewhere = pointer or sanctioned summary.
 | Web-agent index | `llms.txt` | pointers and one-line facts only |
 | Lifecycle metadata (`type`, `status`, `stale_after`) | each playbook/skill frontmatter | indexes describe, never restate dates |
 | Architecture-doc section anchors | `docs/index.md` | grep targets only |
+| Context indexing and never-read categories | `.token-ignore` | `AGENTS.md` summary; adapters automate broad exclusions |
 
 Rules: new knowledge goes to its canonical home **once**; sanctioned homes summarize, never extend or contradict; conflicts resolve in favor of canonical (fix stale copy immediately — `LOOP.md` → Failure handling); retire docs by deletion unless history must stay reproducible (`status: deprecated` + pointer).
 

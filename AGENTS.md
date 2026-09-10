@@ -15,16 +15,17 @@ Both are on-demand playbooks: load them via the repo skills `repo-harness` / `re
 
 Context is expensive — these rules are mandatory in every session:
 
-- Never open generated/artifact paths: `jte-classes/`, `src/main/jib/`, `target/`, `app-cds.jsa`. There is nothing to learn inside.
-- Never open IDE/tool metadata: `.github/`, `.mvn/`, `.opencode/`, `.settings/`, `.vscode/`. These are not source code.
-- Grep before Read, always. Big files are section-anchored: `docs/architecture.md` (~580 lines) has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
+- Automatic broad indexing excludes `.ai-loop/`, `.github`, `.idea`, `.mvn`, `.opencode`, `.settings`, `.vscode`; targeted reads remain allowed when relevant, and `.ai-loop/` must be read when explicit task tracking is active.
+- Never open generated/artifact/dependency paths: `**/query/Q*.java`, `app-cds.jsa`, `jte-classes`, `node_modules`, `src/main/jib`, `target`. There is nothing to learn inside.
+- For documentation work, open `docs/index.md` first and use its exact section anchors to locate only the relevant canonical content.
+- Grep before Read, always. Big files are section-anchored: `docs/architecture.md` has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
 - Delegate wide, multi-file searches to your harness's explore/general subagent; pull back summaries, not raw file dumps.
 - Playbooks are on-demand: invoke the repo skills `repo-harness` (before env/tooling/triage work) and `repo-loops` (before verifying); without a skill mechanism, read `HARNESS.md`/`LOOP.md` directly at those same moments.
 - Frontmatter `stale_after` dates are a trust signal: when today is past the date, re-verify the doc's facts against their source (pom.xml versions, code) before relying on them, and refresh the date after confirming.
 - Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`mvn -q compile`).
 - Iterate with targeted tests (`mvn test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
 - Prefer a harness shortcut over re-deriving the loop (e.g., some harnesses ship `/verify`); elsewhere run LOOP.md's three steps verbatim.
-- Configure your harness to auto-ignore the above paths — synced from `.token-ignore` via `scripts/sync-token-ignore.ps1`.
+- Configure your harness from the categorized paths in `.token-ignore` — synced via `scripts/sync-token-ignore.ps1` or `scripts/sync-token-ignore.sh`.
 
 ## Editing approach
 
@@ -112,4 +113,3 @@ No code-only drift without docs, and no doc-only claims without a green `mvn tes
 
 - Default locale is Japan: `API.start()` loads `Locale.JAPAN`, and some test assertions compare against Japanese messages from `i18n_ja.properties`. Main resources ship **Japanese only** — there is no English `i18n.properties` bundle (`I18NJapaneseOnlyTest` guards this).
 - `docs/architecture-standards.md` holds additional team standards: C4/PlantUML docs required for new features, and hard rules (must use Javalin/Ebean/MapStruct/JTE/Log4j2; no Spring, no XML config, no raw JDBC).
-
