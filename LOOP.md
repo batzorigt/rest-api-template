@@ -96,7 +96,7 @@ Unless the repository already defines stricter limits (none exist), use these de
 
 1. `mvn -q compile` after any Java edit — catches most breakage cheaply. `Unresolved compilation problem` error = shared-`target/` IDE contamination → `mvn clean`, repeat.
 2. Targeted tests — `mvn test -Dtest=Class[#method]` (Docker required).
-3. Full gate — `mvn test`. Never skip before declaring done; no CI enforces it.
+3. Full gate — run `bash ./scripts/validate-doc-index.sh` (Linux/macOS) or `.\scripts\validate-doc-index.ps1` (Windows), then `mvn test`. Never skip either check before declaring done; no CI enforces them.
 
 Shortcut example: some harnesses provide a `/verify` command that wraps these steps. Other harnesses wrap the same steps natively; this file stays canonical.
 
@@ -151,6 +151,14 @@ On any failing step:
 4. Compile → targeted → full gate.
 5. Update `docs/architecture.md` endpoint table + security section on any role change.
 
+## Documentation-change loop
+
+1. Open `docs/index.md` first; use its exact anchors to read only the relevant canonical sections.
+2. Edit each fact in its canonical home (`HARNESS.md` → Canonical-home map) and update pointers without duplicating the fact.
+3. When an indexed `docs/architecture.md` heading changes, update the matching backticked anchor in `docs/index.md`.
+4. Run `bash ./scripts/validate-doc-index.sh` (Linux/macOS) or `.\scripts\validate-doc-index.ps1` (Windows).
+5. Run `mvn test` as the full gate.
+
 ## Template changes
 
 - `environment=local`: JTE hot-reloads from `src/main/resources/jte`.
@@ -176,6 +184,7 @@ On any failing step:
 - [ ] App started via `run.*` where relevant
 - [ ] PlantUML diagrams render without errors
 - [ ] Dependencies verified; no duplicate code/docs introduced
+- [ ] Documentation index validation passed (`./scripts/validate-doc-index.*`)
 - [ ] AI loop validation passed (`./scripts/validate-ai-loop.*`)
 - [ ] AI task state tracked in `.ai-loop/tasks/<task-id>/`
 - [ ] Retry policy respected: primary implementation executed once (counter 0→1, separate from retries); corrective attempts counted separately (failed corrective = counter 1, not 2); transient retries counted per-operation (2 retries = counter 2, 3 total executions); flaky test reruns counted per-test; verifier rejection prevents automatic retries; human approval obtained when limits exceeded or approach changes needed

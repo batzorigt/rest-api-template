@@ -13,47 +13,53 @@ if [[ ! -f "$TOKEN_IGNORE" ]]; then
     exit 1
 fi
 
-# Read patterns (skip comments/empty lines)
-mapfile -t PATTERNS < <(grep -v '^\s*#' "$TOKEN_IGNORE" | grep -v '^\s*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+# Read categorized patterns.
+AUTOMATIC_PATTERNS=()
+NEVER_READ_PATTERNS=()
+SECTION=""
+
+while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+    line="$(printf '%s' "$raw_line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    case "$line" in
+        '# [automatic-index-exclude]') SECTION="automatic"; continue ;;
+        '# [never-read]') SECTION="never"; continue ;;
+        ''|'#'*) continue ;;
+    esac
+
+    case "$SECTION" in
+        automatic) AUTOMATIC_PATTERNS+=("$line") ;;
+        never) NEVER_READ_PATTERNS+=("$line") ;;
+        *)
+            echo "Error: pattern '$line' is outside a recognized category" >&2
+            exit 1
+            ;;
+    esac
+done < "$TOKEN_IGNORE"
+
+if [[ ${#AUTOMATIC_PATTERNS[@]} -eq 0 || ${#NEVER_READ_PATTERNS[@]} -eq 0 ]]; then
+    echo "Error: .token-ignore must contain non-empty [automatic-index-exclude] and [never-read] categories" >&2
+    exit 1
+fi
+
+mapfile -t PATTERNS < <(printf '%s\n' "${AUTOMATIC_PATTERNS[@]}" "${NEVER_READ_PATTERNS[@]}" | sort -u)
 
 # --- Update AGENTS.md ---
-# Separate patterns by type
-IDE_PATTERNS=()
-ARTIFACT_PATTERNS=()
-FILE_PATTERNS=()
-HAS_NODE_MODULES=false
+format_patterns() {
+    printf '`%s`, ' "$@" | sed 's/, $//'
+}
 
-for p in "${PATTERNS[@]}"; do
-    if [[ "$p" == .* ]]; then
-        IDE_PATTERNS+=("$p")
-    elif [[ "$p" == "node_modules" ]]; then
-        HAS_NODE_MODULES=true
-    elif [[ "$p" == **/query/Q*.java ]] || [[ "$p" == *'*'* ]]; then
-        FILE_PATTERNS+=("$p")
-    else
-        ARTIFACT_PATTERNS+=("$p")
-    fi
-done
+mapfile -t SORTED_AUTOMATIC < <(printf '%s\n' "${AUTOMATIC_PATTERNS[@]}" | sort)
+mapfile -t SORTED_NEVER_READ < <(printf '%s\n' "${NEVER_READ_PATTERNS[@]}" | sort)
+AUTOMATIC_LINE="- Automatic broad indexing excludes $(format_patterns "${SORTED_AUTOMATIC[@]}"); targeted reads remain allowed when relevant, and \`.ai-loop/\` must be read when explicit task tracking is active."
+NEVER_READ_LINE="- Never open generated/artifact/dependency paths: $(format_patterns "${SORTED_NEVER_READ[@]}"). There is nothing to learn inside."
 
-# Sort
-IFS=$'\n' IDE_PATTERNS=($(sort <<<"${IDE_PATTERNS[*]}"))
-IFS=$'\n' ARTIFACT_PATTERNS=($(sort <<<"${ARTIFACT_PATTERNS[*]}"))
-
-# Build replacement lines
-IDE_LINE="- Never open IDE/tool metadata: $(printf '\`%s\`, ' "${IDE_PATTERNS[@]}" | sed 's/, $//'). These are not source code."
-ARTIFACT_LINE="- Never open generated/artifact paths: $(printf '\`%s\`, ' "${ARTIFACT_PATTERNS[@]}" | sed 's/, $//'). There is nothing to learn inside."
-NODE_LINE="- Never open \`node_modules/\` — massive token waste (10k–50k files). Not source code."
-
-# Use perl for multi-line replacement
-perl -i -0pe '
-    s/(## Token discipline\n\nContext is expensive \x{2014} these rules are mandatory in every session:\n\n)
-       - Never open generated\/artifact paths:.*?\n
-       - Never open IDE\/tool metadata:.*?\n
-    /$1'"$ARTIFACT_LINE"'\n'"$IDE_LINE"'\n'"$NODE_LINE"'\n/sx
-' "$AGENTS_FILE"
-
-# Update the configure line
-sed -i 's/Configure your harness to auto-ignore the above paths (opencode: `ignore` in `opencode\.json`)\./Configure your harness to auto-ignore the above paths (opencode: `ignore` in `opencode.json`) \x{2014} synced from `.token-ignore` via `scripts\/sync-token-ignore.sh`./' "$AGENTS_FILE"
+agents_tmp="$(mktemp "${AGENTS_FILE}.tmp.XXXXXX")"
+awk -v automatic_line="$AUTOMATIC_LINE" -v never_read_line="$NEVER_READ_LINE" '
+    /^- Automatic broad indexing excludes / { print automatic_line; next }
+    /^- Never open generated\/artifact\/dependency paths: / { print never_read_line; next }
+    { print }
+' "$AGENTS_FILE" > "$agents_tmp"
+mv "$agents_tmp" "$AGENTS_FILE"
 
 echo "Updated AGENTS.md"
 
@@ -65,27 +71,61 @@ for p in "${PATTERNS[@]}"; do
         # File glob pattern - add as-is
         IGNORE_ARRAY+=("\"$p\"")
     else
-        # Directory pattern - add both directory and recursive
-        IGNORE_ARRAY+=("\"**/$p/**\"")
-        IGNORE_ARRAY+=("\"**/$p\"")
+        normalized_pattern="${p%/}"
+        if [[ "$normalized_pattern" == *.* && "$normalized_pattern" != .* ]]; then
+            # Exact file pattern
+            IGNORE_ARRAY+=("\"**/$normalized_pattern\"")
+        else
+            # Directory pattern - add both directory and recursive
+            IGNORE_ARRAY+=("\"**/$normalized_pattern/**\"")
+            IGNORE_ARRAY+=("\"**/$normalized_pattern\"")
+        fi
     fi
 done
 
 # Unique and sort
-IFS=$'\n' IGNORE_ARRAY=($(sort -u <<<"${IGNORE_ARRAY[*]}"))
+mapfile -t IGNORE_ARRAY < <(printf '%s\n' "${IGNORE_ARRAY[@]}" | sort -u)
 
-# Add AI Loop patterns
-IGNORE_ARRAY+=("\"**/.ai-loop/**\"")
-IGNORE_ARRAY+=("\"**/.ai-loop\"")
+IGNORE_JSON_COMPACT="[$(printf '%s,' "${IGNORE_ARRAY[@]}" | sed 's/,$//')]"
 
-# Create JSON array string
-IGNORE_JSON=$(printf '    %s,\n' "${IGNORE_ARRAY[@]}" | sed '$s/,$//')
+# Update only the ignore array so both platform scripts preserve surrounding formatting.
+if command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1; then
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_COMMAND="python3"
+    else
+        PYTHON_COMMAND="python"
+    fi
+    IGNORE_JSON_COMPACT="$IGNORE_JSON_COMPACT" "$PYTHON_COMMAND" - "$OPENCODE_FILE" <<'PYTHON'
+import json
+import os
+import re
+import sys
 
-# Update opencode.json using jq if available, else perl
-if command -v jq >/dev/null 2>&1; then
-    jq --argjson ignore "[$(printf '"%s",' "${IGNORE_ARRAY[@]}" | sed 's/,$//')]" '.ignore = $ignore' "$OPENCODE_FILE" > "$OPENCODE_FILE.tmp" && mv "$OPENCODE_FILE.tmp" "$OPENCODE_FILE"
+path = sys.argv[1]
+with open(path, "rb") as source:
+    raw_content = source.read()
+has_bom = raw_content.startswith(b"\xef\xbb\xbf")
+content = raw_content.decode("utf-8-sig")
+ignore = json.loads(os.environ["IGNORE_JSON_COMPACT"])
+entries = ",\n".join(f'    {json.dumps(pattern)}' for pattern in ignore)
+replacement = f'  "ignore": [\n{entries}\n  ]'
+updated, replacements = re.subn(
+    r'^\s*"ignore"\s*:\s*\[.*?^\s*\]',
+    replacement,
+    content,
+    count=1,
+    flags=re.MULTILINE | re.DOTALL,
+)
+if replacements != 1:
+    raise SystemExit("Error: expected exactly one ignore array in opencode.json")
+json.loads(updated)
+encoding = "utf-8-sig" if has_bom else "utf-8"
+with open(path, "w", encoding=encoding, newline="\n") as destination:
+    destination.write(updated.rstrip("\r\n") + "\n")
+PYTHON
 else
-    perl -i -0pe 's/"ignore"\s*:\s*\[.*?\]/"ignore": [\n'"$IGNORE_JSON"'\n  ]/s' "$OPENCODE_FILE"
+    echo "Error: updating opencode.json requires python3 or python" >&2
+    exit 1
 fi
 
 echo "Updated opencode.json"
