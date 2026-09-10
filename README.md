@@ -36,6 +36,8 @@ Podman: add `--format docker`; use `host.containers.internal` for `DB_HOST_NAME`
 
 See `docs/architecture.md` → Technology Stack.
 
+Transaction test coverage and targeted commands: [Testing Strategy](docs/architecture.md#testing-strategy).
+
 ## Architecture
 
 ```
