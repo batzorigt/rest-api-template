@@ -9,6 +9,3 @@
 /dependency-reduced-pom.xml
 /jte-classes/
 app-cds.jsa
-
-# AI Loop workflow files
-.ai-loop/

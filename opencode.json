@@ -29,9 +29,10 @@
     "**/node_modules",
     "**/node_modules/**",
     "**/query/Q*.java",
-    "**/src/main/jib",
-    "**/src/main/jib/**",
+    "**/src/main/jib/jte-classes",
+    "**/src/main/jib/jte-classes/**",
     "**/target",
-    "**/target/**"
+    "**/target/**",
+    "src/main/jib/ebean-agent-*.jar"
   ]
 }

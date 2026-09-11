@@ -7,10 +7,10 @@ public class RequestLoggerTest {
 
     @Test
     void formatContainsMethodPathStatusDuration() {
-        String line = RequestLogger.format("GET", "/v1/genres?page=2", 200, 12);
+        String line = RequestLogger.format("GET", "/v1/genres", 200, 12);
 
         Assertions.assertTrue(line.startsWith("[http]"));
-        Assertions.assertTrue(line.contains("GET /v1/genres?page=2 -> 200"));
+        Assertions.assertTrue(line.contains("GET /v1/genres -> 200"));
         Assertions.assertTrue(line.endsWith("(12 ms)"));
     }
 

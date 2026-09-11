@@ -4,7 +4,9 @@ info:
   version: 1.0.0
   description: >
     Layered REST API (Javalin + Ebean + PostgreSQL). Update this spec in the same
-    task as any API-surface change - see AGENTS.md -> Change workflow.
+    task as any API-surface change - see AGENTS.md -> Change workflow. When XSRF
+    protection is enabled, GET responses return an `x-xsrf-token` header and
+    matching HttpOnly cookie; clients echo the header on mutating requests.
 servers:
   - url: http://localhost:8080/v1/
 tags:
@@ -17,28 +19,27 @@ paths:
       tags: [genres]
       summary: List genres
       description: |
-        With both pagination params -> `PagedGenres`. Without them -> raw array of all rows
-        (memory risk on large tables; triggers a runtime WARN).
+        With both pagination params -> a populated `PagedGenres` envelope. With neither ->
+        the same envelope with only `data` populated (memory risk on large tables; triggers
+        a runtime WARN). Supplying only one parameter returns 400.
       parameters:
         - $ref: '#/components/parameters/PageNumber'
         - $ref: '#/components/parameters/RecordsPerPage'
       responses:
         '200':
-          description: Paged envelope or full array
+          description: Paged envelope; pagination metadata is null when both parameters are absent
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/PagedGenres'
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/Genre'
+                $ref: '#/components/schemas/PagedGenres'
+        '400': { $ref: '#/components/responses/TextBadRequest' }
         '404':
           $ref: '#/components/responses/MessageNotFound'
       security: []
     post:
       tags: [genres]
       summary: Add genre
+      x-required-role: MANAGER
       security: [{ secureTokenCookie: [] }]
       requestBody:
         required: true
@@ -53,13 +54,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Genre'
-        '400': { $ref: '#/components/responses/MessageBadRequest' }
+        '400': { $ref: '#/components/responses/ValidationBadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /genres/{id}:
     delete:
       tags: [genres]
       summary: Delete genre
+      x-required-role: ADMIN
       security: [{ secureTokenCookie: [] }]
       parameters:
         - name: id
@@ -68,7 +70,7 @@ paths:
           schema: { type: integer, format: int32 }
       responses:
         '204': { description: Deleted }
-        '400': { $ref: '#/components/responses/MessageBadRequest' }
+        '400': { $ref: '#/components/responses/OperationBadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /members:
@@ -112,6 +114,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Member'
+        '400': { $ref: '#/components/responses/TextBadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/MessageNotFound' }
   /metrics:
@@ -125,7 +128,11 @@ paths:
           content:
             text/plain:
               schema: { type: string }
-        '401': { description: Missing or wrong credentials }
+        '401':
+          description: Missing or wrong credentials
+          headers:
+            WWW-Authenticate:
+              schema: { type: string, example: 'Basic realm="metrics"' }
 components:
   parameters:
     PageNumber:
@@ -135,18 +142,31 @@ components:
     RecordsPerPage:
       name: recordsPerPage
       in: query
-      schema: { type: integer, format: int32, minimum: 1, maximum: 10 }
+      description: Values above 10 are capped at 10.
+      schema: { type: integer, format: int32, minimum: 1 }
   responses:
     MessageNotFound:
       description: Data not found
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Message' }
-    MessageBadRequest:
-      description: Could not perform operation
+    ValidationBadRequest:
+      description: Validation errors keyed by request field
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationErrors' }
+    OperationBadRequest:
+      description: Invalid path parameter or operation could not be completed
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Message' }
+        text/plain:
+          schema: { type: string }
+    TextBadRequest:
+      description: Malformed, non-positive, incomplete, or oversized pagination parameters
+      content:
+        text/plain:
+          schema: { type: string }
     Unauthorized:
       description: Missing/invalid/expired token
       content:
@@ -161,7 +181,7 @@ components:
     AuditFields:
       type: object
       properties:
-        id: { type: integer, format: int64 }
+        id: { type: integer, format: int32 }
         createdAt: { type: integer, format: int64, description: Epoch millis }
         updatedAt: { type: integer, format: int64, description: Epoch millis }
     Genre:
@@ -189,21 +209,24 @@ components:
         data:
           type: array
           items: { $ref: '#/components/schemas/Genre' }
-        pageNumber: { type: integer, format: int32 }
-        numberOfPages: { type: integer, format: int32 }
-        recordsPerPage: { type: integer, format: int32 }
-        numberOfRecords: { type: integer, format: int64 }
+        pageNumber: { type: integer, format: int32, nullable: true }
+        numberOfPages: { type: integer, format: int32, nullable: true }
+        recordsPerPage: { type: integer, format: int32, nullable: true }
+        numberOfRecords: { type: integer, format: int32, nullable: true }
     PhoneNumber:
-      type: object
-      properties:
-        phoneNo: { type: string }
-        isHomePhoneNo: { type: boolean }
+      allOf:
+        - $ref: '#/components/schemas/AuditFields'
+        - type: object
+          properties:
+            phoneNo: { type: string }
+            isHomePhoneNo: { type: boolean }
     Member:
       allOf:
         - $ref: '#/components/schemas/AuditFields'
         - type: object
           properties:
             name: { type: string }
+            sex: { type: integer, format: int32, nullable: true }
             phones:
               type: array
               items: { $ref: '#/components/schemas/PhoneNumber' }
@@ -212,6 +235,11 @@ components:
       required: [name]
       properties:
         name: { type: string, minLength: 1, maxLength: 10 }
+        phones:
+          type: array
+          description: May be omitted by clients; the server default is an empty array. Explicit null is invalid.
+          items: { type: string, minLength: 1, maxLength: 255 }
+          default: []
     Message:
       type: object
       properties:

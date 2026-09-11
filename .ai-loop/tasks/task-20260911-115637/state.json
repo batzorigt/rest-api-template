@@ -1,0 +1,55 @@
+{
+  "taskId": "task-20260911-115637",
+  "title": "Preserve template helper APIs",
+  "description": "Restore reusable template helpers and namespace interfaces while retaining structured JSON and runtime correctness fixes.",
+  "status": "completed",
+  "baseCommit": "5b16768588024303ba222f53aff99ab0e219f135",
+  "targetBranch": "feature/ai-task-20260910-project-consistency-audit",
+  "filesModified": [
+    "AGENTS.md",
+    "docs/architecture.md",
+    "pom.xml",
+    "src/main/java/rest/api/ContextHelpers.java",
+    "src/main/java/rest/api/SecureToken.java",
+    "src/main/java/rest/api/Server.java",
+    "src/main/java/rest/api/TemplateEngines.java",
+    "src/main/java/rest/api/Validators.java",
+    "src/main/java/rest/api/genre/GenreHandler.java",
+    "src/main/java/rest/api/genre/GenreService.java",
+    "src/main/java/rest/api/member/MemberHandler.java",
+    "src/main/java/rest/api/member/MemberService.java",
+    "src/main/resources/i18n_ja.properties",
+    "src/test/java/rest/api/ContextHelpersTest.java",
+    "src/test/resources/i18n_ja.properties"
+  ],
+  "filesCreated": [
+    ".ai-loop/tasks/task-20260911-115637/plan.md",
+    ".ai-loop/tasks/task-20260911-115637/state.json",
+    ".ai-loop/tasks/task-20260911-115637/verification.json"
+  ],
+  "filesDeleted": [],
+  "verifiedTests": true,
+  "verifiedDocs": true,
+  "verifiedNeutrality": true,
+  "verifiedNoDuplication": true,
+  "retryAttempts": {
+    "primaryImplementationAttempt": 1,
+    "correctiveAttempt": 0,
+    "transientRetry": 0,
+    "flakyTestRerun": 0
+  },
+  "lastRetryType": null,
+  "lastRetryReason": "",
+  "retryLimitsExceeded": [],
+  "primaryImplementationStatus": "completed",
+  "primaryImplementationFailureReason": "",
+  "verifierRejection": false,
+  "verifierRejectionReason": "",
+  "createdAt": "2026-09-11T03:56:37Z",
+  "updatedAt": "2026-09-11T04:00:02Z",
+  "metadata": {
+    "initiator": "user",
+    "priority": "high",
+    "relatedTasks": ["task-20260910-174827", "task-20260911-095555"]
+  }
+}

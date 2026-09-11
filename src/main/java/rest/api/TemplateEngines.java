@@ -10,12 +10,12 @@ import gg.jte.resolve.DirectoryCodeResolver;
 public interface TemplateEngines {
 
     static TemplateEngine jteEngine() {
-        if ("local".equals(API.cfg.environment())) {
+        if (Config.LOCAL_ENVIRONMENT.equalsIgnoreCase(Server.cfg.environment())) {
             CodeResolver codeResolver = new DirectoryCodeResolver(Path.of("src/main/resources/jte"));
             return TemplateEngine.create(codeResolver, ContentType.Html);
         }
 
-        return TemplateEngine.createPrecompiled(Path.of(API.cfg.jteClassesDir()), ContentType.Html);
+        return TemplateEngine.createPrecompiled(Path.of(Server.cfg.jteClassesDir()), ContentType.Html);
     }
 
 }

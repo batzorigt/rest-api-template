@@ -43,6 +43,17 @@ public class SecureTokenTest {
     }
 
     @Test
+    void rejectsFutureTimestampAndNegativeTimeout() {
+        String payload = Crypto.encrypt(Server.cfg.encryptionKey(), user.toString());
+        long future = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5);
+        String timestampedPayload = payload + "." + future;
+        String token = timestampedPayload + "." + XSRFToken.sign(timestampedPayload);
+
+        Assertions.assertNull(SecureToken.parse(token, TimeUnit.MINUTES.toMillis(10)));
+        Assertions.assertNull(SecureToken.parse(SecureToken.generate(user), -1));
+    }
+
+    @Test
     public void threadSafeOnVirtualThreads() throws Exception {
         String expected = user.toString();
         long timeout = TimeUnit.MINUTES.toMillis(5);

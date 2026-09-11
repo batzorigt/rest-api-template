@@ -2,7 +2,7 @@
 
 ## Project
 
-Javalin 7 + Ebean 17 REST API on **Java 25** and PostgreSQL. Single Maven module, entry point `rest.api.API#main` (port 8080, context path `/v1/`). Request flow: filters → handlers → services → Ebean entities → PostgreSQL.
+Javalin 7 + Ebean 17 REST API on **Java 25** and PostgreSQL. Single Maven module, entry point `rest.api.Server#main` (port 8080, context path `/v1/`). Request flow: filters → handlers → services → Ebean entities → PostgreSQL.
 
 Vendor-neutral playbooks referenced by this file:
 
@@ -16,14 +16,14 @@ Both are on-demand playbooks: load them via the repo skills `repo-harness` / `re
 Context is expensive — these rules are mandatory in every session:
 
 - Automatic broad indexing excludes `.ai-loop/`, `.github`, `.idea`, `.mvn`, `.opencode`, `.settings`, `.vscode`; targeted reads remain allowed when relevant, and `.ai-loop/` must be read when explicit task tracking is active.
-- Never open generated/artifact/dependency paths: `**/query/Q*.java`, `app-cds.jsa`, `jte-classes`, `node_modules`, `src/main/jib`, `target`. There is nothing to learn inside.
+- Never open generated/artifact/dependency paths: `**/query/Q*.java`, `app-cds.jsa`, `jte-classes`, `node_modules`, `src/main/jib/ebean-agent-*.jar`, `src/main/jib/jte-classes`, `target`. There is nothing to learn inside.
 - For documentation work, open `docs/index.md` first and use its exact section anchors to locate only the relevant canonical content.
 - Grep before Read, always. Big files are section-anchored: `docs/architecture.md` has stable headings (`Security Architecture`, `Database Schema`, `Package Structure`, `API Endpoints`, …) — grep the heading, then read only that slice.
 - Delegate wide, multi-file searches to your harness's explore/general subagent; pull back summaries, not raw file dumps.
 - Playbooks are on-demand: invoke the repo skills `repo-harness` (before env/tooling/triage work) and `repo-loops` (before verifying); without a skill mechanism, read `HARNESS.md`/`LOOP.md` directly at those same moments.
 - Frontmatter `stale_after` dates are a trust signal: when today is past the date, re-verify the doc's facts against their source (pom.xml versions, code) before relying on them, and refresh the date after confirming.
-- Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`mvn -q compile`).
-- Iterate with targeted tests (`mvn test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
+- Keep terminal output lean: `.mvn/maven.config` already sets `--no-transfer-progress`; add `-q` yourself for compile checks (`./mvnw -q compile`).
+- Iterate with targeted tests (`./mvnw test -Dtest=Class[#method]`); pay the full-gate cost once at the end.
 - Prefer a harness shortcut over re-deriving the loop (e.g., some harnesses ship `/verify`); elsewhere run LOOP.md's three steps verbatim.
 - Configure your harness from the categorized paths in `.token-ignore` — synced via `scripts/sync-token-ignore.ps1` or `scripts/sync-token-ignore.sh`.
 
@@ -63,11 +63,11 @@ When developing a plan, take the following factors into account:
 
 Maven wrapper is available (`./mvnw` / `mvnw.cmd`).
 
-- `mvn test` — all tests. **Requires a running Docker daemon**: integration/service/handler tests boot a PostgreSQL Testcontainer on port 6433 with `ddlMode=dropCreate` (see `src/test/resources/application.properties`).
-- Single test: `mvn test -Dtest=GenreHandlerTest`
-- `mvn package` — builds `target/rest-api-template-1.0.0.jar`, precompiles JTE templates, and copies `ebean-agent-<ebean.version>.jar` into `src/main/jib/` (generated, not in git).
+- `./mvnw test` — all tests. **Requires a running Docker daemon**: integration/service/handler tests boot a PostgreSQL Testcontainer on port 6433 with `ddlMode=dropCreate` (see `src/test/resources/application.properties`).
+- Single test: `./mvnw test -Dtest=GenreHandlerTest`
+- `./mvnw package` — builds `target/rest-api-template-1.0.0.jar`, precompiles JTE templates, and copies `ebean-agent-<ebean.version>.jar` into `src/main/jib/` (generated, not in git).
 - `build.bat` / `build.sh` — `mvn clean package -DskipTests` plus AppCDS archive (`app-cds.jsa`) generation.
-- `run.bat` / `run.sh` — start the app with required JVM flags; both fail unless `mvn package` ran first.
+- `run.bat` / `run.sh` — start the app with required JVM flags; both fail unless the package step ran first.
 
 Do NOT run the fat jar plainly: `java -jar target/...jar` fails because Ebean entities are enhanced at runtime by the javaagent. Always pass `-javaagent:src/main/jib/ebean-agent-<version>.jar` (version must match `<ebean.version>` in `pom.xml`) — or just use the run scripts. Tests get their agents injected via the Surefire `argLine` in `pom.xml`.
 
@@ -85,9 +85,10 @@ After changing entities, run `rest.api.GenerateDbMigration#main` to emit SQL int
 ## Conventions (differ from framework defaults)
 
 - No Spring, no DI container: static helper methods and direct instantiation everywhere.
+- Static helper interfaces are namespaces only: call their methods statically and never implement them.
 - Transactions are declared on **handler** methods (`io.ebean.annotation.Transactional`), not services. Services stay transaction-free business logic.
 - Feature package layout: `D[Entity].java` (Ebean `@Entity` extends `Domain`), `[Entity].java` (DTO with nested MapStruct `Convertor`), `[Feature]ToAdd.java` (request DTO), `[Feature]Handler.java` (static `routes()` registration), `[Feature]Service.java`.
-- New routes go in the feature handler's static `routes()`, called from `API.config`.
+- New routes go in the feature handler's static `routes()`, called from `Server.config`.
 - Route protection (RBAC): declare allowed roles as extra route args (`app.post("genres", h, Role.MANAGER)`). `rest.api.Role` is `USER < MANAGER < ADMIN`; higher levels satisfy lower requirements; routes without roles stay public. Enforcement is centralized in `Authorization.wrap` (registered via `config.router.handlerWrapper`) — never hand-roll auth checks inside handlers.
 - Session identity: `Authentication.handle` validates the `secure-token` cookie and stores its JSON payload as the `member` context attribute; the user's role comes from that payload's `role` claim (missing/unknown → `USER`). A future login endpoint must embed the role claim when minting tokens.
 - Lombok `accessors.chain = true`: setters return `this`.
@@ -98,10 +99,10 @@ Every change ships, in the same task, with:
 
 1. **Matching tests** — unit tests for new logic, handler-level HTTP tests for endpoints/auth changes (patterns per `LOOP.md`). Run compile → targeted → full gate before declaring done. Reuse before adding: grep for an existing helper/service first; feature-local logic stays in its feature, genuinely shared logic moves to `rest.api` root helpers.
 2. **Doc updates** — anything touching behavior, endpoints, architecture, or tooling updates the relevant MD files in the same task: `docs/architecture.md` (C4 diagrams, package tree, endpoint table), `README.md`, plus `HARNESS.md` / `LOOP.md` / `docs/architecture-standards.md` when contracts or standards change, and `openapi.yaml` whenever endpoints, request/response payloads, parameters, or auth surface change (create it if missing). Place each new fact in its canonical home once (`HARNESS.md` → *Canonical-home map*); everywhere else points, never restates.
-3. **Neutrality pass** — docs *and* code stay model-, agent-, and IDE-neutral. Docs: canonical files name no LLM/coding-agent/IDE except as marked examples or rows in `HARNESS.md`'s wiring table; harness-specific automation lives only in adapter files (`opencode.json`, `.opencode/`), which may automate but never define contracts. Code: no AI/agent attribution comments or markers anywhere in tracked sources, no tool-/IDE-specific files or paths in the diff (IDE metadata like `.settings/`, `.vscode/`, `.idea/` stays untracked), generated code produced only by its generators, build reproducible without any IDE. Full rules: `HARNESS.md` → *Neutrality mechanism*.
+3. **Neutrality pass** — docs *and* code stay model-, agent-, and IDE-neutral. Docs: canonical files name no LLM/coding-agent/IDE except as marked examples or rows in `HARNESS.md`'s wiring table; harness-specific automation lives only in adapter files (`opencode.json`, `.opencode/`, `.github/`), which may automate but never define contracts. Code: no AI/agent attribution comments or markers anywhere in tracked sources, no tool-/IDE-specific files or paths in the diff (IDE metadata like `.settings/`, `.vscode/`, `.idea/` stays untracked), generated code produced only by its generators, build reproducible without any IDE. Full rules: `HARNESS.md` → *Neutrality layers*.
 4. **Dependency & duplication check** — on every code or doc change, verify related dependencies; if duplication exists, consolidate instead of adding.
 
-No code-only drift without docs, and no doc-only claims without a green `mvn test`.
+No code-only drift without docs, and no doc-only claims without a green `./mvnw test`.
 
 ## Configuration
 
@@ -111,5 +112,5 @@ No code-only drift without docs, and no doc-only claims without a green `mvn tes
 
 ## Gotchas
 
-- Default locale is Japan: `API.start()` loads `Locale.JAPAN`, and some test assertions compare against Japanese messages from `i18n_ja.properties`. Main resources ship **Japanese only** — there is no English `i18n.properties` bundle (`I18NJapaneseOnlyTest` guards this).
-- `docs/architecture-standards.md` holds additional team standards: C4/PlantUML docs required for new features, and hard rules (must use Javalin/Ebean/MapStruct/JTE/Log4j2; no Spring, no XML config, no raw JDBC).
+- Default locale is Japan: `Server.start()` loads `Locale.JAPAN`, and some test assertions compare against Japanese messages from `i18n_ja.properties`. Main resources ship **Japanese only** — there is no English `i18n.properties` bundle (`I18NJapaneseOnlyTest` guards this).
+- `docs/architecture-standards.md` holds additional team standards: C4/PlantUML docs required for new features, and hard rules (must use Javalin/Ebean/MapStruct/JTE/Log4j2; no Spring or XML application wiring, no raw JDBC).

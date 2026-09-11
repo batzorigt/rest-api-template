@@ -17,7 +17,7 @@ Progressive-disclosure map for this directory. Grep these stable headings inside
 - `API Endpoints` — route table with roles column (subsections: Pagination Query Params, Error Responses)
 - `Build & Deployment` — Maven, AppCDS, Jib, run scripts
 - `Testing Strategy` — Testcontainers setup, handler-test patterns
-- `Configuration Reference` — every config key with defaults
+- `Configuration Reference` — Owner application config keys and defaults
 
 ## standards
 

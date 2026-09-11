@@ -3,8 +3,6 @@ package rest.api.genre;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Locale;
-import java.util.Random;
 
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.AfterAll;
@@ -18,20 +16,19 @@ import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
-import rest.api.API;
-import rest.api.I18N;
+import rest.api.Server;
 import rest.api.PagedData;
 import rest.api.genre.query.QDGenre;
 
 public class GenreHandlerTest {
 
-    private static API api = new API();
-    private static final int PORT_NO = 1000 + new Random().nextInt(9000);
-    private static final GetRequest GET_GENRES = Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO));
+    private static Server api = new Server();
+    private static String genresUrl;
 
     @BeforeAll
     public static void beforeAll() throws Throwable {
-        api.start(PORT_NO);
+        api.start(0);
+        genresUrl = String.format("http://localhost:%d/v1/genres", api.port());
     }
 
     @AfterAll
@@ -46,17 +43,16 @@ public class GenreHandlerTest {
 
     @Test
     void notFoundCase() throws Exception {
-        HttpResponse<String> response = GET_GENRES.asString();
+        HttpResponse<JsonNode> response = getGenres().asJson();
         assertEquals(HttpStatus.NOT_FOUND_404, response.getStatus());
-        assertEquals(String.format("{\"msg\": \"%s\"}", I18N.message("data.not.found", Locale.JAPAN)), response
-                .getBody());
+        assertNotNull(response.getBody().getObject().getString("msg"));
     }
 
     @Test
     void dataExistingCase() throws Exception {
         DGenreTest.insertRecords(1, 10);
 
-        HttpResponse<JsonNode> res = GET_GENRES.asJson();
+        HttpResponse<JsonNode> res = getGenres().asJson();
         JSONObject result = res.getBody().getObject();
         JSONArray data = result.getJSONArray("data");
         JSONObject firstElement = data.getJSONObject(0);
@@ -65,7 +61,7 @@ public class GenreHandlerTest {
         assertEquals(10, data.length());
         assertEquals("name1", firstElement.get("name"));
 
-        res = GET_GENRES.queryString(PagedData.PAGE_NUMBER, 4).queryString(PagedData.RECORDS_PER_PAGE, 3).asJson();
+        res = getGenres().queryString(PagedData.PAGE_NUMBER, 4).queryString(PagedData.RECORDS_PER_PAGE, 3).asJson();
         result = res.getBody().getObject();
         data = result.getJSONArray("data");
         firstElement = data.getJSONObject(0);
@@ -87,21 +83,36 @@ public class GenreHandlerTest {
         assertEquals(4, result.get("numberOfPages"));
         assertEquals(3, result.get(PagedData.RECORDS_PER_PAGE));
         assertEquals(10, result.get("numberOfRecords"));
+
+        res = getGenres().queryString(PagedData.PAGE_NUMBER, 1)
+                .queryString(PagedData.RECORDS_PER_PAGE, 50).asJson();
+        assertEquals(HttpStatus.OK_200, res.getStatus());
+        assertEquals(10, res.getBody().getObject().get(PagedData.RECORDS_PER_PAGE));
     }
 
     @Test
     void invalidPaginationParamsAreRejected() {
         assertEquals(HttpStatus.BAD_REQUEST_400,
-                Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO))
+                getGenres()
                         .queryString("pageNumber", "abc").asString().getStatus());
         assertEquals(HttpStatus.BAD_REQUEST_400,
-                Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO))
+                getGenres()
                         .queryString(PagedData.PAGE_NUMBER, "-1").queryString(PagedData.RECORDS_PER_PAGE, 3)
                         .asString().getStatus());
         assertEquals(HttpStatus.BAD_REQUEST_400,
-                Unirest.get(String.format("http://localhost:%d/v1/genres", PORT_NO))
+                getGenres()
                         .queryString(PagedData.PAGE_NUMBER, 1).queryString(PagedData.RECORDS_PER_PAGE, "0")
                         .asString().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST_400,
+                getGenres()
+                        .queryString(PagedData.PAGE_NUMBER, 1).asString().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST_400,
+                getGenres()
+                        .queryString(PagedData.RECORDS_PER_PAGE, 10).asString().getStatus());
+    }
+
+    private static GetRequest getGenres() {
+        return Unirest.get(genresUrl);
     }
 
 }

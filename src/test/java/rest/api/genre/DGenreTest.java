@@ -68,7 +68,7 @@ public class DGenreTest {
     @Test
     void findList() throws Exception {
         insertRecords(4, 6);
-        List<DGenre> genres = new QDGenre().findList();
+        List<DGenre> genres = new QDGenre().orderBy().orderNumber.asc().findList();
         assertResults(genres, 4, 6);
     }
 

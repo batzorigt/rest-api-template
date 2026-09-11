@@ -20,15 +20,15 @@ import jakarta.validation.metadata.ConstraintDescriptor;
 
 public abstract class Validators {
 
-    private static final Locale defaultLocale = Locale.JAPANESE;
-    private static final Set<Locale> allowedLocales = Set.of(defaultLocale, Locale.ENGLISH);
-    
+    private static final Locale DEFAULT_LOCALE = Locale.JAPANESE;
+    private static final Set<Locale> ALLOWED_LOCALES = Set.of(DEFAULT_LOCALE, Locale.ENGLISH);
+
     @SuppressWarnings("null")
-	private static final ValidatorFactory factory = Validation.byDefaultProvider().configure().messageInterpolator(
-            new ParameterMessageInterpolator(allowedLocales, defaultLocale, new DefaultLocaleResolver(), false))
+    private static final ValidatorFactory FACTORY = Validation.byDefaultProvider().configure().messageInterpolator(
+            new ParameterMessageInterpolator(ALLOWED_LOCALES, DEFAULT_LOCALE, new DefaultLocaleResolver(), false))
             .buildValidatorFactory();
 
-    private static Validator validator = factory.getValidator();
+    private static Validator VALIDATOR = FACTORY.getValidator();
 
     public static boolean notBlank(String value) {
         return StringUtils.isNotBlank(value);
@@ -40,7 +40,7 @@ public abstract class Validators {
 
     public static <T> T validate(Context ctx, Class<T> type) {
         T input = ctx.bodyAsClass(type);
-        Set<ConstraintViolation<Object>> violations = validator.validate(input);
+        Set<ConstraintViolation<Object>> violations = VALIDATOR.validate(input);
 
         if (violations.isEmpty()) {
             return input;
@@ -67,11 +67,11 @@ public abstract class Validators {
 
     private static String message(Context ctx, ConstraintViolation<Object> violation) {
         Locale locale = ctx.req().getLocale();
-        if (!allowedLocales.contains(locale) || defaultLocale.equals(locale)) {
+        if (!ALLOWED_LOCALES.contains(locale) || DEFAULT_LOCALE.equals(locale)) {
             return violation.getMessage();
         }
 
-        return factory.getMessageInterpolator().interpolate(violation.getMessageTemplate(),
+        return FACTORY.getMessageInterpolator().interpolate(violation.getMessageTemplate(),
                 new MessageInterpolator.Context() {
 
                     @Override

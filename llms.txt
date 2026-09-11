@@ -1,6 +1,6 @@
 # rest-api-template
 
-> Javalin 7 + Ebean 17 REST API on Java 25 and PostgreSQL. Single Maven module; entry point `rest.api.API#main` (port 8080, context path `/v1/`). Request flow: filters -> handlers -> services -> Ebean entities -> PostgreSQL.
+> Javalin 7 + Ebean 17 REST API on Java 25 and PostgreSQL. Single Maven module; entry point `rest.api.Server#main` (port 8080, context path `/v1/`). Request flow: filters -> handlers -> services -> Ebean entities -> PostgreSQL.
 
 ## Agent entrypoints
 
@@ -19,6 +19,7 @@
 
 - repo-harness: distilled environment contract; loads the HARNESS.md context when tooling or triage work starts
 - repo-loops: distilled verification playbooks; loads the LOOP.md context when checks or done-claims start
+- repo-ai-loop: task planning, state, and verification tracking when the explicit task workflow is active
 
 ## Quick facts
 

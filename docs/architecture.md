@@ -1,9 +1,5 @@
 # Rest API Template — Architecture Documentation
 
-> **Preview diagrams:** `Ctrl+Shift+V` (Markdown Preview Enhanced) · PlantUML: `Alt+D` inside `.puml` files
-
----
-
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -19,6 +15,7 @@
 11. [API Endpoints](#api-endpoints)
 12. [Build & Deployment](#build--deployment)
 13. [Testing Strategy](#testing-strategy)
+14. [Configuration Reference](#configuration-reference)
 
 ---
 
@@ -108,7 +105,7 @@ rectangle "Rest API Template" as boundary {
 
   component "API Handlers\n[Java classes]\nMemberHandler\nGenreHandler" as handlers #dce8ff
 
-  component "Business Services\n[Java interfaces]\nMemberService\nGenreService" as services #dce8ff
+  component "Business Services\n[Static Java APIs]\nMemberService\nGenreService" as services #dce8ff
 
   component "Data Access\n[Ebean ORM 17.6]\nQueryBean, DDL,\nMigration" as orm #ffe6cc
 
@@ -153,7 +150,7 @@ skinparam component {
 }
 skinparam ArrowColor #444444
 
-component "API\n(Entry point)" as api #d5e8d4
+component "Server\n(Entry point)" as api #d5e8d4
 component "Config\n(Owner interface)" as config #e1d5e7
 component "Authorization\n(Route RBAC wrapper)" as authz #f8cecc
 component "Role\n(USER < MANAGER < ADMIN)" as role #f8cecc
@@ -319,7 +316,6 @@ note right of crypto
   Keys derived via HKDF-SHA256 (purpose-separated enc/sig)
 end note
 
-authz --> st : parse token\n(30 min timeout)
 authz --> role : resolve claim,\ncompare with route minimum
 auth --> st : parse token\n(30 min timeout)
 xsrf --> xt : validate token\n(30 min timeout)
@@ -339,7 +335,7 @@ note bottom of auth
 end note
 
 note bottom of xsrf
-  GET: generate + set cookie "xsrf-token"
+  GET: return header + HttpOnly cookie "xsrf-token"
   POST/PUT/DELETE/PATCH: validate
   header "x-xsrf-token" == cookie
 end note
@@ -354,7 +350,7 @@ end note
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
 | `X-Frame-Options` | `DENY` |
 | `X-Content-Type-Options` | `nosniff` |
-| `Content-Security-Policy` | `frame-ancestors 'none'; default-src 'self' style-src 'self' 'unsafe-inline';` |
+| `Content-Security-Policy` | `frame-ancestors 'none'; default-src 'self'; style-src 'self' 'unsafe-inline';` |
 | `Cache-Control` | `no-store` |
 | `X-XSS-Protection` | `1; mode=block` |
 | `Referrer-Policy` | `no-referrer` |
@@ -370,15 +366,7 @@ end note
 - **Public routes:** no role args = public, no checks.
 - **Responses:** missing/invalid/expired token → `401`; insufficient role → `403`.
 
-Current route matrix:
-
-| Route | Minimum role |
-|-------|--------------|
-| `POST /v1/members` | public (registration) |
-| `GET /v1/members/{id}` | `USER` (any authenticated) |
-| `GET /v1/genres` | public |
-| `POST /v1/genres` | `MANAGER` |
-| `DELETE /v1/genres/{id}` | `ADMIN` |
+The current route-to-role matrix is maintained once in [API Endpoints](#api-endpoints).
 
 ---
 
@@ -440,7 +428,7 @@ members ||--o{ phones : "has many"
 src/
 ├── main/
 │   ├── java/rest/api/
-│   │   ├── API.java                  # Entry point, Javalin config
+│   │   ├── Server.java               # Entry point, Javalin config
 │   │   ├── Config.java               # Configuration interface (Owner)
 │   │   ├── Domain.java               # Base entity (id, createdAt, updatedAt)
 │   │   ├── Authorization.java        # Route RBAC wrapper (handlerWrapper)
@@ -449,6 +437,7 @@ src/
 │   │   ├── XSRFFilter.java           # CSRF filter (cookie + header)
 │   │   ├── XSRFToken.java            # XSRF token generator/validator
 │   │   ├── SecureToken.java          # Encrypted secure token
+│   │   ├── TimedToken.java           # Shared signed-token timestamp validation
 │   │   ├── Crypto.java               # AES-GCM + HmacSHA256
 │   │   ├── Base64.java               # URL-safe Base64
 │   │   ├── ContextAttributes.java    # Context attribute key constants
@@ -463,6 +452,8 @@ src/
 │   │   ├── Mail.java                 # Jakarta Mail SMTP sender
 │   │   ├── TemplateEngines.java      # JTE engine factory
 │   │   ├── Micrometer.java           # Prometheus metrics setup
+│   │   ├── RequestLogger.java         # Safe HTTP request logging
+│   │   ├── StartupGuard.java          # Production configuration guard
 │   │   ├── GenerateDbMigration.java  # DDL migration generator (dev only)
 │   │   │
 │   │   ├── member/                   # Member feature
@@ -499,11 +490,14 @@ src/
 └── test/
     ├── java/rest/api/
     │   ├── AuthorizationTest.java   # RBAC 401/403/allow matrix (HTTP)
+    │   ├── ServerBehaviorTest.java  # Metrics auth + response-header checks
     │   ├── RoleTest.java            # Role hierarchy + parse unit tests
     │   ├── SecureTokenTest.java     # Token gen/parse/expiry
     │   ├── XSRFTokenTest.java       # XSRF token sign/validate
+    │   ├── XSRFFilterTest.java      # XSRF browser handshake + mutation validation
     │   ├── CryptoTest.java          # AES-GCM encrypt/decrypt/sign
     │   ├── AppConfigTest.java       # Owner config loading
+    │   ├── AppConfig.java           # Owner test fixture
     │   ├── ContextHelpersTest.java  # Response helpers + query params
     │   ├── HandlerTransactionTestSupport.java # Shared transaction assertions
     │   ├── PagedDataTest.java       # Pagination wrapper
@@ -512,7 +506,9 @@ src/
     │   ├── I18NJapaneseOnlyTest.java# Guards Japanese-only bundle contract
     │   ├── IOTest.java              # Classpath/file read helpers
     │   ├── TemplateEnginesTest.java # JTE dev/precompiled modes
-    │   ├── MailTest.java            # SMTP message building
+    │   ├── MailTest.java            # Disabled manual SMTP integration examples
+    │   ├── RequestLoggerTest.java   # Request-log formatting and redaction
+    │   ├── StartupGuardTest.java    # Production-key safety guard
     │   ├── genre/                   # GenreHandlerTest, GenreHandlerTransactionTest, GenreServiceTest, DGenreTest
     │   └── member/                  # MemberHandlerTest, MemberHandlerTransactionTest, MemberServiceTest
     └── resources/
@@ -536,20 +532,19 @@ src/
 | Configuration | Owner | 1.0.12 | Externalized config |
 | Templates | JTE | 3.2.4 | Server-side HTML |
 | Logging Facade | SLF4J | 2.0.17 | API used by Javalin/Ebean |
-| Logging | Log4j2 | 2.26.0 | Async structured logging |
-| Async Logging | LMAX Disruptor | 4.0.0 | Lock-free async log queue |
+| Logging | Log4j2 | 2.26.0 | Pattern-based application logging |
+| Async Logging | LMAX Disruptor | 4.0.0 | Async log queue enabled by run scripts |
 | Monitoring | Micrometer | 1.16.5 | Prometheus metrics |
 | Mail API | Jakarta Mail | 2.1.5 | SMTP email API |
 | Mail Provider | Angus Mail | 2.0.5 | Jakarta Mail implementation |
 | JSON | Jackson | 2.21.3 | JSON serialization |
 | JSON | org.json | 20251224 | JSON object building |
-| Mobile Detect | mobiledetect | 1.1.1 | User-agent parsing |
+| Mobile Detection | mobiledetect | 1.1.1 | Optional user-agent helper exposed by `ContextHelpers` |
 | Utils | Commons Lang3 | 3.20.0 | String utilities |
 | Utils | Commons Collections4 | 4.5.0 | Collection utilities |
 | Code Gen | Lombok | 1.18.46 | Getters/Setters/Builders |
 | Testing | JUnit Jupiter | 6.0.3 | Unit testing |
 | Testing | Mockito | 5.23.0 | Mocking |
-| Testing | JMockit | 1.50 | Alternative mocking |
 | Testing | Ebean Test | 17.6.0 | DB testing support |
 | Testing | Testcontainers | (via Ebean) | Docker-based DB tests |
 | Testing | Unirest | 3.14.5 | HTTP client for tests |
@@ -560,7 +555,7 @@ src/
 
 | Method | Path | Description | Transaction | Roles |
 |--------|------|-------------|-------------|-------|
-| `GET` | `/v1/genres` | List genres (paginated) | `readOnly` | public |
+| `GET` | `/v1/genres` | List genres in a `PagedData` envelope | `readOnly` | public |
 | `POST` | `/v1/genres` | Add genre | `readWrite` | `MANAGER+` |
 | `DELETE` | `/v1/genres/{id}` | Delete genre | `readWrite` | `ADMIN` |
 | `GET` | `/v1/members/{id}` | Find member by ID | `readOnly` | `USER+` (authenticated) |
@@ -574,7 +569,11 @@ Roles column = minimum role enforced by the `Authorization` wrapper (`USER < MAN
 | Param | Type | Description |
 |-------|------|-------------|
 | `pageNumber` | `Integer` | Page number (1-based); invalid/non-positive → `400` |
-| `recordsPerPage` | `Integer` | Rows per page, capped at `10`; invalid/non-positive → `400`. Only when both params are absent does the endpoint return all rows |
+| `recordsPerPage` | `Integer` | Rows per page, capped at `10`; invalid/non-positive → `400` |
+
+Both parameters must be supplied together. Supplying only one returns `400`.
+When both are absent, the endpoint returns a `PagedData` envelope with all rows
+in `data` and null pagination metadata.
 
 > **Warning:** a param-less `GET` calls AllDataFinder. When writing an AllDataFinder, consider whether pulling every row fits memory; latency/DoS risk. Each such fetch logs a runtime `WARN` (`PagedSearch`). Production clients should always pass pagination params.
 >
@@ -584,7 +583,7 @@ Roles column = minimum role enforced by the `Authorization` wrapper (`USER < MAN
 
 | Status | Description |
 |--------|-------------|
-| `400` | Validation error — field-level JSON errors |
+| `400` | Validation error (field-level JSON for request DTOs), failed write message, or malformed pagination text |
 | `401` | Missing/invalid/expired `secure-token` (role-guarded routes) |
 | `403` | Invalid XSRF token **or** insufficient role (RBAC) |
 | `404` | Data not found |
@@ -610,7 +609,7 @@ rectangle "Source Code" as src #dce8ff
 rectangle "Maven Build" as maven #d5e8d4 {
   rectangle "Lombok\nannotation processing" as lombok
   rectangle "MapStruct\nmapper generation" as mapstruct
-  rectangle "Ebean Plugin\nQueryBean + DDL" as ebean
+  rectangle "Ebean enhancement +\nQueryBean generation" as ebean
   rectangle "JTE Plugin\ntemplate precompile" as jte
 }
 
@@ -676,7 +675,7 @@ docker run -p 8080:8080 \
 | Integration tests | JUnit 6 + Ebean Test | Tests against a real DB |
 | Container tests | Testcontainers | Dockerized PostgreSQL |
 | HTTP tests | Unirest | API endpoint tests (`AuthorizationTest` — RBAC 401/403/allow matrix) |
-| Mocking | Mockito / JMockit | External dependency isolation |
+| Mocking | Mockito | External dependency isolation |
 
 `GenreHandlerTransactionTest` and `MemberHandlerTransactionTest` call all five
 transactional handler methods with real services and PostgreSQL, mocking only the

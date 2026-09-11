@@ -8,7 +8,7 @@ Full design: `docs/architecture.md` · agent contracts: `AGENTS.md`
 ```bash
 ./build.sh        # Linux/macOS — package + AppCDS
 build.bat         # Windows
-# or: mvn package
+# or: ./mvnw package
 
 # Run (requires prior build)
 ./run.sh          # Linux/macOS
@@ -17,7 +17,8 @@ run.bat           # Windows
 
 ## Podman
 
-Symlink `podman` as `docker` (see `AGENTS.md` → Commands).
+Ebean Testcontainers invokes a Docker-compatible CLI. If Podman is installed without
+the `docker` compatibility command, provide that compatibility command before tests.
 
 ## Docker
 
@@ -26,11 +27,6 @@ docker build -t rest-api-template .
 docker run -p 8080:8080 -e DB_HOST_NAME=host.docker.internal -e DB_PASSWORD=password rest-api-template
 ```
 Podman: add `--format docker`; use `host.containers.internal` for `DB_HOST_NAME`.
-
-## IDE Setup
-
-- IntelliJ: Lombok, Ebean, MapStruct (see `AGENTS.md` → Gotchas)
-- Eclipse: Lombok, Ebean (see `AGENTS.md` → Gotchas)
 
 ## Libraries
 
@@ -41,6 +37,6 @@ Transaction test coverage and targeted commands: [Testing Strategy](docs/archite
 ## Architecture
 
 ```
-http request → access control → handlers → services → orms → rdb
+HTTP request → access control → handlers → services → Ebean ORM → PostgreSQL
 ```
 Route-level RBAC via `Authorization` wrapper; roles: `USER < MANAGER < ADMIN`. Details: `docs/architecture.md` → Security Architecture.

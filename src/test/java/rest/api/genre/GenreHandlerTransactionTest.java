@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import java.util.Locale;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import io.ebean.DB;
@@ -27,13 +26,9 @@ class GenreHandlerTransactionTest extends HandlerTransactionTestSupport {
 
     private final String genreKey = "transaction-" + UUID.randomUUID();
 
-    @AfterEach
-    void removeFixtures() {
-        try {
-            checkTransactionCleanup();
-        } finally {
-            new QDGenre().key.equalTo(genreKey).delete();
-        }
+    @Override
+    protected void removeFixtures() {
+        new QDGenre().key.equalTo(genreKey).delete();
     }
 
     @Test

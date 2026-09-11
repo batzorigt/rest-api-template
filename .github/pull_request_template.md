@@ -24,10 +24,11 @@
 
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
-- [ ] Compile check passed: `mvn -q compile`
-- [ ] Targeted tests passed: `mvn test -Dtest=Class[#method]`
-- [ ] Full gate tests passed: `mvn test`
-- [ ] Validation script passed: `./scripts/validate-ai-loop.sh` / `.\scripts\validate-ai-loop.ps1`
+- [ ] Compile check passed: `./mvnw -q compile`
+- [ ] Targeted tests passed: `./mvnw test -Dtest=Class[#method]`
+- [ ] Documentation index passed: `./scripts/validate-doc-index.sh` / `.\scripts\validate-doc-index.ps1`
+- [ ] Full gate tests passed: `./mvnw test`
+- [ ] Workflow validation passed when task tracking is active: `./scripts/validate-ai-loop.sh` / `.\scripts\validate-ai-loop.ps1`
 
 ## Documentation
 

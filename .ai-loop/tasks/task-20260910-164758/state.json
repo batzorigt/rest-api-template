@@ -1,0 +1,48 @@
+{
+  "taskId": "task-20260910-164758",
+  "title": "Validate documentation index anchors",
+  "description": "Make documentation navigation mandatory and verifiable, and separate broad-index exclusions from paths agents must never read.",
+  "status": "completed",
+  "baseCommit": "16656c4c5188cc4f6a680aaf5467c1fb357ae363",
+  "targetBranch": "feature/ai-task-20260910-doc-index-validator",
+  "filesModified": [
+    "AGENTS.md",
+    ".token-ignore",
+    "docs/index.md",
+    "LOOP.md",
+    "HARNESS.md",
+    ".agents/skills/repo-loops/SKILL.md",
+    "opencode.json",
+    "scripts/sync-token-ignore.ps1",
+    "scripts/sync-token-ignore.sh"
+  ],
+  "filesCreated": [
+    "scripts/validate-doc-index.ps1",
+    "scripts/validate-doc-index.sh"
+  ],
+  "filesDeleted": [],
+  "verifiedTests": true,
+  "verifiedDocs": true,
+  "verifiedNeutrality": true,
+  "verifiedNoDuplication": true,
+  "retryAttempts": {
+    "primaryImplementationAttempt": 1,
+    "correctiveAttempt": 1,
+    "transientRetry": 0,
+    "flakyTestRerun": 0
+  },
+  "lastRetryType": "CORRECTIVE_ATTEMPT",
+  "lastRetryReason": "Functional sync checks exposed default-encoding corruption, newline churn, and a missing Perl fallback; explicit UTF-8 IO, stable block replacement, and awk/Python fallbacks fixed the identified script defects.",
+  "retryLimitsExceeded": [],
+  "primaryImplementationStatus": "completed",
+  "primaryImplementationFailureReason": "",
+  "verifierRejection": false,
+  "verifierRejectionReason": "",
+  "createdAt": "2026-09-10T08:51:30Z",
+  "updatedAt": "2026-09-10T09:16:02Z",
+  "metadata": {
+    "initiator": "user",
+    "priority": "medium",
+    "relatedTasks": []
+  }
+}

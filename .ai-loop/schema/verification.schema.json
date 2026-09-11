@@ -1,0 +1,228 @@
+﻿{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rest-api-template.dev/schemas/ai-loop/v1/verification",
+  "title": "AI Loop Verification Schema",
+  "description": "Schema for tracking verification results for AI coding tasks",
+  "type": "object",
+  "properties": {
+    "taskId": {
+      "type": "string",
+      "description": "Reference to the task this verification belongs to",
+      "pattern": "^task-[0-9]{8}-[0-9]{6}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 timestamp of the verification",
+      "format": "date-time"
+    },
+    "verifier": {
+      "type": "string",
+      "description": "Name of the person or system performing verification",
+      "minLength": 1
+    },
+    "checks": {
+      "type": "object",
+      "description": "Verification checks performed",
+      "properties": {
+        "compileCheck": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "command": {
+              "type": "string"
+            },
+            "outputFile": {
+              "type": "string"
+            }
+          },
+          "required": ["passed", "command"]
+        },
+        "targetedTests": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "command": {
+              "type": "string"
+            },
+            "testsRan": {
+              "type": "integer"
+            },
+            "testsFailed": {
+              "type": "integer"
+            }
+          },
+          "required": ["passed", "command", "testsRan", "testsFailed"]
+        },
+        "fullGateTests": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "command": {
+              "type": "string"
+            },
+            "testsRan": {
+              "type": "integer"
+            },
+            "testsFailed": {
+              "type": "integer"
+            }
+          },
+          "required": ["passed", "command", "testsRan", "testsFailed"]
+        },
+        "documentationIndex": {
+          "type": "object",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "command": { "type": "string" }
+          },
+          "required": ["passed", "command"]
+        },
+        "workflowIntegrity": {
+          "type": "object",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "command": { "type": "string" }
+          },
+          "required": ["passed", "command"]
+        },
+        "docSync": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "docsUpdated": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["passed", "docsUpdated"]
+        },
+        "neutralityCheck": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "issuesFound": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["passed", "issuesFound"]
+        },
+        "noDuplication": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "analysis": {
+              "type": "string"
+            }
+          },
+          "required": ["passed", "analysis"]
+        }
+      },
+      "required": ["compileCheck", "targetedTests", "fullGateTests", "documentationIndex", "workflowIntegrity", "docSync", "neutralityCheck", "noDuplication"]
+    },
+    "overallResult": {
+      "type": "string",
+      "description": "Overall verification result. REJECTED means no automatic retries allowed—requires new plan with human approval.",
+      "enum": ["pending", "passed", "failed", "warning", "rejected"],
+      "default": "pending"
+    },
+    "issues": {
+      "type": "array",
+      "description": "List of issues found during verification",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error"]
+          },
+          "description": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer"
+          }
+        },
+        "required": ["severity", "description"]
+      },
+      "default": []
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Artifacts produced during verification",
+      "properties": {
+        "coverageReport": {
+          "type": ["string", "null"]
+        },
+        "testReport": {
+          "type": ["string", "null"]
+        },
+        "lintReport": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "sign-off": {
+      "type": "object",
+      "description": "Human verification sign-off",
+      "properties": {
+        "signedBy": {
+          "type": ["string", "null"]
+        },
+        "signedAt": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "comments": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "rejection": {
+      "type": "object",
+      "description": "Verifier rejection details (when overallResult is 'rejected')",
+      "properties": {
+        "rejectedBy": {
+          "type": ["string", "null"],
+          "description": "Name of the person or system that rejected the result"
+        },
+        "rejectedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of rejection"
+        },
+        "reason": {
+          "type": ["string", "null"],
+          "description": "Detailed reason for rejection"
+        },
+        "requiresNewPlan": {
+          "type": "boolean",
+          "description": "Whether a new implementation plan is required",
+          "default": true
+        }
+      },
+      "required": ["rejectedBy", "rejectedAt", "reason"]
+    }
+  },
+  "required": ["taskId", "timestamp", "verifier", "checks", "overallResult"],
+  "additionalProperties": true
+}

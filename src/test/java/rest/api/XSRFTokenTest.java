@@ -37,6 +37,16 @@ public class XSRFTokenTest {
     }
 
     @Test
+    void rejectsFutureTimestampAndNegativeTimeout() {
+        long future = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5);
+        String timestampedPayload = "salt." + future;
+        String token = timestampedPayload + "." + XSRFToken.sign(timestampedPayload);
+
+        Assertions.assertFalse(XSRFToken.isValid(token, TimeUnit.MINUTES.toMillis(10)));
+        Assertions.assertFalse(XSRFToken.isValid(XSRFToken.generate(), -1));
+    }
+
+    @Test
     public void threadSafeOnVirtualThreads() throws Exception {
         int requestCount = 2000;
         long timeout = TimeUnit.MINUTES.toMillis(5);

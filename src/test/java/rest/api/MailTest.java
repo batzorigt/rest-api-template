@@ -5,20 +5,24 @@ import java.util.List;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
- * WARNING: change "Allow less secure apps" to ON to test
+ * Manual SMTP integration examples. Configure a disposable SMTP account and
+ * recipient addresses before enabling.
  */
+@Disabled("Requires external SMTP credentials and recipient addresses")
 public class MailTest {
 
     List<String> to = List.of("recipient1@mail.address", "recipient2@mail.address");
 
-    // @Test TODO uncomment to test
+    @Test
     void sendTextMail() throws AddressException, MessagingException {
         Mail.send(to, null, null, "text mail", "This is test!");
     }
 
-    // @Test TODO uncomment to test
+    @Test
     void sendMailWithAttachment() throws AddressException, MessagingException {
         Mail.send(to, null, null, "text mail with attachment", "I sent you query.sql!", new File(
                 "./src/test/resources/query.sql"));

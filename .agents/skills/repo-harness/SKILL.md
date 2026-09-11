@@ -22,8 +22,8 @@ Before environment setup, build/test runs, artifact questions, or failure diagno
 ## Facts
 
 - Build/test through the Maven wrapper (`mvnw`); add `-q` for quiet compile checks. `build.*` packages plus AppCDS dump; `run.*` launches with the Ebean javaagent — bare `java -jar` fails.
-- Never hand-edit generated outputs (`target/`, `jte-classes/`, `src/main/jib/`, `[feature]/query/Q*.java`, MapStruct impls, `app-cds.jsa`); fix the generating source and rebuild.
-- IDE-based compilers may share `target/` with Maven: run `mvn clean` before trusting results after any IDE build.
+- Never hand-edit generated outputs (`target/`, `jte-classes/`, `src/main/jib/ebean-agent-*.jar`, `src/main/jib/jte-classes/`, `[feature]/query/Q*.java`, MapStruct impls, `app-cds.jsa`); fix the generating source and rebuild.
+- IDE-based compilers may share `target/` with Maven: run `./mvnw clean` before trusting results after any IDE build.
 
 ## Post-conditions
 

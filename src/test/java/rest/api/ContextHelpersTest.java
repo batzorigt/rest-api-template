@@ -1,60 +1,29 @@
 package rest.api;
 
-import java.util.Date;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.Locale;
+import java.util.Map;
 
 import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import io.javalin.http.Context;
 import io.javalin.json.JavalinJackson;
-import rest.api.member.Member;
-import rest.api.member.Phone;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class ContextHelpersTest {
 
-	@BeforeAll
-    public static void beforeAll() throws Throwable {
+    @BeforeAll
+    static void loadMessages() {
         I18N.load(Locale.JAPAN);
-    }
-
-    @Test
-    void setSuccessResult() {
-        Member expected = new Member();
-        expected.setId(1);
-        expected.setName("Batzorigt");
-        expected.setCreatedAt(new Date());
-        expected.setUpdatedAt(new Date());
-
-        Phone phone = new Phone();
-        phone.setPhoneNo("88381882");
-        expected.setPhones(List.of(phone));
-
-        String msg = I18N.message("sucessfully.saved", Locale.JAPAN);
-        JavalinJackson jsonMapper = new JavalinJackson();
-		String json = jsonMapper.toJsonString(expected, expected.getClass());
-
-        String response = String.format("{\"status\": %d, \"result\": %s, \"msg\": \"%s\"}", HttpStatus.OK_200, json,
-                msg);
-        JSONObject jsonObject = new JSONObject(response);
-        Member actual = jsonMapper.fromJsonString(jsonObject.get("result").toString(), Member.class);
-
-        Assertions.assertEquals(200, jsonObject.get("status"));
-        Assertions.assertEquals(expected, actual);
-        Assertions.assertEquals("正常に保存しました。", jsonObject.get("msg"));
-    }
-
-    @Test
-    void setFailedResult() {
-        String msg = I18N.message("could.not.save", Locale.JAPAN);
-        String response = String.format("{\"status\": %d, \"msg\": %s}", HttpStatus.BAD_REQUEST_400, msg);
-        JSONObject jsonObject = new JSONObject(response);
-
-        Assertions.assertEquals(400, jsonObject.get("status"));
-        Assertions.assertEquals("保存できませんでした！", jsonObject.get("msg"));
     }
 
     @Test
@@ -64,5 +33,51 @@ public class ContextHelpersTest {
         Assertions.assertEquals(10, ContextHelpers.capped(50));
         Assertions.assertEquals(10, ContextHelpers.capped(1_000_000));
         Assertions.assertNull(ContextHelpers.capped(null));
+    }
+
+    @Test
+    void resultUsesStructuredJsonBody() {
+        Context ctx = context();
+        Map<String, Integer> result = Map.of("id", 1);
+        ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+
+        ContextHelpers.result(ctx, 7, result, "json.test.message");
+
+        verify(ctx).status(HttpStatus.OK_200);
+        verify(ctx).json(body.capture());
+        assertEquals(Map.of(
+                "status", 7,
+                "result", result,
+                "msg", "message with \"quotes\""), body.getValue());
+    }
+
+    @Test
+    void updateFailureUsesStructuredMessageBody() {
+        Context ctx = context();
+        ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+
+        ContextHelpers.resultOfUpdate(ctx, null);
+
+        verify(ctx).status(HttpStatus.BAD_REQUEST_400);
+        verify(ctx).json(body.capture());
+        assertEquals(Map.of("msg", I18N.message("could.not.update", Locale.JAPAN)), body.getValue());
+    }
+
+    @Test
+    void jsonMessageUsesConfiguredMapper() {
+        Context ctx = context();
+        when(ctx.jsonMapper()).thenReturn(new JavalinJackson());
+
+        String json = ContextHelpers.jsonMessage("json.test.message", ctx);
+
+        assertEquals("message with \"quotes\"", new JSONObject(json).getString("msg"));
+    }
+
+    private static Context context() {
+        Context ctx = mock(Context.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(ctx.req()).thenReturn(request);
+        when(request.getLocale()).thenReturn(Locale.JAPAN);
+        return ctx;
     }
 }

@@ -1,6 +1,6 @@
 # Architecture Standards
 
-This document contains the architecture guidelines for the REST API Template project. It is tool-agnostic: humans and AI coding agents alike are expected to follow it.
+This document contains tool-agnostic architecture guidelines for every contributor and automation harness.
 
 ## C4 Model Usage
 
@@ -28,20 +28,20 @@ title [Diagram Type] - [Feature Name]
 - Use one consistent theme across all diagrams (`plain` is the current choice — keep it unless re-theming every diagram at once; do not invent theme names)
 - Always include a title
 - Keep diagrams focused on specific aspects
-- Use rectangles for containers, circles for components
+- Use rectangles for containers and PlantUML `component` nodes for components
 - **PlantUML must render without errors** — validate diagrams after every edit (e.g., `plantuml -checkonly` or IDE preview)
 
 ## Documentation Requirements
 
 New features require:
 
-1. Architecture decision record (ADR)
+1. An ADR under `docs/adr/` when the feature makes a material architectural decision (create the directory and index with the first ADR)
 2. Updated `docs/architecture.md` with C4 diagrams
 3. Updated package structure documentation
 4. API endpoint documentation (if applicable)
 5. Matching tests shipped in the same task (see Testing Requirements) and the verification loop from `LOOP.md` run to green
-6. Documentation neutrality preserved — apply `HARNESS.md` → *Neutrality mechanism* to every canonical-doc edit
-7. Source neutrality preserved — code diffs are author-agnostic: no AI/agent attribution markers, no IDE metadata in git, generated code only via its generators (`HARNESS.md` → *Neutrality mechanism*)
+6. Documentation neutrality preserved — apply `HARNESS.md` → *Neutrality layers* to every canonical-doc edit
+7. Source neutrality preserved — code diffs are author-agnostic: no AI/agent attribution markers, no IDE metadata in git, generated code only via its generators (`HARNESS.md` → *Neutrality layers*)
 8. Language: all documentation is written and maintained in English only; be concise — omit unnecessary words
 9. OpenAPI contract: `openapi.yaml` is created/updated in the same task as any API-surface change (see `AGENTS.md` → Change workflow)
 10. Documentation sync: every code change must create or update related docs (architecture, endpoints, config, standards) in the same task
@@ -53,7 +53,7 @@ Every behavior change must ship with corresponding tests, verified before finish
 1. Unit tests for new logic (utilities, parsing, hierarchy rules — pattern: `RoleTest`)
 2. Handler-level HTTP tests for endpoint or authorization changes — pattern: `AuthorizationTest`
 3. Authorization rules require an allow/deny matrix: 401 (no/invalid/expired token), 403 (insufficient role, data unchanged), success at and above the minimum role
-4. Run `LOOP.md`'s loop (compile → targeted → full gate); a green `mvn test` is part of done
+4. Run `LOOP.md`'s loop (compile → targeted → full gate); a green `./mvnw test` is part of done
 
 ## Technology Standards
 
@@ -68,14 +68,14 @@ Every behavior change must ship with corresponding tests, verified before finish
 ### Must Not Use
 
 - Spring Framework (use manual DI instead)
-- XML configuration (use Java interface config)
+- XML application or dependency-injection wiring (library-required descriptors such as Maven and Log4j2 XML remain allowed)
 - Raw JDBC (use Ebean ORM)
 
 ## Code Structure Standards
 
 ```
 src/main/java/rest/api/
-├── API.java                    # Application entry point
+├── Server.java                 # Application entry point
 ├── Config.java                 # Configuration interface
 ├── Domain.java                 # Base entity
 ├── [FeatureName].java          # Feature-specific helpers
@@ -91,19 +91,18 @@ src/main/java/rest/api/
 
 All endpoints must follow:
 
-1. Role-based access control: mutating endpoints declare the minimum role via Javalin route args (`rest.api.Role`: `USER < MANAGER < ADMIN`, higher satisfies lower); enforcement is centralized in the `Authorization` handler wrapper — never hand-roll auth checks inside handlers
+1. Role-based access control: protected mutating endpoints declare the minimum role via Javalin route args (`rest.api.Role`: `USER < MANAGER < ADMIN`, higher satisfies lower); explicitly documented entry points such as public registration may remain public; enforcement is centralized in the `Authorization` handler wrapper
 2. XSRF protection (if enabled in config)
 3. Input validation on all POST/PUT/DELETE
-4. HTTPS enforcement in production
+4. HTTPS termination and forwarding are deployment responsibilities; production startup rejects the shipped default encryption key
 5. Security headers (automatically added)
 
 ## Monitoring Standards
 
-All services must expose:
+Supported monitoring capabilities:
 
-1. Health check endpoint
-2. Metrics via Micrometer
-3. Structured logging with MDC
+1. Metrics via Micrometer at the Basic-authenticated `/metrics` endpoint
+2. Pattern-based Log4j2 request and application logs
 
 ## Database Standards
 

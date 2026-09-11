@@ -8,7 +8,7 @@ stale_after: 2027-02-26T00:00:00Z
 
 # Agent Loops
 
-No lint/typecheck: compiler + annotation processors + tests are the entire gate (Maven).
+No separate lint/typecheck: repository validators plus the Maven compiler, annotation processors, and tests form the gate.
 
 ## Retry Policy
 
@@ -94,9 +94,9 @@ Unless the repository already defines stricter limits (none exist), use these de
 
 ## Default loop
 
-1. `mvn -q compile` after any Java edit — catches most breakage cheaply. `Unresolved compilation problem` error = shared-`target/` IDE contamination → `mvn clean`, repeat.
-2. Targeted tests — `mvn test -Dtest=Class[#method]` (Docker required).
-3. Full gate — run `bash ./scripts/validate-doc-index.sh` (Linux/macOS) or `.\scripts\validate-doc-index.ps1` (Windows), then `mvn test`. Never skip either check before declaring done; no CI enforces them.
+1. `./mvnw -q compile` after any Java edit — catches most breakage cheaply. `Unresolved compilation problem` error = shared-`target/` IDE contamination → `./mvnw clean`, repeat.
+2. Targeted tests — `./mvnw test -Dtest=Class[#method]` (Docker required).
+3. Full gate — run the platform `scripts/validate-doc-index.*` validator, run `scripts/validate-ai-loop.*` when explicit task tracking is active, then `./mvnw test`. Never skip an applicable check before declaring done; no CI enforces them.
 
 Shortcut example: some harnesses provide a `/verify` command that wraps these steps. Other harnesses wrap the same steps natively; this file stays canonical.
 
@@ -126,7 +126,7 @@ On any failing step:
 
 1. Edit `D[Entity].java`.
 2. Regenerate migration SQL via IDE (`rest.api.GenerateDbMigration#main`; CLI fails — see `AGENTS.md`).
-3. `mvn test`.
+3. `./mvnw test`.
 4. Tests use `ddlMode=dropCreate` → they never exercise new `dbmigration/*.sql`; review generated SQL manually.
 
 ## DTO/entity field loop
@@ -157,12 +157,12 @@ On any failing step:
 2. Edit each fact in its canonical home (`HARNESS.md` → Canonical-home map) and update pointers without duplicating the fact.
 3. When an indexed `docs/architecture.md` heading changes, update the matching backticked anchor in `docs/index.md`.
 4. Run `bash ./scripts/validate-doc-index.sh` (Linux/macOS) or `.\scripts\validate-doc-index.ps1` (Windows).
-5. Run `mvn test` as the full gate.
+5. Run `./mvnw test` as the full gate.
 
 ## Template changes
 
 - `environment=local`: JTE hot-reloads from `src/main/resources/jte`.
-- Otherwise: precompiled classes from last `mvn package` are used — repackage or nothing changes.
+- Otherwise: precompiled classes from the last `./mvnw package` are used — repackage or nothing changes.
 
 ## Deployment
 
@@ -172,7 +172,7 @@ On any failing step:
 
 ## Definition of done
 
-- [ ] `mvn test` green with Docker up
+- [ ] `./mvnw test` green with Docker up
 - [ ] Matching tests shipped for the change
 - [ ] Affected MD docs updated when behavior/endpoints/architecture/tooling changed
 - [ ] Doc edits neutral: tool names only as marked examples or wiring-table rows

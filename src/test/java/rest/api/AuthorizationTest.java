@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
@@ -25,13 +24,13 @@ import rest.api.member.query.QDMember;
 
 public class AuthorizationTest {
 
-    private static API api = new API();
-    private static final int PORT_NO = 1000 + new Random().nextInt(9000);
-    private static final String BASE_URL = String.format("http://localhost:%d/v1", PORT_NO);
+    private static Server api = new Server();
+    private static String baseUrl;
 
     @BeforeAll
     public static void beforeAll() throws Throwable {
-        api.start(PORT_NO);
+        api.start(0);
+        baseUrl = String.format("http://localhost:%d/v1", api.port());
     }
 
     @AfterAll
@@ -47,14 +46,14 @@ public class AuthorizationTest {
 
     @Test
     void anonymousIsUnauthorizedOnProtectedRoute() {
-        HttpResponse<String> response = Unirest.get(BASE_URL + "/members/1").asString();
+        HttpResponse<String> response = Unirest.get(baseUrl + "/members/1").asString();
 
         assertEquals(401, response.getStatus());
     }
 
     @Test
     void invalidTokenIsUnauthorized() {
-        HttpResponse<String> response = Unirest.get(BASE_URL + "/members/1")
+        HttpResponse<String> response = Unirest.get(baseUrl + "/members/1")
                 .cookie(Authentication.secureToken, "not-a-valid-token").asString();
 
         assertEquals(401, response.getStatus());
@@ -62,12 +61,12 @@ public class AuthorizationTest {
 
     @Test
     void expiredTokenIsUnauthorized() {
-        String payload = Crypto.encrypt(API.cfg.encryptionKey(), sessionWithRole(Role.USER.name()).toString());
+        String payload = Crypto.encrypt(Server.cfg.encryptionKey(), sessionWithRole(Role.USER.name()).toString());
         long expiredTimestamp = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(31);
         String timestampedPayload = payload + "." + expiredTimestamp;
         String expiredToken = timestampedPayload + "." + XSRFToken.sign(timestampedPayload);
 
-        HttpResponse<String> response = Unirest.get(BASE_URL + "/members/1")
+        HttpResponse<String> response = Unirest.get(baseUrl + "/members/1")
                 .cookie(Authentication.secureToken, expiredToken).asString();
 
         assertEquals(401, response.getStatus());
@@ -77,7 +76,7 @@ public class AuthorizationTest {
     void loggedUserCanReadMember() {
         int memberId = insertMember("Batzorigt");
 
-        HttpResponse<JsonNode> response = Unirest.get(BASE_URL + "/members/" + memberId)
+        HttpResponse<JsonNode> response = Unirest.get(baseUrl + "/members/" + memberId)
                 .cookie(Authentication.secureToken, tokenForRole(Role.USER.name())).asJson();
 
         assertEquals(200, response.getStatus());
@@ -90,7 +89,7 @@ public class AuthorizationTest {
         org.json.JSONObject claims = new org.json.JSONObject().put("id", memberId).put("name", "NoRole");
         String token = SecureToken.generate(claims);
 
-        HttpResponse<JsonNode> readResponse = Unirest.get(BASE_URL + "/members/" + memberId)
+        HttpResponse<JsonNode> readResponse = Unirest.get(baseUrl + "/members/" + memberId)
                 .cookie(Authentication.secureToken, token).asJson();
         HttpResponse<String> writeResponse = addGenre(token);
 
@@ -109,7 +108,7 @@ public class AuthorizationTest {
 
     @Test
     void managerCanCreateGenre() {
-        HttpResponse<JsonNode> response = Unirest.post(BASE_URL + "/genres")
+        HttpResponse<JsonNode> response = Unirest.post(baseUrl + "/genres")
                 .header("Content-Type", "application/json").body("{\"name\":\"Action\",\"orderNumber\":7}")
                 .cookie(Authentication.secureToken, tokenForRole(Role.MANAGER.name())).asJson();
 
@@ -117,6 +116,25 @@ public class AuthorizationTest {
         assertEquals("Action", response.getBody().getObject().getString("name"));
         assertEquals(7, response.getBody().getObject().getInt("orderNumber"));
         assertEquals(1, new QDGenre().findCount());
+    }
+
+    @Test
+    void adminCanCreateGenreAboveMinimumRole() {
+        HttpResponse<String> response = addGenre(tokenForRole(Role.ADMIN.name()));
+
+        assertEquals(201, response.getStatus());
+        assertEquals(1, new QDGenre().findCount());
+    }
+
+    @Test
+    void managerAndAdminCanReadUserRoute() {
+        int memberId = insertMember("HigherRole");
+
+        for (Role role : new Role[]{Role.MANAGER, Role.ADMIN}) {
+            HttpResponse<String> response = Unirest.get(baseUrl + "/members/" + memberId)
+                    .cookie(Authentication.secureToken, tokenForRole(role.name())).asString();
+            assertEquals(200, response.getStatus());
+        }
     }
 
     @Test
@@ -141,8 +159,8 @@ public class AuthorizationTest {
 
     @Test
     void anonymousCanStillUsePublicRoutes() {
-        HttpResponse<String> genres = Unirest.get(BASE_URL + "/genres").asString();
-        HttpResponse<String> register = Unirest.post(BASE_URL + "/members")
+        HttpResponse<String> genres = Unirest.get(baseUrl + "/genres").asString();
+        HttpResponse<String> register = Unirest.post(baseUrl + "/members")
                 .header("Content-Type", "application/json").body("{\"name\":\"Anon\"}").asString();
 
         assertNotEquals(401, genres.getStatus());
@@ -151,12 +169,12 @@ public class AuthorizationTest {
     }
 
     private static HttpResponse<String> addGenre(String token) {
-        return Unirest.post(BASE_URL + "/genres").header("Content-Type", "application/json")
+        return Unirest.post(baseUrl + "/genres").header("Content-Type", "application/json")
                 .body("{\"name\":\"Action\"}").cookie(Authentication.secureToken, token).asString();
     }
 
     private static HttpResponse<String> deleteGenre(int genreId, String role) {
-        return Unirest.delete(BASE_URL + "/genres/" + genreId)
+        return Unirest.delete(baseUrl + "/genres/" + genreId)
                 .cookie(Authentication.secureToken, tokenForRole(role)).asString();
     }
 

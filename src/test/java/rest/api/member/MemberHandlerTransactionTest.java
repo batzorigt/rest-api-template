@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -19,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,8 +31,12 @@ class MemberHandlerTransactionTest extends HandlerTransactionTestSupport {
     private static final List<String> PHONES = List.of("tx-member-1", "tx-member-2");
 
     @BeforeEach
-    @AfterEach
-    void cleanFixtures() {
+    void prepareFixtures() {
+        removeFixtures();
+    }
+
+    @Override
+    protected void removeFixtures() {
         DB.find(DPhone.class).where().in("phoneNo", PHONES).delete();
         DB.find(DMember.class).where().eq("name", NAME).delete();
     }
@@ -141,13 +143,13 @@ class MemberHandlerTransactionTest extends HandlerTransactionTestSupport {
         doAnswer(invocation -> {
             captureTransaction();
             return ctx;
-        }).when(ctx).result(anyString());
+        }).when(ctx).json(any());
 
         MemberHandler.getMember(ctx);
 
         assertTransactionClosed();
         verify(ctx).status(HttpStatus.NOT_FOUND_404);
-        verify(ctx, never()).json(any());
+        verify(ctx).json(any());
     }
 
     private void stubInput(MemberToAdd input) {
