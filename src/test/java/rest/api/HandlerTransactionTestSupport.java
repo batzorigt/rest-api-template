@@ -64,14 +64,24 @@ public abstract class HandlerTransactionTestSupport {
     }
 
     @AfterEach
-    protected void checkTransactionCleanup() {
+    final void checkTransactionCleanup() {
+        AssertionError leak = null;
         try {
             assertNull(DB.currentTransaction(), "The handler must not leak a transaction to the next test");
+        } catch (AssertionError error) {
+            leak = error;
         } finally {
             Transaction current = DB.currentTransaction();
             if (current != null) {
                 current.end();
             }
+            removeFixtures();
         }
+        if (leak != null) {
+            throw leak;
+        }
+    }
+
+    protected void removeFixtures() {
     }
 }

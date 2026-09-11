@@ -52,4 +52,16 @@ public class MemberServiceTest {
         Assertions.assertEquals(member.getPhones().get(0), foundOne.getPhones().get(0).getPhoneNo());
     }
 
+    @Test
+    void deletingPhoneDoesNotCascadeToMember() {
+        Member created = MemberService.addMember(new MemberToAdd("Cascade", List.of("555-0100")));
+        Integer phoneId = created.getPhones().getFirst().getId();
+
+        DB.find(DPhone.class, phoneId).delete();
+
+        Assertions.assertNotNull(DB.find(DMember.class, created.getId()));
+        Assertions.assertNull(DB.find(DPhone.class, phoneId));
+        DB.find(DMember.class, created.getId()).delete();
+    }
+
 }

@@ -1,0 +1,61 @@
+{
+  "taskId": "task-20260910-164758",
+  "timestamp": "2026-09-10T09:16:02Z",
+  "verifier": "repository verification workflow",
+  "checks": {
+    "compileCheck": {
+      "passed": true,
+      "command": ".\\mvnw.cmd test (compile phase)"
+    },
+    "targetedTests": {
+      "passed": true,
+      "command": "PowerShell and Bash documentation validators, including missing-anchor rejection",
+      "testsRan": 3,
+      "testsFailed": 0
+    },
+    "fullGateTests": {
+      "passed": true,
+      "command": ".\\mvnw.cmd test",
+      "testsRan": 86,
+      "testsFailed": 0
+    },
+    "documentationIndex": {
+      "passed": true,
+      "command": ".\\scripts\\validate-doc-index.ps1"
+    },
+    "workflowIntegrity": {
+      "passed": true,
+      "command": ".\\scripts\\validate-ai-loop.ps1"
+    },
+    "docSync": {
+      "passed": true,
+      "docsUpdated": [
+        "AGENTS.md",
+        "HARNESS.md",
+        "LOOP.md",
+        "docs/index.md",
+        ".agents/skills/repo-loops/SKILL.md"
+      ]
+    },
+    "neutralityCheck": {
+      "passed": true,
+      "issuesFound": []
+    },
+    "noDuplication": {
+      "passed": true,
+      "analysis": ".token-ignore is the single source for categorized context rules; AGENTS.md summarizes them, opencode.json automates them, and LOOP.md remains the canonical verification contract."
+    }
+  },
+  "overallResult": "passed",
+  "issues": [],
+  "artifacts": {
+    "coverageReport": null,
+    "testReport": null,
+    "lintReport": null
+  },
+  "sign-off": {
+    "signedBy": "repository verification workflow",
+    "signedAt": "2026-09-10T09:16:02Z",
+    "comments": "Both platform validators and sync scripts passed, missing anchors were rejected, and all 86 Maven tests passed."
+  }
+}

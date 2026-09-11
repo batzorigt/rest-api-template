@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 public enum XSRFFilter {
     ;
 
-    private static final boolean nagHttps = true;
-    private static final long timeout = 30 * 60 * 1000;
+    private static final boolean NAG_HTTPS = true;
+    private static final long TIMEOUT_MILLIS = 30 * 60 * 1000;
 
     private static final String cookiePath = "/";
     private static final String cookieName = "xsrf-token";
@@ -21,22 +21,18 @@ public enum XSRFFilter {
             return false;
         }
 
-        return XSRFToken.isValid(headerValue, timeout);
+        return XSRFToken.isValid(headerValue, TIMEOUT_MILLIS);
     }
 
     public static void handle(Context ctx) {
-        if (nagHttps) {
-            String uri = ctx.req().getRequestURI();
-            if (uri != null && !uri.startsWith("https:")) {
-                log.warn(
-                        "Using session cookies without https could make you susceptible to session hijacking: " + uri);
-            }
+        if (NAG_HTTPS && !ctx.req().isSecure()) {
+            log.warn("Using session cookies without HTTPS can expose them to session hijacking: {}", ctx.path());
         }
 
         switch (ctx.req().getMethod()) {
             case "GET":
                 final String token = XSRFToken.generate();
-                ctx.attribute(headerName, token);
+                ctx.header(headerName, token);
                 ctx.cookie(cookie(token));
                 break;
             case "POST":
@@ -53,6 +49,6 @@ public enum XSRFFilter {
     }
 
     private static Cookie cookie(final String token) {
-        return new Cookie(cookieName, token, cookiePath, -1, API.cfg.isSecure(), true);
+        return new Cookie(cookieName, token, cookiePath, -1, Server.cfg.isSecure(), true);
     }
 }

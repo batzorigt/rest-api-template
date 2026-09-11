@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 
 import io.ebean.PagedList;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.ForbiddenResponse;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,8 +22,8 @@ public final class PagedSearch {
                                              PagedDataFinder<T> pagedDataFinder,
                                              AllDataFinder<T> allDataFinder,
                                              Function<T, R> convertor) {
-        Integer[] totalRowCount = {0};
-        List<T> data = findData(pageNumber, recordsPerPage, pagedDataFinder, allDataFinder, totalRowCount);
+        FoundData<T> found = findData(pageNumber, recordsPerPage, pagedDataFinder, allDataFinder);
+        List<T> data = found.data();
 
         if (CollectionUtils.isEmpty(data)) {
             return null;
@@ -30,35 +31,29 @@ public final class PagedSearch {
 
         List<R> result = data.parallelStream().filter(value -> value != null).map(convertor).collect(Collectors.toList());
 
-        return new PagedData<R>(pageNumber, recordsPerPage, totalRowCount[0], result);
+        return new PagedData<R>(pageNumber, recordsPerPage, found.totalRowCount(), result);
     }
 
     public static <T> PagedData<T> search(Integer pageNumber,
                                           Integer recordsPerPage,
                                           PagedDataFinder<T> pagedDataFinder,
                                           AllDataFinder<T> allDataFinder) {
-        Integer[] totalRowCount = {0};
-        List<T> data = findData(pageNumber, recordsPerPage, pagedDataFinder, allDataFinder, totalRowCount);
-
-        if (CollectionUtils.isEmpty(data)) {
-            return null;
-        }
-
-        return new PagedData<T>(pageNumber, recordsPerPage, totalRowCount[0], data);
+        return search(pageNumber, recordsPerPage, pagedDataFinder, allDataFinder, Function.identity());
     }
 
-    private static <T> List<T> findData(Integer pageNumber,
-                                        Integer recordsPerPage,
-                                        PagedDataFinder<T> pagedDataFinder,
-                                        AllDataFinder<T> allDataFinder,
-                                        Integer[] totalRowCount) {
-        if (pageNumber != null && recordsPerPage != null) {
+    private static <T> FoundData<T> findData(Integer pageNumber,
+                                             Integer recordsPerPage,
+                                             PagedDataFinder<T> pagedDataFinder,
+                                             AllDataFinder<T> allDataFinder) {
+        if ((pageNumber == null) != (recordsPerPage == null)) {
+            throw new BadRequestResponse("pageNumber and recordsPerPage must be provided together!");
+        }
+
+        if (pageNumber != null) {
             PagedList<T> pagedData = pagedDataFinder.find();
             pagedData.loadCount();
             List<T> data = pagedData.getList();
-            totalRowCount[0] = pagedData.getTotalCount();
-
-            return data;
+            return new FoundData<>(data, pagedData.getTotalCount());
         }
 
         if (allDataFinder == null) {
@@ -66,14 +61,17 @@ public final class PagedSearch {
         }
 
         List<T> data = allDataFinder.find();
-        totalRowCount[0] = data.size();
         log.warn("Unpaginated fetch returned {} rows - large tables can exhaust memory; clients should pass pageNumber & recordsPerPage", data.size());
 
-        return data;
+        return new FoundData<>(data, data.size());
     }
 
     public static int offset(Integer pageNumber, Integer recordsPerPage) {
-        return (pageNumber - 1) * recordsPerPage;
+        long offset = ((long) pageNumber - 1L) * recordsPerPage;
+        if (offset > Integer.MAX_VALUE) {
+            throw new BadRequestResponse("Pagination offset is too large!");
+        }
+        return (int) offset;
     }
 
     @FunctionalInterface
@@ -84,6 +82,9 @@ public final class PagedSearch {
     @FunctionalInterface
     public interface AllDataFinder<T> {
         List<T> find();
+    }
+
+    private record FoundData<T>(List<T> data, int totalRowCount) {
     }
 
 }

@@ -22,22 +22,22 @@ public class CryptoTest {
         user.put("emailAddress", "email@address");
 
         String expectedValue = user.toString();
-        String encryptedValue = Crypto.encrypt(API.cfg.encryptionKey(), expectedValue);
-        Assertions.assertEquals(expectedValue, Crypto.decrypt(API.cfg.encryptionKey(), encryptedValue));
+        String encryptedValue = Crypto.encrypt(Server.cfg.encryptionKey(), expectedValue);
+        Assertions.assertEquals(expectedValue, Crypto.decrypt(Server.cfg.encryptionKey(), encryptedValue));
     }
 
     @Test
     void enryptAndDecryptRawString() {
         String expectedValue = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@#$%^&*()_+`1234567890-={}|[]\\:\";'<>?,./";
-        String encryptedValue = Crypto.encrypt(API.cfg.encryptionKey(), expectedValue);
-        Assertions.assertEquals(expectedValue, Crypto.decrypt(API.cfg.encryptionKey(), encryptedValue));
+        String encryptedValue = Crypto.encrypt(Server.cfg.encryptionKey(), expectedValue);
+        Assertions.assertEquals(expectedValue, Crypto.decrypt(Server.cfg.encryptionKey(), encryptedValue));
     }
 
     @Test
     void encryptUsesRandomInitVector() {
         String payload = "same-input";
-        String encryptedValueOne = Crypto.encrypt(API.cfg.encryptionKey(), payload);
-        String encryptedValueTwo = Crypto.encrypt(API.cfg.encryptionKey(), payload);
+        String encryptedValueOne = Crypto.encrypt(Server.cfg.encryptionKey(), payload);
+        String encryptedValueTwo = Crypto.encrypt(Server.cfg.encryptionKey(), payload);
 
         Assertions.assertNotEquals(encryptedValueOne, encryptedValueTwo);
     }
@@ -45,12 +45,12 @@ public class CryptoTest {
     @Test
     void decryptFailsWhenPayloadTampered() {
         String payload = "payload";
-        String encryptedValue = Crypto.encrypt(API.cfg.encryptionKey(), payload);
+        String encryptedValue = Crypto.encrypt(Server.cfg.encryptionKey(), payload);
         byte[] tampered = Base64.decode(encryptedValue.getBytes(StandardCharsets.UTF_8));
         tampered[tampered.length - 1] ^= 0x01;
 
         Assertions.assertThrows(IllegalStateException.class,
-                () -> Crypto.decrypt(API.cfg.encryptionKey(), Base64.encode(tampered)));
+                () -> Crypto.decrypt(Server.cfg.encryptionKey(), Base64.encode(tampered)));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class CryptoTest {
 
     @Test
     void rejectsInvalidInputs() {
-        String key = API.cfg.encryptionKey();
+        String key = Server.cfg.encryptionKey();
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.encrypt(key, null));
         Assertions.assertThrows(IllegalArgumentException.class, () -> Crypto.decrypt(key, " "));
@@ -72,7 +72,7 @@ public class CryptoTest {
 
     @Test
     void decryptFailsWithWrongKey() {
-        String encrypted = Crypto.encrypt(API.cfg.encryptionKey(), "secret payload");
+        String encrypted = Crypto.encrypt(Server.cfg.encryptionKey(), "secret payload");
         String otherKey = "another-secret-key-16";
 
         Assertions.assertThrows(IllegalStateException.class, () -> Crypto.decrypt(otherKey, encrypted));
@@ -88,7 +88,7 @@ public class CryptoTest {
 
     @Test
     void threadSafeOnVirtualThreads() throws Exception {
-        String secretKey = API.cfg.encryptionKey();
+        String secretKey = Server.cfg.encryptionKey();
         int requestCount = 2000;
         List<Future<Boolean>> futures = new ArrayList<>(requestCount);
 

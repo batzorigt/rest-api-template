@@ -89,16 +89,75 @@ foreach ($template in @("state.template.json", "verification.template.json")) {
     }
 }
 
-# Check tasks directory
-Write-Host ""
-Write-Host "Tasks directory check..." -ForegroundColor Cyan
-$tasksDir = Join-Path $aiLoopDir "tasks"
-if ((Get-ChildItem $tasksDir -Directory -ErrorAction SilentlyContinue).Count -gt 0) {
-    $taskCount = (Get-ChildItem $tasksDir -Directory).Count
-    Write-Host "[OK] Tasks directory contains $taskCount task(s)" -ForegroundColor Green
+$stateSchema = Get-Content (Join-Path $aiLoopDir "schema/state.schema.json") -Raw | ConvertFrom-Json
+$verificationSchema = Get-Content (Join-Path $aiLoopDir "schema/verification.schema.json") -Raw | ConvertFrom-Json
+$stateTemplate = Get-Content (Join-Path $aiLoopDir "templates/state.template.json") -Raw | ConvertFrom-Json
+$verificationTemplate = Get-Content (Join-Path $aiLoopDir "templates/verification.template.json") -Raw | ConvertFrom-Json
+if ($stateTemplate.taskId -notmatch $stateSchema.properties.taskId.pattern -or
+    $stateTemplate.baseCommit -notmatch $stateSchema.properties.baseCommit.pattern) {
+    throw "state.template.json violates taskId or baseCommit schema constraints"
 }
-else {
+if ($verificationTemplate.taskId -notmatch $verificationSchema.properties.taskId.pattern -or
+    $verificationTemplate.overallResult -notin $verificationSchema.properties.overallResult.enum) {
+    throw "verification.template.json violates taskId or overallResult schema constraints"
+}
+Write-Host "[OK] JSON templates satisfy key schema constraints" -ForegroundColor Green
+
+# Validate task contracts
+Write-Host ""
+Write-Host "Validating task contracts..." -ForegroundColor Cyan
+$tasksDir = Join-Path $aiLoopDir "tasks"
+$taskDirs = @(Get-ChildItem $tasksDir -Directory -ErrorAction SilentlyContinue)
+$validStateStatuses = @("not_started", "planning", "implementation", "verification", "completed", "abandoned")
+$validResults = @("pending", "passed", "failed", "warning", "rejected")
+
+foreach ($taskDir in $taskDirs) {
+    if ($taskDir.Name -notmatch '^task-[0-9]{8}-[0-9]{6}$') {
+        throw "Invalid task directory name: $($taskDir.Name)"
+    }
+    $planFile = Join-Path $taskDir.FullName "plan.md"
+    $stateFile = Join-Path $taskDir.FullName "state.json"
+    if (-not (Test-Path $planFile -PathType Leaf) -or -not (Test-Path $stateFile -PathType Leaf)) {
+        throw "$($taskDir.Name) must contain plan.md and state.json"
+    }
+    $state = Get-Content $stateFile -Raw | ConvertFrom-Json
+    foreach ($property in @("taskId", "title", "description", "status", "baseCommit", "targetBranch", "createdAt", "updatedAt")) {
+        if ($null -eq $state.$property) {
+            throw "$($taskDir.Name)/state.json is missing required property '$property'"
+        }
+    }
+    if ($state.taskId -ne $taskDir.Name -or $state.status -notin $validStateStatuses -or
+        $state.baseCommit -notmatch '^[a-f0-9]{40}$') {
+        throw "$($taskDir.Name)/state.json violates taskId, status, or baseCommit constraints"
+    }
+    if ($state.retryAttempts.primaryImplementationAttempt -gt 1 -or
+        $state.retryAttempts.correctiveAttempt -gt 1 -or
+        $state.retryAttempts.transientRetry -gt 2 -or
+        $state.retryAttempts.flakyTestRerun -gt 1) {
+        throw "$($taskDir.Name)/state.json exceeds retry limits"
+    }
+    $verificationFile = Join-Path $taskDir.FullName "verification.json"
+    if ($state.status -eq "completed" -and -not (Test-Path $verificationFile -PathType Leaf)) {
+        throw "$($taskDir.Name) is completed but has no verification.json"
+    }
+    if (Test-Path $verificationFile -PathType Leaf) {
+        $verification = Get-Content $verificationFile -Raw | ConvertFrom-Json
+        if ($verification.taskId -ne $taskDir.Name -or $verification.overallResult -notin $validResults) {
+            throw "$($taskDir.Name)/verification.json violates taskId or overallResult constraints"
+        }
+        foreach ($check in @("compileCheck", "targetedTests", "fullGateTests", "documentationIndex", "workflowIntegrity", "docSync", "neutralityCheck", "noDuplication")) {
+            if ($null -eq $verification.checks.$check) {
+                throw "$($taskDir.Name)/verification.json is missing check '$check'"
+            }
+        }
+    }
+    Write-Host "[OK] $($taskDir.Name) contract is valid" -ForegroundColor Green
+}
+
+if ($taskDirs.Count -eq 0) {
     Write-Host "[OK] Tasks directory is empty (ready for new tasks)" -ForegroundColor Green
+} else {
+    Write-Host "[OK] Tasks directory contains $($taskDirs.Count) valid task(s)" -ForegroundColor Green
 }
 
 # Summary

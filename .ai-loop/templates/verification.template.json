@@ -1,0 +1,62 @@
+﻿{
+  "taskId": "task-20000101-000000",
+  "timestamp": "2026-09-08T11:00:00Z",
+  "verifier": "[Name/Role]",
+  "checks": {
+    "compileCheck": {
+      "passed": false,
+      "command": "./mvnw -q compile",
+      "outputFile": "compile.log"
+    },
+    "targetedTests": {
+      "passed": false,
+      "command": "./mvnw test -Dtest=Class[#method]",
+      "testsRan": 0,
+      "testsFailed": 0
+    },
+    "fullGateTests": {
+      "passed": false,
+      "command": "./mvnw test",
+      "testsRan": 0,
+      "testsFailed": 0
+    },
+    "documentationIndex": {
+      "passed": false,
+      "command": "./scripts/validate-doc-index.sh"
+    },
+    "workflowIntegrity": {
+      "passed": false,
+      "command": "./scripts/validate-ai-loop.sh"
+    },
+    "docSync": {
+      "passed": false,
+      "docsUpdated": []
+    },
+    "neutralityCheck": {
+      "passed": false,
+      "issuesFound": []
+    },
+    "noDuplication": {
+      "passed": false,
+      "analysis": "[Analysis description]"
+    }
+  },
+  "overallResult": "pending",
+  "issues": [],
+  "artifacts": {
+    "coverageReport": null,
+    "testReport": null,
+    "lintReport": null
+  },
+  "sign-off": {
+    "signedBy": null,
+    "signedAt": null,
+    "comments": null
+  },
+  "rejection": {
+    "rejectedBy": null,
+    "rejectedAt": null,
+    "reason": null,
+    "requiresNewPlan": true
+  }
+}

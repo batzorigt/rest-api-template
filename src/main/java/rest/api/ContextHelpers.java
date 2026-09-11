@@ -1,6 +1,7 @@
 package rest.api;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -16,26 +17,21 @@ public interface ContextHelpers {
     int MAX_RECORDS_PER_PAGE = 10;
 
     static void result(Context ctx, int status, Object result, String msgKey, Object... args) {
-        String msg = I18N.message(msgKey, ctx, args);
-        String json = ctx.jsonMapper().toJsonString(result, result.getClass());
-
-        // @off
         ctx.status(HttpStatus.OK_200);
-        ctx.result(String.format("{\"status\": %d, \"result\": %s, \"msg\": \"%s\"}", Integer.valueOf(status), json, msg));
-        // @on
+        ctx.json(Map.of(
+                "status", status,
+                "result", result,
+                "msg", I18N.message(msgKey, ctx, args)));
     }
 
     static void result(Context ctx, int status, String msgKey, Object... args) {
-        String msg = I18N.message(msgKey, ctx, args);
-
         ctx.status(HttpStatus.OK_200);
-        ctx.result(String.format("{\"status\": %d, \"msg\": %s}", Integer.valueOf(status), msg));
+        ctx.json(Map.of("status", status, "msg", I18N.message(msgKey, ctx, args)));
     }
 
     static void resultOfSearch(Context ctx, Object result) {
         if (result == null) {
             ctx.status(HttpStatus.NO_CONTENT_204);
-            ctx.result(jsonMessage("data.not.found", ctx));
         } else {
             ctx.status(HttpStatus.OK_200);
             ctx.json(result);
@@ -45,7 +41,7 @@ public interface ContextHelpers {
     static void resultOfGet(Context ctx, Object result) {
         if (result == null) {
             ctx.status(HttpStatus.NOT_FOUND_404);
-            ctx.result(jsonMessage("data.not.found", ctx));
+            ctx.json(message("data.not.found", ctx));
         } else {
             ctx.status(HttpStatus.OK_200);
             ctx.json(result);
@@ -55,17 +51,17 @@ public interface ContextHelpers {
     static void resultOfAdd(Context ctx, Object result) {
         if (result == null) {
             ctx.status(HttpStatus.BAD_REQUEST_400);
-            ctx.result(jsonMessage("could.not.save", ctx));
+            ctx.json(message("could.not.save", ctx));
         } else {
             ctx.status(HttpStatus.CREATED_201);
             ctx.json(result);
         }
     }
 
-    static void resutlOfUpdate(Context ctx, Object result) {
+    static void resultOfUpdate(Context ctx, Object result) {
         if (result == null) {
             ctx.status(HttpStatus.BAD_REQUEST_400);
-            ctx.result(jsonMessage("could.not.update", ctx));
+            ctx.json(message("could.not.update", ctx));
         } else {
             ctx.status(HttpStatus.OK_200);
             ctx.json(result);
@@ -77,12 +73,17 @@ public interface ContextHelpers {
             ctx.status(HttpStatus.NO_CONTENT_204);
         } else {
             ctx.status(HttpStatus.BAD_REQUEST_400);
-            ctx.result(jsonMessage("could.not.delete", ctx));
+            ctx.json(message("could.not.delete", ctx));
         }
     }
 
     static String jsonMessage(String msgKey, Context ctx, Object... params) {
-        return String.format("{\"msg\": \"%s\"}", I18N.message(msgKey, ctx, params));
+        Map<String, String> body = message(msgKey, ctx, params);
+        return ctx.jsonMapper().toJsonString(body, body.getClass());
+    }
+
+    private static Map<String, String> message(String msgKey, Context ctx, Object... params) {
+        return Map.of("msg", I18N.message(msgKey, ctx, params));
     }
 
     static Integer recordsPerPage(Context ctx) {
@@ -159,4 +160,5 @@ public interface ContextHelpers {
     static boolean isMobile(Context ctx) {
         return new UAgentInfo(ctx.userAgent(), ctx.header("Accept")).detectMobileLong();
     }
+
 }

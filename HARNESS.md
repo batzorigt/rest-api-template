@@ -37,8 +37,9 @@ New harness = add a row, never duplicate contracts.
 | Layer | Files | Rules |
 |---|---|---|
 | **Canonical** | `AGENTS.md`, `HARNESS.md`, `LOOP.md`, `docs/*.md`, `README.md` | Generic "agent/harness/model" wording; tool names only as marked examples or wiring-table rows |
-| **Adapter** | `opencode.json`, `.opencode/**`, future `CLAUDE.md` / `.cursor/rules` / `GEMINI.md` | Automates mandates only; never defines contracts; deleting one loses nothing but convenience |
-| **Source** | everything tracked | Author-agnostic: no AI/agent attribution markers; no IDE/tool metadata committed (`.settings/`, `.vscode/`, `.idea/` are gitignored); generated code only from generators; build reproducible without any IDE — Maven owns `target/`, so `mvn clean` after any IDE build |
+| **Adapter** | `opencode.json`, `.opencode/**`, `.github/**`, future `CLAUDE.md` / `.cursor/rules` / `GEMINI.md` | Automates mandates only; never defines contracts; deleting one loses nothing but convenience |
+| **Workflow metadata** | `.ai-loop/**` | May use the AI Loop name; records task-neutral plans, state, and verification without model attribution |
+| **Source** | everything tracked | Author-agnostic: no AI/agent attribution markers; no IDE/tool metadata committed (`.settings/`, `.vscode/`, `.idea/` are gitignored); generated code only from generators; build reproducible without any IDE — Maven owns `target/`, so `./mvnw clean` after any IDE build |
 
 Update order: canonical docs first → mirror into adapters if automation changed. Gate: canonical diffs stay actionable by any harness; code stays free of tool metadata.
 
@@ -48,14 +49,15 @@ Each fact lives fully once; elsewhere = pointer or sanctioned summary.
 
 | Fact | Canonical home | Sanctioned secondary |
 |---|---|---|
-| Project facts, commands, conventions, RBAC semantics | `AGENTS.md` | `README.md` quickstart |
+| Project facts, commands, conventions, RBAC rules | `AGENTS.md` | `README.md` quickstart; `docs/architecture.md` current endpoint/role summary |
 | Migration regeneration (IDE-only) | `AGENTS.md` → Database migrations | `/migration` adapter may restate |
-| Environment, artifacts, triage, config resolution, neutrality, this map | `HARNESS.md` | — |
+| Environment, runtime artifacts, triage, config resolution, neutrality, this map | `HARNESS.md` | — |
+| Generated source and build outputs | `AGENTS.md` → Generated code | `HARNESS.md` artifact pointer |
 | Loops, failure handling, definition of done | `LOOP.md` | command adapters |
 | Team standards (C4, security, tech) | `docs/architecture-standards.md` | — |
 | Endpoints, schema, package tree, request flow | `docs/architecture.md` | — |
 | OpenAPI spec | `openapi.yaml` (root) | authoritative for shapes; endpoint table stays summary-level |
-| Playbook summaries | `.agents/skills/repo-harness`, `repo-loops` | point back; never extend rules |
+| Playbook summaries | `.agents/skills/repo-harness`, `repo-loops`, `repo-ai-loop` | point back; never extend rules |
 | Web-agent index | `llms.txt` | pointers and one-line facts only |
 | Lifecycle metadata (`type`, `status`, `stale_after`) | each playbook/skill frontmatter | indexes describe, never restate dates |
 | Architecture-doc section anchors | `docs/index.md` | grep targets only |
@@ -82,9 +84,9 @@ See `AGENTS.md` → Generated code.
 | Symptom | Cause | Fix |
 |---|---|---|
 | Bare `java -jar target/rest-api-template-1.0.0.jar` dies on entity load | javaagent enhancement missing | use `run.*` or pass `-javaagent:src/main/jib/ebean-agent-<ebean.version>.jar` |
-| Test throws `java.lang.Error: Unresolved compilation problem` | Eclipse/JDT IDE (e.g., VS Code Java) wrote error-stub classes into shared `target/classes` | `mvn clean` then rerun; disable IDE autobuild while gating |
+| Test throws `java.lang.Error: Unresolved compilation problem` | Eclipse/JDT IDE (e.g., VS Code Java) wrote error-stub classes into shared `target/classes` | `./mvnw clean` then rerun; disable IDE autobuild while gating |
 | Chained-setter compile errors / `NoSuchMethodError: ...setId(...)` | same ECJ contamination | purge `target/classes` + `target/test-classes`; if locked, reload the IDE language server |
-| First DB-backed run after incremental build fails with `ServiceConfigurationError: ... EntityClassRegister ... not found` | incremental compile drops querybean-generator registration | prefer `mvn clean test` after adding/removing classes |
+| First DB-backed run after incremental build fails with `ServiceConfigurationError: ... EntityClassRegister ... not found` | incremental compile drops querybean-generator registration | prefer `./mvnw clean test` after adding/removing classes |
 | Unexpected 401/403 in handler tests | route declares roles; cookie missing or `role` claim too low | mint token: `SecureToken.generate(new JSONObject().put("role", "..."))` as cookie (see `AuthorizationTest`) |
 | Tests can't reach `localhost:6433` / report missing docker | daemon down or port busy | start Docker/Podman; free 6433 |
 | JVM aborts with shared-archive mismatch | stale `app-cds.jsa` after dependency change | delete it or rerun `build.*` |

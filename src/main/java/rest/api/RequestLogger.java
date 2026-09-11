@@ -17,7 +17,7 @@ public final class RequestLogger {
     private static final Set<String> SENSITIVE_HEADERS = Set.of("cookie", "authorization");
 
     static void register(JavalinConfig config) {
-        if (!API.cfg.requestLoggingEnabled()) {
+        if (!Server.cfg.requestLoggingEnabled()) {
             return;
         }
 
@@ -27,11 +27,11 @@ public final class RequestLogger {
     static void log(Context ctx, Float executionTimeMillis) {
         StringBuilder line = new StringBuilder(format(
                 ctx.method().name(),
-                fullPath(ctx),
+                ctx.path(),
                 ctx.status().getCode(),
                 executionTimeMillis == null ? 0L : executionTimeMillis.longValue()));
 
-        if (API.cfg.requestLoggingVerbose()) {
+        if (Server.cfg.requestLoggingVerbose()) {
             appendVerbose(ctx, line);
         }
 
@@ -74,8 +74,4 @@ public final class RequestLogger {
         return "[http] " + method + " " + path + " -> " + statusCode + " (" + durationMillis + " ms)";
     }
 
-    private static String fullPath(Context ctx) {
-        String query = ctx.queryString();
-        return query == null ? ctx.path() : ctx.path() + "?" + query;
-    }
 }

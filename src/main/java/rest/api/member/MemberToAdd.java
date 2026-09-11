@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +17,8 @@ public class MemberToAdd {
     @Size(min = 1, max = 10)
     private String name;
 
-    private List<String> phones = new ArrayList<>();
+    @NotNull
+    private List<@NotBlank @Size(max = 255) String> phones = new ArrayList<>();
 
     public MemberToAdd() {
         super();

@@ -1,6 +1,9 @@
 package rest.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -10,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import io.ebean.PagedList;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.http.ForbiddenResponse;
 import rest.api.PagedSearch.AllDataFinder;
 import rest.api.PagedSearch.PagedDataFinder;
 
@@ -29,8 +34,7 @@ public class PagedSearchTest {
         when(pagedList.getList()).thenReturn(List.of(1, 2));
         when(pagedList.getTotalCount()).thenReturn(10);
 
-        Function<Integer, Integer> itemConvertor = value -> value;
-        PagedData<Integer> pagedData = PagedSearch.search(1, 2, pagedDataFinder, allDataFinder, itemConvertor);
+        PagedData<Integer> pagedData = PagedSearch.search(1, 2, pagedDataFinder, allDataFinder, convertor);
 
         assertEquals(1, pagedData.getPageNumber());
         assertEquals(2, pagedData.getRecordsPerPage());
@@ -67,45 +71,35 @@ public class PagedSearchTest {
     }
 
     @Test
-    void recordsPerPageGreaterThanNumberOfRecords() {
-        data = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        when(pagedList.getList()).thenReturn(data);
-        when(pagedList.getTotalCount()).thenReturn(10);
-
-        PagedData<Integer> pagedData = new PagedData<Integer>(1, 20, data.size(), data);
-
-        assertEquals(1, pagedData.getPageNumber());
-        assertEquals(20, pagedData.getRecordsPerPage());
-        assertEquals(1, pagedData.getNumberOfPages());
-        assertEquals(10, pagedData.getNumberOfRecords());
-    }
-
-    @Test
     void findAllForNullParams() {
         data = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        when(pagedList.getList()).thenReturn(data);
-        when(pagedList.getTotalCount()).thenReturn(10);
 
-        PagedData<Integer> pagedData = new PagedData<Integer>(null, null, data.size(), data);
-        assertValuesWhenParamsAreNull(pagedData);
-    }
-
-    private void assertValuesWhenParamsAreNull(PagedData<Integer> pagedData) {
+        PagedData<Integer> pagedData = PagedSearch.search(null, null, pagedDataFinder, allDataFinder);
         assertEquals(null, pagedData.getPageNumber());
         assertEquals(null, pagedData.getRecordsPerPage());
         assertEquals(null, pagedData.getNumberOfPages());
         assertEquals(null, pagedData.getNumberOfRecords());
         assertEquals(9, pagedData.getData().size());
+        verify(pagedList, never()).getList();
     }
 
     @Test
-    void findAllForZeroedParams() {
-        data = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-        when(pagedList.getList()).thenReturn(data);
-        when(pagedList.getTotalCount()).thenReturn(10);
+    void rejectsIncompletePaginationPair() {
+        assertThrows(BadRequestResponse.class,
+                () -> PagedSearch.search(1, null, pagedDataFinder, allDataFinder));
+        assertThrows(BadRequestResponse.class,
+                () -> PagedSearch.search(null, 10, pagedDataFinder, allDataFinder));
+    }
 
-        PagedData<Integer> pagedData = new PagedData<Integer>(0, 0, data.size(), data);
-        assertValuesWhenParamsAreNull(pagedData);
+    @Test
+    void rejectsUnpaginatedSearchWhenAllFinderIsDisabled() {
+        assertThrows(ForbiddenResponse.class,
+                () -> PagedSearch.search(null, null, pagedDataFinder, null));
+    }
+
+    @Test
+    void rejectsOffsetOutsideIntegerRange() {
+        assertThrows(BadRequestResponse.class, () -> PagedSearch.offset(Integer.MAX_VALUE, 10));
     }
 
 }

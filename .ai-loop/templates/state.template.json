@@ -1,0 +1,35 @@
+﻿{
+  "taskId": "task-20000101-000000",
+  "title": "[Short Title]",
+  "description": "[Detailed description]",
+  "status": "not_started",
+  "baseCommit": "0000000000000000000000000000000000000000",
+  "targetBranch": "feature/ai-task-YYYYMMDD",
+  "filesModified": [],
+  "filesCreated": [],
+  "filesDeleted": [],
+  "verifiedTests": false,
+  "verifiedDocs": false,
+  "verifiedNeutrality": false,
+  "verifiedNoDuplication": false,
+  "retryAttempts": {
+    "primaryImplementationAttempt": 0,
+    "correctiveAttempt": 0,
+    "transientRetry": 0,
+    "flakyTestRerun": 0
+  },
+  "lastRetryType": null,
+  "lastRetryReason": "",
+  "retryLimitsExceeded": [],
+  "primaryImplementationStatus": "not_started",
+  "primaryImplementationFailureReason": "",
+  "verifierRejection": false,
+  "verifierRejectionReason": "",
+  "createdAt": "2026-09-08T10:00:00Z",
+  "updatedAt": "2026-09-08T10:00:00Z",
+  "metadata": {
+    "initiator": "[Name/System]",
+    "priority": "medium",
+    "relatedTasks": []
+  }
+}

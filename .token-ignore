@@ -15,7 +15,8 @@
 # Generated artifacts and dependencies contain no source context. Agents must not read them.
 target
 jte-classes
-src/main/jib
+src/main/jib/ebean-agent-*.jar
+src/main/jib/jte-classes
 app-cds.jsa
 node_modules
 **/query/Q*.java

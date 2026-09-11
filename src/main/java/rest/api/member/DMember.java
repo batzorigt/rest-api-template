@@ -22,7 +22,7 @@ public class DMember extends Domain {
     @Size(min = 1, max = 10)
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DPhone> phones;
 
     private Integer sex;

@@ -1,6 +1,5 @@
 package rest.api.member;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
@@ -17,7 +16,7 @@ public class DPhone extends Domain {
 
     private String phoneNo;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     private DMember member;
 
     private boolean isHomePhoneNo;

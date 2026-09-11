@@ -3,7 +3,7 @@ name: repo-ai-loop
 description: AI coding workflow structure for tracking tasks through planning, implementation, and verification phases. Load when working with AI-generated code changes.
 type: Playbook
 title: Repo AI Loop quick playbook
-resource: /ai-loop/
+resource: /.ai-loop/
 tags: [ai-loop, workflow, task-management]
 status: stable
 stale_after: 2027-02-26T00:00:00Z
