@@ -86,47 +86,61 @@ done
 # Unique and sort
 mapfile -t IGNORE_ARRAY < <(printf '%s\n' "${IGNORE_ARRAY[@]}" | sort -u)
 
-IGNORE_JSON_COMPACT="[$(printf '%s,' "${IGNORE_ARRAY[@]}" | sed 's/,$//')]"
-
-# Update only the ignore array so both platform scripts preserve surrounding formatting.
-if command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1; then
-    if command -v python3 >/dev/null 2>&1; then
-        PYTHON_COMMAND="python3"
+# Build the formatted ignore block.
+ignore_entries=""
+for i in "${!IGNORE_ARRAY[@]}"; do
+    if [[ $i -eq $((${#IGNORE_ARRAY[@]} - 1)) ]]; then
+        ignore_entries+=$'    '"${IGNORE_ARRAY[i]}"
     else
-        PYTHON_COMMAND="python"
+        ignore_entries+=$'    '"${IGNORE_ARRAY[i]},"$'\n'
     fi
-    IGNORE_JSON_COMPACT="$IGNORE_JSON_COMPACT" "$PYTHON_COMMAND" - "$OPENCODE_FILE" <<'PYTHON'
-import json
-import os
-import re
-import sys
+done
+ignore_block="  \"ignore\": ["$'\n'"$ignore_entries"$'\n'"  ]"
 
-path = sys.argv[1]
-with open(path, "rb") as source:
-    raw_content = source.read()
-has_bom = raw_content.startswith(b"\xef\xbb\xbf")
-content = raw_content.decode("utf-8-sig")
-ignore = json.loads(os.environ["IGNORE_JSON_COMPACT"])
-entries = ",\n".join(f'    {json.dumps(pattern)}' for pattern in ignore)
-replacement = f'  "ignore": [\n{entries}\n  ]'
-updated, replacements = re.subn(
-    r'^\s*"ignore"\s*:\s*\[.*?^\s*\]',
-    replacement,
-    content,
-    count=1,
-    flags=re.MULTILINE | re.DOTALL,
-)
-if replacements != 1:
-    raise SystemExit("Error: expected exactly one ignore array in opencode.json")
-json.loads(updated)
-encoding = "utf-8-sig" if has_bom else "utf-8"
-with open(path, "w", encoding=encoding, newline="\n") as destination:
-    destination.write(updated.rstrip("\r\n") + "\n")
-PYTHON
-else
-    echo "Error: updating opencode.json requires python3 or python" >&2
-    exit 1
+# Detect BOM if present.
+has_bom=0
+if [[ $(head -c 3 "$OPENCODE_FILE" 2>/dev/null) == $'\xef\xbb\xbf' ]]; then
+    has_bom=1
 fi
+
+opencode_tmp="$(mktemp "${OPENCODE_FILE}.tmp.XXXXXX")"
+if [[ $has_bom -eq 1 ]]; then
+    printf '\xef\xbb\xbf' > "$opencode_tmp"
+fi
+
+awk -v replacement="$ignore_block" '
+BEGIN {
+    in_ignore = 0
+    match_count = 0
+}
+{
+    sub(/\r$/, "")
+    if (NR == 1) {
+        sub(/^\xef\xbb\xbf/, "")
+    }
+    if (!in_ignore && $0 ~ /^[[:space:]]*"ignore"[[:space:]]*:[[:space:]]*\[/) {
+        match_count++
+        in_ignore = 1
+        print replacement
+        next
+    }
+    if (in_ignore) {
+        if ($0 ~ /^[[:space:]]*\]/) {
+            in_ignore = 0
+        }
+        next
+    }
+    print
+}
+END {
+    if (match_count != 1 || in_ignore != 0) {
+        print "Error: expected exactly one ignore array in opencode.json" > "/dev/stderr"
+        exit 1
+    }
+}
+' "$OPENCODE_FILE" >> "$opencode_tmp"
+
+mv "$opencode_tmp" "$OPENCODE_FILE"
 
 echo "Updated opencode.json"
 echo "Sync complete. Patterns synced: ${#PATTERNS[@]}"

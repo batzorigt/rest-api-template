@@ -12,7 +12,13 @@ if not defined EBEAN_VERSION (
 )
 
 echo Step 1: Building with Maven...
-call mvn clean package -DskipTests
+where mvn >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    set "MVN_CMD=mvn"
+) else (
+    set "MVN_CMD=mvnw.cmd"
+)
+call %MVN_CMD% clean package -DskipTests
 
 if %ERRORLEVEL% neq 0 (
     echo Error: Maven build failed.
