@@ -11,7 +11,15 @@ if [ -z "$EBEAN_VERSION" ]; then
 fi
 
 echo "Step 1: Building with Maven..."
-mvn clean package -DskipTests
+if command -v mvn >/dev/null 2>&1; then
+    MVN_CMD="mvn"
+elif [ -x "./mvnw" ]; then
+    MVN_CMD="./mvnw"
+else
+    MVN_CMD="sh ./mvnw"
+fi
+
+$MVN_CMD clean package -DskipTests
 
 if [ $? -ne 0 ]; then
     echo "Error: Maven build failed."
